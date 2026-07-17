@@ -56,6 +56,9 @@ export function SimulationControls() {
   const toggleOrbits = useExplorationStore((state) => state.toggleOrbits);
   const toggleLabels = useExplorationStore((state) => state.toggleLabels);
 
+  const controlDeckExpanded = usePreferencesStore(
+    (state) => state.controlDeckExpanded,
+  );
   const qualityLevel = usePreferencesStore((state) => state.qualityLevel);
   const motionPreference = usePreferencesStore(
     (state) => state.motionPreference,
@@ -64,25 +67,78 @@ export function SimulationControls() {
   const setMotionPreference = usePreferencesStore(
     (state) => state.setMotionPreference,
   );
+  const toggleControlDeck = usePreferencesStore(
+    (state) => state.toggleControlDeck,
+  );
+
+  if (!controlDeckExpanded) {
+    return (
+      <aside aria-label={copy.label} className={styles.controlDock}>
+        <button
+          aria-controls="simulation-control-deck"
+          aria-expanded="false"
+          className={styles.controlDockButton}
+          onClick={toggleControlDeck}
+          type="button"
+        >
+          <span aria-hidden="true" className={styles.controlDockOrbit}>
+            <span />
+          </span>
+          <span className={styles.controlDockCopy}>
+            <strong>{copy.openControls}</strong>
+            <small>
+              {copy.compactStatus(
+                isPaused,
+                timeScale,
+                copy.scaleOptions[scaleMode],
+              )}
+            </small>
+          </span>
+          <span aria-hidden="true" className={styles.controlDockChevron}>
+            ↑
+          </span>
+        </button>
+        <p className="sr-only" id="experience-scale-description">
+          {copy.scaleDescriptions[scaleMode]}
+        </p>
+      </aside>
+    );
+  }
 
   return (
-    <aside aria-label={copy.label} className={styles.controlDeck}>
+    <aside
+      aria-label={copy.label}
+      className={styles.controlDeck}
+      id="simulation-control-deck"
+    >
       <div className={styles.controlDeckHeader}>
         <div>
           <p className={styles.controlEyebrow}>{copy.eyebrow}</p>
           <h2>{copy.label}</h2>
         </div>
-        <div className={styles.transportControls}>
+        <div className={styles.controlHeaderActions}>
+          <div className={styles.transportControls}>
+            <button
+              aria-pressed={isPaused}
+              className={styles.primaryControl}
+              onClick={togglePaused}
+              type="button"
+            >
+              {isPaused ? copy.resume : copy.pause}
+            </button>
+            <button onClick={resetSimulation} type="button">
+              {copy.reset}
+            </button>
+          </div>
           <button
-            aria-pressed={isPaused}
-            className={styles.primaryControl}
-            onClick={togglePaused}
+            aria-controls="simulation-control-deck"
+            aria-expanded="true"
+            aria-label={copy.collapseControls}
+            className={styles.collapseControl}
+            onClick={toggleControlDeck}
             type="button"
           >
-            {isPaused ? copy.resume : copy.pause}
-          </button>
-          <button onClick={resetSimulation} type="button">
-            {copy.reset}
+            <span aria-hidden="true">↓</span>
           </button>
         </div>
       </div>

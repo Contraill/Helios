@@ -16,11 +16,17 @@ describe("preferences store", () => {
     resetPreferencesStore();
   });
 
-  it("updates render quality and motion preference", () => {
+  it("updates render quality, motion and control deck state", () => {
     state().setQualityLevel("low");
     state().setMotionPreference("reduced");
+    state().setControlDeckExpanded(false);
+
     expect(state().qualityLevel).toBe("low");
     expect(state().motionPreference).toBe("reduced");
+    expect(state().controlDeckExpanded).toBe(false);
+
+    state().toggleControlDeck();
+    expect(state().controlDeckExpanded).toBe(true);
   });
 
   it("rehydrates saved preferences", async () => {
@@ -28,7 +34,11 @@ describe("preferences store", () => {
     localStorage.setItem(
       "helios-preferences",
       JSON.stringify({
-        state: { qualityLevel: "high", motionPreference: "standard" },
+        state: {
+          controlDeckExpanded: false,
+          qualityLevel: "high",
+          motionPreference: "standard",
+        },
         version: 1,
       }),
     );
@@ -37,5 +47,6 @@ describe("preferences store", () => {
 
     expect(state().qualityLevel).toBe("high");
     expect(state().motionPreference).toBe("standard");
+    expect(state().controlDeckExpanded).toBe(false);
   });
 });

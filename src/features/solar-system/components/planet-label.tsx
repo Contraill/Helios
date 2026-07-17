@@ -42,9 +42,7 @@ function createLabelTexture(
   canvas.height = mode === "scientific" ? 224 : 128;
 
   const context = canvas.getContext("2d");
-  if (!context) {
-    throw new Error("Canvas 2D context is unavailable.");
-  }
+  if (!context) throw new Error("Canvas 2D context is unavailable.");
 
   context.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -53,39 +51,24 @@ function createLabelTexture(
     const centerY = canvas.height / 2;
     const offsets: Record<ScientificLabelPlacement, readonly [number, number]> =
       {
-        north: [0, -86],
-        northeast: [180, -68],
-        northwest: [-180, -68],
-        east: [196, 0],
-        southeast: [174, 72],
-        southwest: [-174, 72],
-        west: [-196, 0],
-        south: [0, 78],
+        north: [0, -84],
+        northeast: [178, -66],
+        northwest: [-178, -66],
+        east: [198, 0],
+        southeast: [174, 70],
+        southwest: [-174, 70],
+        west: [-198, 0],
+        south: [0, 80],
       };
     const [labelX, labelY] = offsets[placement];
     const textX = centerX + labelX;
     const textY = centerY + labelY;
-    context.strokeStyle = color;
-    context.lineWidth = selected ? 6 : 4;
-    context.globalAlpha = selected ? 1 : 0.86;
-    context.beginPath();
-    context.arc(centerX, centerY, selected ? 26 : 21, 0, Math.PI * 2);
-    context.moveTo(centerX - 39, centerY);
-    context.lineTo(centerX - 13, centerY);
-    context.moveTo(centerX + 13, centerY);
-    context.lineTo(centerX + 39, centerY);
-    context.moveTo(centerX, centerY - 39);
-    context.lineTo(centerX, centerY - 13);
-    context.moveTo(centerX, centerY + 13);
-    context.lineTo(centerX, centerY + 39);
-    context.stroke();
-    context.globalAlpha = 1;
 
     context.strokeStyle = color;
-    context.globalAlpha = 0.62;
-    context.lineWidth = 2;
+    context.globalAlpha = selected ? 0.82 : 0.46;
+    context.lineWidth = selected ? 3 : 2;
     context.beginPath();
-    context.moveTo(centerX + labelX * 0.22, centerY + labelY * 0.22);
+    context.moveTo(centerX + labelX * 0.2, centerY + labelY * 0.2);
     context.lineTo(centerX + labelX * 0.72, centerY + labelY * 0.72);
     context.stroke();
     context.globalAlpha = 1;
@@ -97,12 +80,17 @@ function createLabelTexture(
     context.fillStyle = "rgba(242, 239, 230, 0.98)";
     context.fillText(text, textX, textY);
 
-    context.font =
-      '600 12px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
-    context.fillStyle = selected
-      ? "rgba(242, 239, 230, 0.9)"
-      : "rgba(155, 163, 176, 0.92)";
-    context.fillText(positionCaption.toUpperCase(), textX, textY + 28);
+    context.fillStyle = color;
+    context.fillRect(textX - 24, textY + 22, 48, selected ? 3 : 2);
+
+    if (positionCaption) {
+      context.font =
+        '600 12px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+      context.fillStyle = selected
+        ? "rgba(242, 239, 230, 0.9)"
+        : "rgba(155, 163, 176, 0.92)";
+      context.fillText(positionCaption.toUpperCase(), textX, textY + 43);
+    }
   } else {
     context.font =
       '600 44px ui-sans-serif, system-ui, -apple-system, "Segoe UI"';

@@ -15,7 +15,10 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    fileParallelism: false,
+    isolate: false,
     maxWorkers: 1,
+    pool: "threads",
     setupFiles: ["./vitest.setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
     css: false,

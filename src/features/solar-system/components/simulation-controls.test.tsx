@@ -66,4 +66,21 @@ describe("SimulationControls", () => {
     expect(usePreferencesStore.getState().qualityLevel).toBe("low");
     expect(usePreferencesStore.getState().motionPreference).toBe("reduced");
   });
+  it("collapses into a meaningful status dock and reopens", () => {
+    render(<SimulationControls />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Collapse simulation controls" }),
+    );
+
+    const openButton = screen.getByRole("button", { name: /Open controls/i });
+    expect(openButton).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByText(/1× · Explore/)).toBeVisible();
+    expect(usePreferencesStore.getState().controlDeckExpanded).toBe(false);
+
+    fireEvent.click(openButton);
+    expect(
+      screen.getByRole("button", { name: "Collapse simulation controls" }),
+    ).toHaveAttribute("aria-expanded", "true");
+  });
 });

@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { getPlanetById, planetIds } from "@/content/planets";
+import { getPlanetById, planetIds, planets } from "@/content/planets";
 import { PhasePlaceholder } from "@/components/ui/phase-placeholder";
+import { MarsDetailPage } from "@/features/planet-details/components/mars-detail-page";
+import { createPlanetDetailModel } from "@/features/planet-details/lib/planet-detail-model";
 import { uiStrings } from "@/lib/i18n/ui-strings";
 
 interface PlanetPageProps {
@@ -20,9 +22,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const planet = getPlanetById(slug);
 
-  if (!planet) {
-    return { title: uiStrings.pages.notFound.title };
-  }
+  if (!planet) return { title: uiStrings.pages.notFound.title };
 
   return {
     title: planet.name.en,
@@ -34,14 +34,16 @@ export default async function PlanetPage({ params }: PlanetPageProps) {
   const { slug } = await params;
   const planet = getPlanetById(slug);
 
-  if (!planet) {
-    notFound();
+  if (!planet) notFound();
+
+  if (planet.id === "mars") {
+    return <MarsDetailPage model={createPlanetDetailModel(planet, planets)} />;
   }
 
   return (
-    <article className="flex flex-col gap-6">
+    <article className="mx-auto flex max-w-4xl flex-col gap-6 px-5 py-16">
       <header className="flex flex-col gap-2">
-        <p className="font-mono text-xs uppercase tracking-[0.18em] text-muted">
+        <p className="font-mono text-xs tracking-[0.18em] text-muted uppercase">
           {uiStrings.pages.planet.referenceDataReady}
         </p>
         <h1 className="font-display text-3xl">{planet.name.en}</h1>

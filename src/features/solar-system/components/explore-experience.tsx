@@ -102,6 +102,7 @@ export function ExploreExperience({
       </p>
 
       <div className={styles.interfaceStack}>
+        <p className={styles.scaleNotice}>{copy.scaleNotices[scaleMode]}</p>
         {selectedPlanet ? (
           <section
             aria-labelledby="selected-planet-title"

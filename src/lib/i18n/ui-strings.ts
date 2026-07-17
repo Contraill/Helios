@@ -22,6 +22,17 @@ export const uiStrings = {
   placeholder: {
     label: "In development",
   },
+  dataPresentation: {
+    accessed: "Accessed",
+    sources: "Sources and provenance",
+    freshness: {
+      live: "Live",
+      "near-live": "Near-live",
+      "latest-available": "Latest available",
+      historical: "Historical",
+      reference: "Reference",
+    },
+  },
   pages: {
     home: {
       intro:
@@ -66,8 +77,14 @@ export const uiStrings = {
       formatGravity: (value: string): string => `${value} m/s²`,
       formatEarthDays: (value: string): string => `${value} Earth days`,
       formatMinutes: (value: string): string => `${value} min`,
-      scientificMarkerCaption: "Position marker",
-      scientificSelectedMarkerCaption: "Position · not body size",
+      scientificMarkerCaption: "",
+      scientificSelectedMarkerCaption: "Selected locator · not body size",
+      scaleNotices: {
+        exploration:
+          "Exploration scale · bodies enlarged and distance compressed",
+        scientific:
+          "Scientific positions · locator discs identify worlds, not body size",
+      },
       gravityLabel: "Gravity",
       yearLabel: "Orbital year",
       lightLabel: "Sunlight travel",
@@ -94,6 +111,13 @@ export const uiStrings = {
         pause: "Pause",
         resume: "Resume",
         reset: "Reset",
+        collapseControls: "Collapse simulation controls",
+        openControls: "Open controls",
+        compactStatus: (
+          paused: boolean,
+          speed: number,
+          scale: string,
+        ): string => `${paused ? "Paused" : `${speed}×`} · ${scale}`,
         speed: "Time speed",
         scale: "Scale model",
         scene: "Scene layers",
@@ -119,7 +143,7 @@ export const uiStrings = {
           exploration:
             "Exploration scale enlarges bodies and compresses distance for legibility. It is intentionally not to scale.",
           scientific:
-            "Scientific scale uses one shared ratio for radii and distance. Screen-space position markers keep all eight locations readable; they do not represent body size.",
+            "Scientific scale uses one shared ratio for radii and distance. Colored locator discs preserve planet identity and mark position only; they do not represent physical size.",
         },
       },
     },
@@ -156,6 +180,83 @@ export const uiStrings = {
       placeholderFor: (name: string): string =>
         `${name} is connected to the validated planet catalog. Its full editorial page and personal calculations are scheduled for the planet-detail phase.`,
       backToExplore: "Back to Explore",
+      mars: {
+        backToExplore: "Return to the system",
+        jumpToHumanScale: "Human scale",
+        jumpToSources: "Method and sources",
+        heroNavigation: "Mars page shortcuts",
+        editorialVisualLabel:
+          "Editorial visual interpretation of Mars with orbital annotations",
+        heroMeta: {
+          order: "Order from Sun",
+          kind: "World type",
+        },
+        kindLabels: {
+          terrestrial: "Terrestrial",
+          "gas-giant": "Gas giant",
+          "ice-giant": "Ice giant",
+        },
+        metrics: {
+          radius: "Mean radius",
+          radiusContext: "About half Earth’s diameter",
+          solarDay: "Solar day",
+          dayContext: "Only about forty minutes beyond Earth",
+          temperature: "Mean surface reference",
+          temperatureContext: "A planetary mean, not local weather",
+        },
+        sections: {
+          portraitEyebrow: "Planet portrait",
+          portraitTitle: "Familiar rhythms, alien conditions",
+          portraitLede:
+            "Mars is close enough to invite comparison and different enough to expose where intuition fails.",
+          humanEyebrow: "Personal comparison",
+          humanTitle: "Put the numbers against your own body",
+          humanLede:
+            "Gravity, day length and sunlight delay become more understandable when they are related to an Earth reference.",
+          environmentEyebrow: "Reference signals",
+          environmentTitle: "Three numbers that change the whole experience",
+          methodologyEyebrow: "Scientific limits",
+          methodologyTitle: "What these values do—and do not—describe",
+          methodologyLede:
+            "Every displayed value keeps its source, definition and date context. Reference values are not presented as observations happening now.",
+        },
+        facts: {
+          gravityEyebrow: "Gravity",
+          gravityTitle: "Your mass stays; the scale reading changes",
+          gravityBody: (percent: string): string =>
+            `Mars surface gravity is about ${percent}% of the Earth reference used by Helios. The result is a scale-reading comparison, not a change in mass.`,
+          yearEyebrow: "Year",
+          yearTitle: "One orbit, hundreds of local days",
+          yearBody: (earthDays: string, localDays: string): string =>
+            `A Martian year lasts about ${earthDays} Earth days, or roughly ${localDays} Martian solar days using the reference day length.`,
+          moonsEyebrow: "Moons",
+          moonsTitle: "Two small companions",
+          moonsBody: (count: number, asOf: string): string =>
+            `Mars has ${count} recognized moons—Phobos and Deimos. The catalog snapshot is dated ${asOf}.`,
+          undated: "date not recorded",
+        },
+        methodologyLabel: "Methodology and limits",
+        adjacentPlanets: "Adjacent planets",
+        previousPlanet: "Previous world",
+        nextPlanet: "Next world",
+        humanScale: {
+          eyebrow: "Your Earth reference",
+          title: "What would the scale read on Mars?",
+          body: "Enter an Earth scale reading. The calculation applies the ratio between Mars surface gravity and standard Earth gravity; your mass does not change.",
+          inputLabel: "Earth scale reading",
+          inputHelp: "Use a value from 0 to 1,000 kilograms.",
+          inputError: "Enter a number from 0 to 1,000.",
+          resultLabel: "Mars scale equivalent",
+          resultExplanation:
+            "This is an Earth-style scale equivalent. It is not a medical or body-mass calculation.",
+          gravityLabel: "Earth gravity",
+          gravityNote: "surface-reference ratio",
+          dayLabel: "Extra per solar day",
+          dayNote: "compared with 24 hours",
+          lightLabel: "Sunlight travel",
+          lightNote: "average orbital distance",
+        },
+      },
     },
     notFound: {
       title: "Page not found",

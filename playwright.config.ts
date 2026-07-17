@@ -1,8 +1,29 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = 3000;
-const baseURL = `http://localhost:${PORT}`;
+const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${PORT}`;
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
+const useServerlessChromium =
+  process.env.PLAYWRIGHT_CHROMIUM_FLAVOR === "serverless";
+
+const localChromiumArgs = useServerlessChromium
+  ? [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage",
+      "--ignore-gpu-blocklist",
+      "--use-gl=angle",
+      "--use-angle=swiftshader",
+      "--enable-unsafe-swiftshader",
+      "--headless=shell",
+    ]
+  : [
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+      "--use-angle=swiftshader",
+      "--enable-webgl",
+      "--ignore-gpu-blocklist",
+    ];
 
 export default defineConfig({
   testDir: "./e2e",
@@ -21,13 +42,7 @@ export default defineConfig({
         launchOptions: executablePath
           ? {
               executablePath,
-              args: [
-                "--no-sandbox",
-                "--disable-dev-shm-usage",
-                "--use-angle=swiftshader",
-                "--enable-webgl",
-                "--ignore-gpu-blocklist",
-              ],
+              args: localChromiumArgs,
             }
           : undefined,
       },

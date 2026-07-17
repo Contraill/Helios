@@ -6,17 +6,15 @@ The project combines a cinematic 3D experience with sourced planetary data, pers
 
 ## Current status
 
-Phase 5 implementation is complete. The `/explore` route now has a stable simulation and preference layer on top of the Phase 4 interaction loop:
+Block B has started with a controlled opening slice. The work currently includes:
 
-- pause, resume, four time speeds and deterministic reset,
-- exploration and scientific scale modes with explicit scale explanations,
-- orbit-path and planet-label visibility controls,
-- low, medium and high render quality with measurable DPR and geometry differences,
-- system, reduced and standard motion preferences,
-- local persistence for viewing preferences and time speed,
-- scientific-scale position markers that do not pretend to enlarge the planets.
+- a collapsible, persisted simulation control deck and responsive tablet/mobile layout,
+- scientific-scale locator discs that preserve real mesh scale while making planets readable,
+- shared editorial primitives for metrics, facts, methodology, freshness and sources,
+- pure comparison helpers and a server-only NASA adapter foundation,
+- a complete Mars detail vertical slice with sourced reference data and a personal gravity comparison.
 
-The next implementation block combines planet details, the first NASA adapters and comparison infrastructure while keeping separate Phase 6, 7 and 8 acceptance gates.
+Phases 6, 7 and 8 remain separate acceptance gates. Mars defines the quality bar for the remaining planet pages; no NASA surface or comparison experience is presented as complete yet.
 
 ## Stack
 
@@ -44,6 +42,8 @@ src/
 │   ├── planets/               # eight validated planet records
 │   └── sources/               # NASA/JPL source registry
 ├── features/
+│   ├── data-presentation/     # source, metric and methodology primitives
+│   ├── planet-details/        # editorial detail-page compositions
 │   └── solar-system/          # scene, interaction and camera orchestration
 ├── hooks/                     # client capability and preference hooks
 ├── lib/
@@ -100,4 +100,4 @@ pnpm dev
 - [`docs/project/05_DEVELOPMENT_ROADMAP.md`](docs/project/05_DEVELOPMENT_ROADMAP.md) — phase plan and acceptance criteria
 - [`docs/project/06_TESTING_QUALITY_RELEASE.md`](docs/project/06_TESTING_QUALITY_RELEASE.md) — quality and release standard
 - [`docs/decisions.md`](docs/decisions.md) — decision log
-- [`docs/phase-5-report.md`](docs/phase-5-report.md) — latest completed phase report
+- [`docs/block-b-opening-report.md`](docs/block-b-opening-report.md) — current Block B opening slice

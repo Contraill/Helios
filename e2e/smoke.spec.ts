@@ -266,12 +266,24 @@ test.describe("tablet acceptance", () => {
     });
     const summary = page.getByRole("region", { name: "Saturn" });
 
-    for (const element of [controls, navigator, summary]) {
-      const box = await element.boundingBox();
+    const [controlsBox, navigatorBox, summaryBox] = await Promise.all([
+      controls.boundingBox(),
+      navigator.boundingBox(),
+      summary.boundingBox(),
+    ]);
+
+    for (const box of [controlsBox, navigatorBox, summaryBox]) {
       expect(box).not.toBeNull();
       expect(box!.x).toBeGreaterThanOrEqual(0);
       expect(box!.x + box!.width).toBeLessThanOrEqual(768);
     }
+
+    expect(summaryBox!.y + summaryBox!.height).toBeLessThanOrEqual(
+      Math.min(controlsBox!.y, navigatorBox!.y),
+    );
+    expect(controlsBox!.x + controlsBox!.width).toBeLessThanOrEqual(
+      navigatorBox!.x,
+    );
     await expectNoHorizontalOverflow(page);
   });
 });
@@ -297,4 +309,86 @@ test("scene accessibility name follows scale and reduced motion", async ({
       name: "Static scientific-scale model of the Sun and the eight planets",
     }),
   ).toBeVisible();
+});
+
+test("the simulation deck collapses into a compact dock and persists", async ({
+  page,
+}) => {
+  await page.goto("/explore");
+
+  const controls = page.getByRole("complementary", {
+    name: "Simulation controls",
+  });
+  await controls.getByRole("button", { name: "Scientific" }).click();
+  const expandedBox = await controls.boundingBox();
+  expect(expandedBox).not.toBeNull();
+  expect(expandedBox!.width).toBeLessThanOrEqual(500);
+
+  await controls
+    .getByRole("button", { name: "Collapse simulation controls" })
+    .click();
+
+  const openButton = page.getByRole("button", { name: /Open controls/i });
+  await expect(openButton).toBeVisible();
+  await expect(openButton).toHaveAttribute("aria-expanded", "false");
+  await expect(
+    page.getByText(
+      "Scientific positions · locator discs identify worlds, not body size",
+    ),
+  ).toBeVisible();
+  const dockBox = await openButton.boundingBox();
+  expect(dockBox).not.toBeNull();
+  expect(dockBox!.width).toBeLessThanOrEqual(260);
+
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: /Open controls/i }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: /Open controls/i }).click();
+  await expect(
+    page.getByRole("button", { name: "Collapse simulation controls" }),
+  ).toBeVisible();
+});
+
+test("Mars detail provides sources, methodology and a personal calculation", async ({
+  page,
+}) => {
+  await page.goto("/planet/mars");
+
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Mars" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: "What these values do—and do not—describe",
+    }),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Mars: Facts" })).toHaveAttribute(
+    "href",
+    "https://science.nasa.gov/mars/facts/",
+  );
+
+  const weightInput = page.getByRole("textbox", {
+    name: "Earth scale reading",
+  });
+  await weightInput.fill("70");
+  await expect(page.getByText("26.5")).toBeVisible();
+});
+
+test.describe("Mars detail mobile", () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+
+  test("keeps the editorial vertical slice readable without horizontal overflow", async ({
+    page,
+  }) => {
+    await page.goto("/planet/mars");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Mars" }),
+    ).toBeVisible();
+    await expect(
+      page.getByText("A cold desert with the memory of water."),
+    ).toBeVisible();
+    await expectNoHorizontalOverflow(page);
+  });
 });

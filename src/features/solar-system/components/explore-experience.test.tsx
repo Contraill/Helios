@@ -54,6 +54,11 @@ describe("ExploreExperience", () => {
         name: "Static scientific-scale model of the Sun and the eight planets",
       }),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Scientific positions · locator discs identify worlds, not body size",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("selects a planet from the semantic navigator", () => {

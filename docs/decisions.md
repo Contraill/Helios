@@ -167,3 +167,34 @@
 - **Karar:** `engines.node` yeniden `22.x` olarak sabitlenir. `.nvmrc`, README ve GitHub Actions Node 22 sözleşmesini korur. `pnpm@10.34.4` somut bir lockfile veya deployment hatası olmadığı için değiştirilmez.
 - **Gerekçe:** Vercel yalnızca major Node sürümlerini destekler ve geniş `>=20.9.0` aralığı güncel platformda en yeni LTS major sürümüne çözümlenebilir. `22.x`, yerel geliştirme, CI ve deployment arasında deterministik major sürüm uyumu sağlar.
 - **Etkilenen dosyalar:** `package.json`, `.nvmrc`, `README.md`, `.github/workflows/ci.yml`
+
+## Blok B açılışında kontrol yüzeyi
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Simulation controls, genişletilmiş control deck ile sahneyi minimum örten kalıcı compact dock arasında geçer. Açık/kapalı tercih cihazda saklanır. Tablet ve mobilde summary, controls ve navigator absolute overlay yerine doğal grid akışında yer alır.
+- **Gerekçe:** Kontrolleri kaybetmeden sahne alanını geri verir; geçici gizleme butonu veya z-index telafisi üretmez.
+- **Etkilenen dosyalar:** `src/features/solar-system/components/simulation-controls.tsx`, `src/app/explore/explore.module.css`, `src/stores/preferences-store.ts`
+
+## Bilimsel ölçekte gezegen kimliği
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Bilimsel ölçekte gerçek mesh ve doğrusal ölçek korunur. Crosshair ana temsil olmaktan çıkar; ekran-uzayı renkli disk, ince halo ve lider çizgili isim etiketi yalnızca konum/kimlik yardımcısı olarak kullanılır. Genel ölçek notu locator disklerinin fiziksel boyut olmadığını görünür biçimde açıklar.
+- **Gerekçe:** Bilimsel dürüstlük korunurken sahne radar hedefleri dizisi yerine aynı gezegen ailesi olarak okunur.
+- **Etkilenen dosyalar:** `scientific-planet-marker.tsx`, `planet-label.tsx`, `planet-system.tsx`, `explore-experience.tsx`
+
+## Blok B ortak sunum ve veri sınırı
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Kaynak, freshness, methodology, metric, fact ve comparison primitive'leri ortak veri sözleşmesi paylaşır; sayfa kompozisyonunu dayatmaz. NASA erişimi `server-only` adapter sözleşmesi, Zod doğrulama, açık cache/revalidate politikası ve normalize edilmiş hata/fallback modeli üzerinden ilerler.
+- **Gerekçe:** Faz 6, 7 ve 8'in tekrar eden altyapısını birleştirirken gezegen sayfalarını tek şablon kopyasına dönüştürmez ve client-side ham API response kullanımını engeller.
+
+## İlk Blok B dikey örneği olarak Mars
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** İlk tam detay dikeyi Mars'tır. Sayfa; editoryal hero, kaynaklı referans değerler, kişisel ağırlık karşılaştırması, metodoloji ve kaynak provenansını birlikte doğrular. Güncel hava veya rover gözlemi bu dilimde gösterilmez.
+- **Gerekçe:** Dünya'ya yakın gün uzunluğu, düşük yerçekimi, ince atmosfer ve su geçmişi güçlü bir insan ölçeği anlatısı kurarken kararsız dinamik veri iddialarından kaçınmaya izin verir.
+- **Not:** Bu karar Faz 6'yı tamamlamaz; kalan yedi gezegen ve ayrı Faz 6 kabul kapısı açıktır.

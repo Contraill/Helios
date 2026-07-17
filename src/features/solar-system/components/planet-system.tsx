@@ -21,6 +21,7 @@ import { useExplorationStore } from "@/stores/exploration-store";
 
 import { OrbitPath } from "./orbit-path";
 import { PlanetLabel, type ScientificLabelPlacement } from "./planet-label";
+import { ScientificPlanetMarker } from "./scientific-planet-marker";
 
 const SCIENTIFIC_LABEL_PLACEMENTS: Readonly<
   Record<ScenePlanet["id"], ScientificLabelPlacement>
@@ -198,6 +199,14 @@ export function PlanetSystem({
             />
           </mesh>
         </group>
+
+        {scientificMode ? (
+          <ScientificPlanetMarker
+            active={active}
+            color={planet.color}
+            selected={selected}
+          />
+        ) : null}
 
         {active && !scientificMode ? (
           <mesh
