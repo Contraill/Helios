@@ -142,8 +142,8 @@
 
 - **Durum:** Kabul edildi
 - **Tarih:** 17 Temmuz 2026
-- **Karar:** Bilimsel modda Güneş, gezegen yarıçapları ve yörünge mesafeleri aynı doğrusal oranı kullanır. Görünemeyecek kadar küçük gezegenler sabit konum işaretçisiyle bulunabilir; işaretçi boyut temsili olarak sunulmaz.
-- **Gerekçe:** Gerçek oranları bozarken bilimsel mod iddiasında bulunmak yerine, görünürlük yardımını açık bir arayüz katmanı olarak ayırır.
+- **Karar:** Bilimsel modda Güneş, gezegen yarıçapları ve yörünge mesafeleri aynı doğrusal oranı kullanır. Görünemeyecek kadar küçük gezegenler, kamera uzaklığından etkilenmeyen ekran-uzayı crosshair ve isim etiketleriyle bulunur. İşaretçiler gerçek mesh'i büyütmez ve boyut temsili olarak sunulmaz.
+- **Gerekçe:** Gerçek oranları bozarken bilimsel mod iddiasında bulunmak yerine, görünürlük yardımını açık ve erişilebilir bir sunum katmanı olarak ayırır.
 
 ## Kalite seviyelerinin ölçülebilir farkı
 
@@ -158,3 +158,12 @@
 - **Tarih:** 17 Temmuz 2026
 - **Karar:** Ölçek modu, yörünge ve etiket görünürlüğü, kalite, hareket tercihi ve zaman hızı cihazda saklanır. Seçili gezegen, hover durumu, kamera geçişi ve pause durumu reload sonrasında geri yüklenmez.
 - **Gerekçe:** Kullanıcının görünüm tercihlerini korurken geçici etkileşim ve yarım kalmış simülasyon durumunu yeni oturuma taşımamayı sağlar.
+
+## Node sürümü sözleşmesinin Node 22'ye sabitlenmesi
+
+- **Durum:** Kabul edildi
+- **Tarih:** 17 Temmuz 2026
+- **Problem:** Faz 1 temel commit'inde `package.json` içine `node >=20.9.0` yazılırken `.nvmrc` değeri `22` olarak bırakılmıştı. README de aynı anda Node 22 çalışma ortamını işaret ediyordu. Git geçmişinde bu geniş aralığı gerektiren bir lockfile, Vercel hatası veya karar kaydı bulunmuyor; değer Next.js'in minimum uyumluluk eşiğinin genel bir aralık olarak kopyalanmasından kaynaklanmış görünüyor.
+- **Karar:** `engines.node` yeniden `22.x` olarak sabitlenir. `.nvmrc`, README ve GitHub Actions Node 22 sözleşmesini korur. `pnpm@10.34.4` somut bir lockfile veya deployment hatası olmadığı için değiştirilmez.
+- **Gerekçe:** Vercel yalnızca major Node sürümlerini destekler ve geniş `>=20.9.0` aralığı güncel platformda en yeni LTS major sürümüne çözümlenebilir. `22.x`, yerel geliştirme, CI ve deployment arasında deterministik major sürüm uyumu sağlar.
+- **Etkilenen dosyalar:** `package.json`, `.nvmrc`, `README.md`, `.github/workflows/ci.yml`

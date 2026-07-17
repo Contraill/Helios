@@ -18,7 +18,7 @@ describe("camera poses", () => {
   it("frames the complete scientific scale from much farther away", () => {
     const exploration = overviewCameraPosition(1440, 900, "exploration");
     const scientific = overviewCameraPosition(1440, 900, "scientific");
-    expect(scientific[2]).toBeGreaterThan(exploration[2] * 20);
+    expect(scientific[2]).toBeGreaterThan(exploration[2] * 7);
   });
 
   it("keeps the focus camera outside the selected planet", () => {

@@ -50,6 +50,10 @@
   min-height: 38rem;
 }
 
+.interfaceStack {
+  display: contents;
+}
+
 .summaryPanel,
 .navigator {
   position: absolute;
@@ -307,27 +311,24 @@
     margin-top: -2.5rem;
   }
 
+  .interfaceStack {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    gap: 0.75rem;
+    margin-top: -3.25rem;
+    padding: 0 1rem 1rem;
+  }
+
   .summaryPanel,
   .navigator {
     position: relative;
     top: auto;
     right: auto;
     bottom: auto;
-    width: auto;
-    margin-inline: 1rem;
-  }
-
-  .summaryPanel {
-    margin-top: -3.25rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .navigator {
-    margin-top: -2.25rem;
-  }
-
-  .summaryPanel + .navigator {
-    margin-top: 0;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
   }
 
   .navigator ol {
@@ -490,8 +491,9 @@
     position: relative;
     bottom: auto;
     left: auto;
-    width: auto;
-    margin: 0 1rem 0.75rem;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
     backdrop-filter: none;
   }
 

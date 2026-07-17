@@ -4,16 +4,15 @@ import { useEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { Mesh } from "three";
 
+import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
-import { explorationScale, scientificScale } from "@/lib/calculations/scale";
-
-const SUN_MEAN_RADIUS_KM = 696_340;
 
 interface SunProps {
   motionEnabled: boolean;
   resetVersion: number;
   scaleMode: ScaleMode;
   segments: readonly [number, number];
+  sun: SceneSun;
   timeScale: number;
 }
 
@@ -22,13 +21,11 @@ export function Sun({
   resetVersion,
   scaleMode,
   segments,
+  sun,
   timeScale,
 }: SunProps) {
   const surfaceRef = useRef<Mesh>(null);
-  const radius =
-    scaleMode === "scientific"
-      ? scientificScale.radiusFromKm(SUN_MEAN_RADIUS_KM)
-      : Math.max(2.5, explorationScale.radiusFromKm(SUN_MEAN_RADIUS_KM));
+  const radius = sun.scales[scaleMode];
 
   useEffect(() => {
     if (surfaceRef.current) surfaceRef.current.rotation.y = 0;
@@ -42,7 +39,7 @@ export function Sun({
 
   return (
     <group>
-      <mesh ref={surfaceRef} name="Sun" scale={radius}>
+      <mesh ref={surfaceRef} name={sun.name} scale={radius}>
         <sphereGeometry args={[1, segments[0], segments[1]]} />
         <meshStandardMaterial
           color="#f5b85f"

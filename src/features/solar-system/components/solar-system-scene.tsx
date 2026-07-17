@@ -5,6 +5,7 @@ import type { Object3D } from "three";
 
 import { SCENE_QUALITY } from "@/features/solar-system/lib/quality";
 import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
+import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
 import type { PlanetId } from "@/lib/data/schemas/planet";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { usePreferencesStore } from "@/stores/preferences-store";
@@ -18,11 +19,13 @@ import { Sun } from "./sun";
 interface SolarSystemSceneProps {
   reducedMotion: boolean;
   scenePlanets: readonly ScenePlanet[];
+  sceneSun: SceneSun;
 }
 
 export function SolarSystemScene({
   reducedMotion,
   scenePlanets,
+  sceneSun,
 }: SolarSystemSceneProps) {
   const planetObjects = useRef<Map<PlanetId, Object3D>>(new Map());
   const scaleMode = useExplorationStore((state) => state.scaleMode);
@@ -42,7 +45,7 @@ export function SolarSystemScene({
         attach="fog"
         args={
           scaleMode === "scientific"
-            ? ["#03050a", 3_600, 5_900]
+            ? ["#03050a", 950, 1_650]
             : ["#03050a", 105, 205]
         }
       />
@@ -61,6 +64,7 @@ export function SolarSystemScene({
         resetVersion={resetVersion}
         scaleMode={scaleMode}
         segments={quality.planetSegments}
+        sun={sceneSun}
         timeScale={timeScale}
       />
       {scenePlanets.map((planet) => (

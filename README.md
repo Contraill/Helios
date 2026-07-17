@@ -57,7 +57,9 @@ src/
 
 ## Local development
 
-Requirements: Node 22 and the pnpm version pinned in `package.json`.
+Requirements: Node 22 and the pnpm version pinned in `package.json`. The
+repository, GitHub Actions and Vercel deployment contract all target the Node
+22 major line.
 
 ```bash
 corepack enable

@@ -37,8 +37,15 @@ export const uiStrings = {
       eyebrow: "Solar System overview",
       scaleNotice:
         "Exploration scale enlarges planets and compresses distances so the full system remains legible. It is not a true-scale astronomical view.",
-      sceneLabel:
-        "Animated exploration-scale model of the Sun and the eight planets",
+      sceneLabel: (
+        scaleMode: "exploration" | "scientific",
+        reducedMotion: boolean,
+      ): string => {
+        const motion = reducedMotion ? "Static" : "Animated";
+        const scale =
+          scaleMode === "scientific" ? "scientific-scale" : "exploration-scale";
+        return `${motion} ${scale} model of the Sun and the eight planets`;
+      },
       loading: "Preparing the Solar System",
       fallbackTitle: "The 3D view is unavailable",
       fallbackBody:
@@ -48,6 +55,19 @@ export const uiStrings = {
       returnToOverviewLabel: "Return to the Solar System overview",
       keyboardHint:
         "Use Tab to reach a planet, Enter to focus, and Escape to return.",
+      planetSummaryType: (kind: string, order: number): string => {
+        const kinds: Record<string, string> = {
+          "gas-giant": "Gas giant",
+          "ice-giant": "Ice giant",
+          terrestrial: "Terrestrial",
+        };
+        return `${kinds[kind] ?? kind.replaceAll("-", " ")} · planet ${order}`;
+      },
+      formatGravity: (value: string): string => `${value} m/s²`,
+      formatEarthDays: (value: string): string => `${value} Earth days`,
+      formatMinutes: (value: string): string => `${value} min`,
+      scientificMarkerCaption: "Position marker",
+      scientificSelectedMarkerCaption: "Position · not body size",
       gravityLabel: "Gravity",
       yearLabel: "Orbital year",
       lightLabel: "Sunlight travel",
@@ -99,7 +119,7 @@ export const uiStrings = {
           exploration:
             "Exploration scale enlarges bodies and compresses distance for legibility. It is intentionally not to scale.",
           scientific:
-            "Scientific scale uses one shared ratio for radii and distance. Wire markers show position only and do not enlarge a planet.",
+            "Scientific scale uses one shared ratio for radii and distance. Screen-space position markers keep all eight locations readable; they do not represent body size.",
         },
       },
     },

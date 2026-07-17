@@ -16,10 +16,24 @@ import {
 } from "@/features/solar-system/lib/orbital-motion";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
+import { uiStrings } from "@/lib/i18n/ui-strings";
 import { useExplorationStore } from "@/stores/exploration-store";
 
 import { OrbitPath } from "./orbit-path";
-import { PlanetLabel } from "./planet-label";
+import { PlanetLabel, type ScientificLabelPlacement } from "./planet-label";
+
+const SCIENTIFIC_LABEL_PLACEMENTS: Readonly<
+  Record<ScenePlanet["id"], ScientificLabelPlacement>
+> = {
+  mercury: "south",
+  venus: "northeast",
+  earth: "northwest",
+  mars: "east",
+  jupiter: "west",
+  saturn: "north",
+  uranus: "east",
+  neptune: "north",
+};
 
 interface PlanetSystemProps {
   labelsVisible: boolean;
@@ -66,8 +80,7 @@ export function PlanetSystem({
     scale.radius * 1.65,
     scaleMode === "scientific" ? 0.32 : 0.72,
   );
-  const showScientificMarker =
-    scaleMode === "scientific" && scale.radius < 0.12;
+  const scientificMode = scaleMode === "scientific";
 
   useLayoutEffect(() => {
     const node = bodyRef.current;
@@ -186,26 +199,10 @@ export function PlanetSystem({
           </mesh>
         </group>
 
-        {showScientificMarker ? (
-          <mesh raycast={() => undefined} scale={0.18}>
-            <sphereGeometry args={[1, 12, 8]} />
-            <meshBasicMaterial
-              color={planet.color}
-              depthWrite={false}
-              opacity={active ? 0.7 : 0.34}
-              transparent
-              wireframe
-            />
-          </mesh>
-        ) : null}
-
-        {active ? (
+        {active && !scientificMode ? (
           <mesh
             raycast={() => undefined}
-            scale={Math.max(
-              scale.radius * (selected ? 1.24 : 1.16),
-              showScientificMarker ? 0.22 : 0,
-            )}
+            scale={scale.radius * (selected ? 1.24 : 1.16)}
           >
             <sphereGeometry args={[1, 22, 16]} />
             <meshBasicMaterial
@@ -218,10 +215,19 @@ export function PlanetSystem({
           </mesh>
         ) : null}
 
-        {labelsVisible && (active || scaleMode === "scientific") ? (
+        {labelsVisible && (active || scientificMode) ? (
           <PlanetLabel
+            active={active}
             color={planet.color}
-            offsetY={Math.max(scale.radius + 1.15, 1.15)}
+            mode={scaleMode}
+            offsetY={scale.radius + 1.15}
+            placement={SCIENTIFIC_LABEL_PLACEMENTS[planet.id]}
+            positionCaption={
+              selected
+                ? uiStrings.pages.explore.scientificSelectedMarkerCaption
+                : uiStrings.pages.explore.scientificMarkerCaption
+            }
+            selected={selected}
             text={planet.name}
           />
         ) : null}

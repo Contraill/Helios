@@ -56,10 +56,10 @@ test("explore exposes all eight planets outside the canvas", async ({
   page,
 }) => {
   await page.goto("/explore");
-  const navigator = page.getByRole("complementary");
-  await expect(navigator.getByRole("button", { pressed: false })).toHaveCount(
-    8,
-  );
+  const navigator = page.getByRole("complementary", {
+    name: "Planets ordered from the Sun",
+  });
+  await expect(navigator.locator("ol").getByRole("button")).toHaveCount(8);
 });
 
 test("explore selection, rapid change and Escape stay synchronized", async ({
@@ -114,7 +114,7 @@ test.describe("mobile explore", () => {
     const targetBox = await jupiter.boundingBox();
     expect(targetBox?.height ?? 0).toBeGreaterThanOrEqual(44);
 
-    await page.getByRole("button", { name: "Overview" }).tap();
+    await page.getByRole("button", { name: "Overview", exact: true }).tap();
     await expect(jupiter).toHaveAttribute("aria-pressed", "false");
     await expect(panel).toHaveCount(0);
   });
@@ -193,4 +193,108 @@ test("viewing preferences survive reload", async ({ page }) => {
     "aria-pressed",
     "true",
   );
+});
+
+async function expectNoHorizontalOverflow(
+  page: import("@playwright/test").Page,
+) {
+  const dimensions = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: document.documentElement.scrollWidth,
+  }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+}
+
+async function expectVerticalStack(
+  page: import("@playwright/test").Page,
+  names: readonly { role: "region" | "complementary"; name: string }[],
+) {
+  const boxes = [];
+  for (const item of names) {
+    const box = await page
+      .getByRole(item.role, { name: item.name })
+      .boundingBox();
+    expect(box).not.toBeNull();
+    boxes.push(box!);
+  }
+
+  for (let index = 1; index < boxes.length; index += 1) {
+    expect(boxes[index].y).toBeGreaterThanOrEqual(
+      boxes[index - 1].y + boxes[index - 1].height,
+    );
+  }
+}
+
+for (const viewport of [
+  { width: 390, height: 844 },
+  { width: 430, height: 932 },
+] as const) {
+  test.describe(`mobile acceptance ${viewport.width}`, () => {
+    test.use({ hasTouch: true, viewport });
+
+    test("keeps the selected panel, controls, scale explanation and navigator separated", async ({
+      page,
+    }) => {
+      await page.goto("/explore");
+      await page.getByRole("button", { name: "Mars" }).tap();
+
+      await expectVerticalStack(page, [
+        { role: "region", name: "Mars" },
+        { role: "complementary", name: "Simulation controls" },
+        { role: "complementary", name: "Planets ordered from the Sun" },
+      ]);
+      await expect(page.locator("#experience-scale-description")).toBeVisible();
+      await expectNoHorizontalOverflow(page);
+    });
+  });
+}
+
+test.describe("tablet acceptance", () => {
+  test.use({ hasTouch: true, viewport: { width: 768, height: 1024 } });
+
+  test("keeps control surfaces inside the tablet viewport", async ({
+    page,
+  }) => {
+    await page.goto("/explore");
+    await page.getByRole("button", { name: "Saturn" }).tap();
+
+    const controls = page.getByRole("complementary", {
+      name: "Simulation controls",
+    });
+    const navigator = page.getByRole("complementary", {
+      name: "Planets ordered from the Sun",
+    });
+    const summary = page.getByRole("region", { name: "Saturn" });
+
+    for (const element of [controls, navigator, summary]) {
+      const box = await element.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(768);
+    }
+    await expectNoHorizontalOverflow(page);
+  });
+});
+
+test("scene accessibility name follows scale and reduced motion", async ({
+  page,
+}) => {
+  await page.goto("/explore");
+  await expect(
+    page.getByRole("region", {
+      name: "Animated exploration-scale model of the Sun and the eight planets",
+    }),
+  ).toBeVisible();
+
+  const controls = page.getByRole("complementary", {
+    name: "Simulation controls",
+  });
+  await controls.getByRole("button", { name: "Scientific" }).click();
+  await controls.getByRole("button", { name: "Reduced" }).click();
+
+  await expect(
+    page.getByRole("region", {
+      name: "Static scientific-scale model of the Sun and the eight planets",
+    }),
+  ).toBeVisible();
 });

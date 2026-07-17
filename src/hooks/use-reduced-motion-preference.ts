@@ -13,6 +13,8 @@ export function useReducedMotionPreference(
     useState(false);
 
   useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+
     const mediaQuery = window.matchMedia(QUERY);
     const update = () => setSystemPrefersReducedMotion(mediaQuery.matches);
     update();

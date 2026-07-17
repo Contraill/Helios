@@ -5,6 +5,7 @@ import { Canvas } from "@react-three/fiber";
 
 import { SCENE_QUALITY } from "@/features/solar-system/lib/quality";
 import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
+import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
 import { useReducedMotionPreference } from "@/hooks/use-reduced-motion-preference";
 import { uiStrings } from "@/lib/i18n/ui-strings";
 import { useExplorationStore } from "@/stores/exploration-store";
@@ -16,9 +17,13 @@ import { SolarSystemScene } from "./solar-system-scene";
 
 interface SolarSystemCanvasProps {
   scenePlanets: readonly ScenePlanet[];
+  sceneSun: SceneSun;
 }
 
-export function SolarSystemCanvas({ scenePlanets }: SolarSystemCanvasProps) {
+export function SolarSystemCanvas({
+  scenePlanets,
+  sceneSun,
+}: SolarSystemCanvasProps) {
   const motionPreference = usePreferencesStore(
     (state) => state.motionPreference,
   );
@@ -53,6 +58,7 @@ export function SolarSystemCanvas({ scenePlanets }: SolarSystemCanvasProps) {
             <SolarSystemScene
               reducedMotion={reducedMotion}
               scenePlanets={scenePlanets}
+              sceneSun={sceneSun}
             />
           </Suspense>
         </Canvas>

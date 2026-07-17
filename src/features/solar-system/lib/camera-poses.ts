@@ -21,8 +21,8 @@ export function overviewCameraPosition(
   const portrait = aspect < 0.85;
 
   if (scaleMode === "scientific") {
-    const distance = portrait ? 3_650 : aspect < 1.2 ? 3_250 : 2_850;
-    return [0, distance * (portrait ? 0.68 : 0.46), distance];
+    const distance = portrait ? 1_060 : aspect < 1.2 ? 820 : 690;
+    return [0, distance * (portrait ? 0.58 : 0.42), distance];
   }
 
   const distance = portrait ? 128 : aspect < 1.2 ? 108 : 90;

@@ -43,6 +43,20 @@ const rawSources = [
     accessedAt: ACCESSED_AT,
   },
   {
+    id: "nasa-sun-fact-sheet",
+    provider: "NASA Goddard Space Flight Center",
+    title: "Sun Fact Sheet",
+    url: "https://nssdc.gsfc.nasa.gov/planetary/factsheet/sunfact.html",
+    sourceType: "dataset",
+    freshness: "reference",
+    accessedAt: ACCESSED_AT,
+    publishedOrUpdatedAt: "2024-05-09",
+    notes: {
+      en: "Volumetric mean radius used by the sourced Sun scene model.",
+      tr: "Kaynaklı Güneş sahne modelinde kullanılan hacimsel ortalama yarıçap.",
+    },
+  },
+  {
     id: "nasa-solar-system-temperatures",
     provider: "NASA Science",
     title: "Temperatures Across Our Solar System",

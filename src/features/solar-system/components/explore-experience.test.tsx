@@ -2,10 +2,18 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { planets } from "@/content/planets";
+import { sun } from "@/content/solar-system/sun";
 import { createExplorePlanetSummaries } from "@/features/solar-system/lib/explore-planets";
 import { createScenePlanets } from "@/features/solar-system/lib/scene-planets";
-import { resetExplorationStore } from "@/stores/exploration-store";
-import { resetPreferencesStore } from "@/stores/preferences-store";
+import { createSceneSun } from "@/features/solar-system/lib/scene-sun";
+import {
+  resetExplorationStore,
+  useExplorationStore,
+} from "@/stores/exploration-store";
+import {
+  resetPreferencesStore,
+  usePreferencesStore,
+} from "@/stores/preferences-store";
 import { resetSimulationStore } from "@/stores/simulation-store";
 
 import { ExploreExperience } from "./explore-experience";
@@ -17,6 +25,7 @@ vi.mock("./explore-canvas-client", () => ({
 const props = {
   planetSummaries: createExplorePlanetSummaries(planets),
   scenePlanets: createScenePlanets(planets),
+  sceneSun: createSceneSun(sun),
 };
 
 describe("ExploreExperience", () => {
@@ -25,6 +34,26 @@ describe("ExploreExperience", () => {
     resetExplorationStore();
     resetPreferencesStore();
     resetSimulationStore();
+  });
+
+  it("describes the active scale and motion state accurately", () => {
+    const { rerender } = render(<ExploreExperience {...props} />);
+
+    expect(
+      screen.getByRole("region", {
+        name: "Animated exploration-scale model of the Sun and the eight planets",
+      }),
+    ).toBeInTheDocument();
+
+    useExplorationStore.getState().setScaleMode("scientific");
+    usePreferencesStore.getState().setMotionPreference("reduced");
+    rerender(<ExploreExperience {...props} />);
+
+    expect(
+      screen.getByRole("region", {
+        name: "Static scientific-scale model of the Sun and the eight planets",
+      }),
+    ).toBeInTheDocument();
   });
 
   it("selects a planet from the semantic navigator", () => {
