@@ -392,3 +392,95 @@ test.describe("Mars detail mobile", () => {
     await expectNoHorizontalOverflow(page);
   });
 });
+
+const phaseSixPlanets = [
+  { id: "mercury", name: "Mercury" },
+  { id: "venus", name: "Venus" },
+  { id: "earth", name: "Earth" },
+  { id: "mars", name: "Mars" },
+  { id: "jupiter", name: "Jupiter" },
+  { id: "saturn", name: "Saturn" },
+  { id: "uranus", name: "Uranus" },
+  { id: "neptune", name: "Neptune" },
+] as const;
+
+test.describe("Phase 6 planet details", () => {
+  for (const planet of phaseSixPlanets) {
+    test(`${planet.name} has metadata, methodology and sourced content`, async ({
+      page,
+    }) => {
+      await page.goto(`/planet/${planet.id}`);
+
+      await expect(page).toHaveTitle(`${planet.name} · Helios`);
+      await expect(
+        page.getByRole("heading", { level: 1, name: planet.name }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", {
+          name: "What these values do—and do not—describe",
+        }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Sources and provenance" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("link", { name: /Facts|Fact Sheet/i }).first(),
+      ).toHaveAttribute("href", /^https:\/\//);
+    });
+  }
+
+  test("adjacent navigation keeps Solar System order and works by keyboard", async ({
+    page,
+  }) => {
+    await page.goto("/planet/mercury");
+    const nextVenus = page.getByRole("link", { name: /Next world Venus/i });
+    await expect(nextVenus).toHaveAttribute("href", "/planet/venus");
+    await nextVenus.focus();
+    await expect(nextVenus).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Venus" }),
+    ).toBeVisible();
+
+    await page.goto("/planet/neptune");
+    await expect(
+      page.getByRole("link", { name: /Previous world Uranus/i }),
+    ).toHaveAttribute("href", "/planet/uranus");
+    await expect(page.getByText("Next world")).toHaveCount(0);
+  });
+
+  test("two different worlds produce finite personal scale comparisons", async ({
+    page,
+  }) => {
+    await page.goto("/planet/mercury");
+    await page.getByRole("textbox", { name: "Earth scale reading" }).fill("70");
+    await expect(page.getByText("26.4")).toBeVisible();
+    await expect(page.getByText(/NaN/)).toHaveCount(0);
+
+    await page.goto("/planet/jupiter");
+    await page.getByRole("textbox", { name: "Earth scale reading" }).fill("70");
+    await expect(page.getByText("177")).toBeVisible();
+    await expect(page.getByText(/one-bar reference ratio/i)).toBeVisible();
+    await expect(page.getByText(/NaN/)).toHaveCount(0);
+  });
+});
+
+test.describe("Phase 6 mobile overflow", () => {
+  test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
+
+  for (const planet of phaseSixPlanets) {
+    test(`${planet.name} remains complete at 390 px`, async ({ page }) => {
+      await page.goto(`/planet/${planet.id}`);
+      await expect(
+        page.getByRole("heading", { level: 1, name: planet.name }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("textbox", { name: "Earth scale reading" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "Sources and provenance" }),
+      ).toBeVisible();
+      await expectNoHorizontalOverflow(page);
+    });
+  }
+});

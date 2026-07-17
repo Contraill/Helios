@@ -19,6 +19,7 @@ import {
 import { uiStrings } from "@/lib/i18n/ui-strings";
 
 import { MarsHumanScale } from "./mars-human-scale";
+import { PlanetMissionList } from "./planet-mission-list";
 import styles from "./mars-detail.module.css";
 
 export function MarsDetailPage({ model }: { model: PlanetDetailModel }) {
@@ -161,6 +162,14 @@ export function MarsDetailPage({ model }: { model: PlanetDetailModel }) {
               title={copy.facts.moonsTitle}
             />
           </div>
+        </ContentSection>
+
+        <ContentSection
+          eyebrow={uiStrings.pages.planet.detail.sections.missionsEyebrow}
+          lede={uiStrings.pages.planet.detail.sections.missionsLede}
+          title={uiStrings.pages.planet.detail.sections.missionsTitle}
+        >
+          <PlanetMissionList missions={content.missions} />
         </ContentSection>
 
         <ContentSection

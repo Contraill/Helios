@@ -180,6 +180,71 @@ export const uiStrings = {
       placeholderFor: (name: string): string =>
         `${name} is connected to the validated planet catalog. Its full editorial page and personal calculations are scheduled for the planet-detail phase.`,
       backToExplore: "Back to Explore",
+      detail: {
+        backToExplore: "Return to the system",
+        jumpToHumanScale: "Human scale",
+        jumpToSources: "Method and sources",
+        heroNavigation: (name: string): string => `${name} page shortcuts`,
+        heroMeta: {
+          order: "Order from Sun",
+          kind: "World type",
+        },
+        kindLabels: {
+          terrestrial: "Terrestrial",
+          "gas-giant": "Gas giant",
+          "ice-giant": "Ice giant",
+        },
+        metrics: {
+          radius: "Mean radius",
+          solarDay: "Solar day",
+          temperature: "Temperature reference",
+          temperatureContexts: {
+            surface: "Global surface reference, not local weather",
+            "cloud-top": "Cloud-top reference, not solid ground",
+            "reference-level": "Atmospheric reference level, not a surface",
+            "not-applicable": "No single physical surface definition",
+          },
+        },
+        sections: {
+          humanEyebrow: "Personal comparison",
+          humanTitle: "Put the numbers against your own body",
+          humanLede:
+            "Gravity, day length and sunlight delay become more understandable when related to an Earth reference.",
+          signalsEyebrow: "Reference signals",
+          signalsTitle: "The conditions that define this world",
+          missionsEyebrow: "Exploration record",
+          missionsTitle: "How we learned to read this planet",
+          missionsLede:
+            "Mission summaries are tied to dated official records and are not presented as live telemetry.",
+          methodologyEyebrow: "Scientific limits",
+          methodologyTitle: "What these values do—and do not—describe",
+          methodologyLede:
+            "Reference values keep their definition, source and date context. Editorial diagrams are separated from measured planetary data.",
+        },
+        methodologyLabel: "Methodology and limits",
+        adjacentPlanets: "Adjacent planets",
+        previousPlanet: "Previous world",
+        nextPlanet: "Next world",
+        missionSource: "Mission source",
+        humanScale: {
+          eyebrow: "Your Earth reference",
+          inputLabel: "Earth scale reading",
+          inputHelp: "Use a value from 0 to 1,000 kilograms.",
+          inputError: "Enter a number from 0 to 1,000.",
+          resultLabel: (name: string): string => `${name} scale equivalent`,
+          resultExplanation:
+            "This is an Earth-style scale equivalent. Your mass does not change, and a giant-planet value refers to a defined atmospheric level rather than a place to stand.",
+          gravityLabel: "Earth gravity",
+          gravityNotes: {
+            "surface-equatorial": "surface-reference ratio",
+            "one-bar-reference-level": "one-bar reference ratio",
+          },
+          dayLabel: "Solar-day difference",
+          dayNote: "compared with 24 hours",
+          lightLabel: "Sunlight travel",
+          lightNote: "average orbital distance",
+        },
+      },
       mars: {
         backToExplore: "Return to the system",
         jumpToHumanScale: "Human scale",

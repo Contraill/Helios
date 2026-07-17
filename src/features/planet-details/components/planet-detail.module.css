@@ -1,0 +1,934 @@
+.page {
+  --page-bg: #07080c;
+  --page-glow: rgb(255 255 255 / 0.06);
+  overflow: clip;
+  background: var(--page-bg);
+}
+
+.hero {
+  position: relative;
+  display: grid;
+  min-height: min(54rem, calc(100svh - 4.5rem));
+  grid-template-columns: minmax(0, 0.92fr) minmax(22rem, 1.08fr);
+  align-items: center;
+  gap: clamp(2rem, 6vw, 7rem);
+  padding: clamp(4rem, 8vw, 7rem) max(1.25rem, calc((100vw - 80rem) / 2));
+  border-bottom: 1px solid var(--helios-color-line);
+  background:
+    radial-gradient(circle at 72% 45%, var(--page-glow), transparent 32%),
+    linear-gradient(118deg, rgb(255 255 255 / 0.018), transparent 43%);
+  isolation: isolate;
+}
+
+.heroCopy {
+  position: relative;
+  z-index: 3;
+  max-width: 39rem;
+}
+
+.heroKicker,
+.heroCaption,
+.heroMeta dt,
+.microLabel,
+.missionIndex,
+.referenceLedger dt,
+.planetNav span {
+  margin: 0;
+  color: var(--helios-color-text-secondary);
+  font-family: var(--helios-font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  margin: 1.15rem 0 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(4.6rem, 12vw, 9.5rem);
+  font-weight: 480;
+  letter-spacing: -0.08em;
+  line-height: 0.8;
+}
+
+.heroTagline {
+  max-width: 28rem;
+  margin: 2rem 0 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(1.35rem, 2.7vw, 2.2rem);
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+}
+
+.heroDescription {
+  max-width: 35rem;
+  margin: 1.2rem 0 0;
+  color: var(--helios-color-text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.78;
+}
+
+.heroLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem 1rem;
+  margin-top: 2rem;
+}
+
+.heroLinks a {
+  display: inline-flex;
+  min-height: 2.8rem;
+  align-items: center;
+  padding: 0 0.9rem;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--planet-accent), transparent 38%);
+  color: var(--helios-color-text-primary);
+  font-size: 0.78rem;
+  text-decoration: none;
+  transition:
+    background var(--helios-duration-fast) var(--helios-ease-out),
+    border-color var(--helios-duration-fast) var(--helios-ease-out);
+}
+
+.heroLinks a:hover,
+.heroLinks a:focus-visible {
+  border-color: var(--planet-accent);
+  background: color-mix(in srgb, var(--planet-accent), transparent 90%);
+}
+
+.heroVisualWrap {
+  position: relative;
+  min-width: 0;
+  min-height: 39rem;
+}
+
+.visual {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.visualField,
+.visualOrbit,
+.visualAxis,
+.visualRing,
+.visualOrb {
+  position: absolute;
+  display: block;
+}
+
+.visualField {
+  inset: 8%;
+  border: 1px solid rgb(255 255 255 / 0.06);
+  border-radius: 50%;
+}
+
+.visualOrbit {
+  width: min(43vw, 39rem);
+  aspect-ratio: 1.7;
+  border: 1px solid color-mix(in srgb, var(--planet-accent), transparent 72%);
+  border-radius: 50%;
+  transform: rotate(-14deg);
+}
+
+.visualAxis {
+  width: 1px;
+  height: 72%;
+  background: linear-gradient(transparent, var(--planet-accent), transparent);
+  opacity: 0.46;
+  transform: rotate(14deg);
+}
+
+.visualRing {
+  width: min(41vw, 35rem);
+  aspect-ratio: 2.8;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 50%;
+  opacity: 0;
+  transform: rotate(-12deg);
+}
+
+.visualOrb {
+  width: min(31vw, 25rem);
+  min-width: 18rem;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--planet-accent), white 12%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 36% 32%,
+    color-mix(in srgb, var(--planet-accent), white 42%) 0%,
+    var(--planet-accent) 35%,
+    color-mix(in srgb, var(--planet-accent), black 48%) 72%,
+    #08090d 100%
+  );
+  box-shadow:
+    inset -4rem -2rem 5rem rgb(0 0 0 / 0.66),
+    0 0 5rem color-mix(in srgb, var(--planet-accent), transparent 78%);
+}
+
+.visualOrb::before,
+.visualOrb::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  content: "";
+}
+
+.visualOrb::after {
+  border: 1px solid color-mix(in srgb, var(--planet-accent), transparent 58%);
+  box-shadow: 0 0 2rem color-mix(in srgb, var(--planet-accent), transparent 72%);
+}
+
+.heroIndex {
+  position: absolute;
+  top: 8%;
+  right: 1%;
+  color: var(--helios-color-text-secondary);
+  font-family: var(--helios-font-mono);
+  font-size: 0.64rem;
+  letter-spacing: 0.15em;
+  writing-mode: vertical-rl;
+}
+
+.heroCaption {
+  position: absolute;
+  bottom: 3%;
+  left: 3%;
+  z-index: 2;
+  max-width: 20rem;
+  letter-spacing: 0.06em;
+  line-height: 1.55;
+  text-transform: none;
+}
+
+.heroMeta {
+  position: absolute;
+  right: 2%;
+  bottom: 4%;
+  z-index: 2;
+  display: grid;
+  gap: 0.7rem;
+  margin: 0;
+}
+
+.heroMeta div {
+  display: grid;
+  gap: 0.2rem;
+  text-align: right;
+}
+
+.heroMeta dd {
+  margin: 0;
+  font-family: var(--helios-font-mono);
+  font-size: 0.76rem;
+}
+
+.content {
+  width: min(80rem, calc(100% - 2.5rem));
+  margin: 0 auto;
+}
+
+.narrativeStack {
+  display: grid;
+  gap: 2.8rem;
+}
+
+.narrativeBlock {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.28fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  padding-bottom: 2.8rem;
+  border-bottom: 1px solid var(--helios-color-line);
+}
+
+.narrativeNumber {
+  color: var(--planet-accent);
+  font-family: var(--helios-font-mono);
+  font-size: 0.72rem;
+}
+
+.narrativeBlock h3 {
+  max-width: 21ch;
+  margin: 0.55rem 0 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(1.55rem, 3vw, 2.7rem);
+  font-weight: 510;
+  letter-spacing: -0.045em;
+  line-height: 1.06;
+}
+
+.narrativeBlock p:not(.microLabel) {
+  max-width: 46rem;
+  margin: 1rem 0 0;
+  color: var(--helios-color-text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.8;
+}
+
+.humanScale {
+  display: grid;
+  grid-template-columns: minmax(0, 0.88fr) minmax(20rem, 1.12fr);
+  gap: clamp(2rem, 6vw, 5rem);
+  align-items: start;
+}
+
+.humanIntro h3 {
+  max-width: 12ch;
+  margin: 0.8rem 0 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(2.3rem, 5vw, 4.7rem);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+}
+
+.humanIntro > p:last-child {
+  max-width: 30rem;
+  margin: 1.2rem 0 0;
+  color: var(--helios-color-text-secondary);
+  line-height: 1.75;
+}
+
+.calculator {
+  padding: clamp(1.35rem, 3vw, 2rem);
+  border: 1px solid color-mix(in srgb, var(--planet-accent), transparent 55%);
+  border-radius: var(--helios-radius-lg);
+  background:
+    radial-gradient(
+      circle at 92% 0%,
+      color-mix(in srgb, var(--planet-accent), transparent 86%),
+      transparent 35%
+    ),
+    rgb(255 255 255 / 0.018);
+}
+
+.inputRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.8rem;
+  margin-top: 0.55rem;
+}
+
+.inputRow input {
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0 0.85rem;
+  border: 0;
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--planet-accent), transparent 38%);
+  border-radius: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--helios-color-text-primary);
+  font-family: var(--helios-font-display);
+  font-size: 2rem;
+}
+
+.inputRow input:focus {
+  border-bottom-color: var(--planet-accent);
+  box-shadow: 0 1px 0 var(--planet-accent);
+}
+
+.inputRow span {
+  padding-bottom: 0.85rem;
+  color: var(--helios-color-text-secondary);
+  font-family: var(--helios-font-mono);
+  font-size: 0.78rem;
+}
+
+.inputHelp,
+.inputError,
+.result > p:last-child {
+  margin: 0.65rem 0 0;
+  color: var(--helios-color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.55;
+}
+
+.inputError {
+  color: #ffb19c;
+}
+
+.result {
+  margin-top: 1.6rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--helios-color-line);
+}
+
+.resultValue {
+  margin: 0.65rem 0 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(3rem, 7vw, 5.4rem);
+  letter-spacing: -0.07em;
+  line-height: 0.9;
+}
+
+.resultValue small {
+  margin-left: 0.3rem;
+  color: var(--helios-color-text-secondary);
+  font-family: var(--helios-font-mono);
+  font-size: 0.84rem;
+  letter-spacing: 0;
+}
+
+.comparisonRows {
+  margin-top: 1.6rem;
+  border-top: 1px solid var(--helios-color-line);
+}
+
+.factGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+}
+
+.referenceLedger {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 3rem 0 0;
+  border-top: 1px solid var(--helios-color-line);
+}
+
+.referenceLedger div {
+  display: grid;
+  grid-template-columns: minmax(8rem, 0.4fr) minmax(0, 1fr);
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--helios-color-line);
+}
+
+.referenceLedger div:nth-child(odd) {
+  padding-right: 1.5rem;
+  border-right: 1px solid var(--helios-color-line);
+}
+
+.referenceLedger div:nth-child(even) {
+  padding-left: 1.5rem;
+}
+
+.referenceLedger dd {
+  margin: 0;
+  color: var(--helios-color-text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.missionList {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--helios-color-line);
+  list-style: none;
+}
+
+.missionItem {
+  display: grid;
+  grid-template-columns: minmax(5rem, 0.2fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  padding: 1.8rem 0;
+  border-bottom: 1px solid var(--helios-color-line);
+}
+
+.missionIndex {
+  color: var(--planet-accent);
+}
+
+.missionItem h3 {
+  margin: 0.45rem 0 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(1.45rem, 2.5vw, 2.2rem);
+  font-weight: 520;
+  letter-spacing: -0.035em;
+}
+
+.missionItem p:last-child {
+  max-width: 46rem;
+  margin: 0.8rem 0 0;
+  color: var(--helios-color-text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.75;
+}
+
+.methodologyStack {
+  display: grid;
+  gap: 2rem;
+}
+
+.planetNav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-top: clamp(4rem, 9vw, 8rem);
+  border-top: 1px solid var(--helios-color-line);
+}
+
+.planetNav a {
+  display: grid;
+  min-height: 8rem;
+  align-content: center;
+  gap: 0.45rem;
+  padding: 1.5rem 0;
+  text-decoration: none;
+}
+
+.planetNav a:last-child {
+  justify-items: end;
+  text-align: right;
+}
+
+.planetNav strong {
+  font-family: var(--helios-font-display);
+  font-size: 1.7rem;
+  font-weight: 520;
+}
+
+/* Mercury: hard light, sparse field, compressed visual rhythm. */
+.page[data-planet="mercury"] {
+  --page-bg: linear-gradient(180deg, #070708 0%, #0c0b0a 50%, #07080c 100%);
+  --page-glow: rgb(218 205 178 / 0.12);
+}
+
+.page[data-planet="mercury"] .hero {
+  grid-template-columns: minmax(0, 1.12fr) minmax(20rem, 0.88fr);
+}
+
+.visual[data-planet="mercury"] .visualField {
+  inset: 4% 10% 4% -15%;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(90deg, rgb(255 214 144 / 0.16), transparent 42%);
+}
+
+.visual[data-planet="mercury"] .visualField::before {
+  position: absolute;
+  top: 4%;
+  bottom: 4%;
+  left: 11%;
+  width: 1px;
+  background: linear-gradient(transparent, #f6d197, transparent);
+  content: "";
+  box-shadow: 0 0 3rem #d79b52;
+}
+
+.visual[data-planet="mercury"] .visualOrbit {
+  width: min(38vw, 31rem);
+  transform: rotate(8deg);
+}
+
+.visual[data-planet="mercury"] .visualOrb {
+  width: min(24vw, 18rem);
+  min-width: 14rem;
+  background:
+    radial-gradient(
+      circle at 34% 31%,
+      rgb(231 220 196 / 0.38) 0 4%,
+      transparent 5%
+    ),
+    radial-gradient(
+      circle at 57% 62%,
+      rgb(43 41 38 / 0.68) 0 12%,
+      transparent 13%
+    ),
+    radial-gradient(
+      circle at 38% 56%,
+      rgb(79 75 69 / 0.72) 0 9%,
+      transparent 10%
+    ),
+    radial-gradient(
+      circle at 35% 33%,
+      #c4beb3,
+      #77736b 43%,
+      #282725 74%,
+      #09090a 100%
+    );
+  box-shadow:
+    inset -4.5rem 0 4rem rgb(0 0 0 / 0.82),
+    -2rem 0 5rem rgb(232 188 113 / 0.16);
+}
+
+/* Venus: atmosphere dominates, copy enters after the cloud mass. */
+.page[data-planet="venus"] {
+  --page-bg: linear-gradient(180deg, #0b0907 0%, #151006 48%, #07080c 100%);
+  --page-glow: rgb(230 157 67 / 0.2);
+}
+
+.page[data-planet="venus"] .heroCopy {
+  order: 2;
+}
+
+.page[data-planet="venus"] .heroVisualWrap {
+  order: 1;
+}
+
+.visual[data-planet="venus"] .visualField {
+  inset: 2%;
+  border-color: rgb(255 200 104 / 0.12);
+  box-shadow:
+    inset 0 0 4rem rgb(226 160 75 / 0.08),
+    0 0 6rem rgb(226 160 75 / 0.08);
+}
+
+.visual[data-planet="venus"] .visualOrb {
+  width: min(36vw, 28rem);
+  background:
+    repeating-linear-gradient(
+      8deg,
+      transparent 0 9%,
+      rgb(255 235 190 / 0.1) 10% 13%,
+      transparent 14% 20%
+    ),
+    radial-gradient(
+      circle at 35% 31%,
+      #f6d18c 0%,
+      #d89b4c 38%,
+      #7c4c20 70%,
+      #17100b 100%
+    );
+  filter: saturate(0.9);
+  box-shadow:
+    inset -4rem -1rem 5rem rgb(65 33 8 / 0.64),
+    0 0 7rem rgb(222 153 65 / 0.24);
+}
+
+.visual[data-planet="venus"] .visualOrb::before {
+  background: repeating-linear-gradient(
+    13deg,
+    transparent 0 12%,
+    rgb(255 244 207 / 0.11) 13% 16%,
+    transparent 17% 25%
+  );
+  filter: blur(7px);
+}
+
+/* Earth: a horizon-first visual, not a default blue sphere. */
+.page[data-planet="earth"] {
+  --page-bg: linear-gradient(180deg, #05090d 0%, #07131c 48%, #07080c 100%);
+  --page-glow: rgb(68 143 214 / 0.22);
+}
+
+.visual[data-planet="earth"] .visualOrbit {
+  width: min(48vw, 42rem);
+  aspect-ratio: 2.4;
+  transform: translateY(18%) rotate(-4deg);
+}
+
+.visual[data-planet="earth"] .visualOrb {
+  width: min(34vw, 27rem);
+  background:
+    radial-gradient(
+      ellipse at 42% 39%,
+      rgb(84 124 81 / 0.88) 0 10%,
+      transparent 11%
+    ),
+    radial-gradient(
+      ellipse at 62% 58%,
+      rgb(73 111 69 / 0.82) 0 13%,
+      transparent 14%
+    ),
+    radial-gradient(
+      ellipse at 31% 67%,
+      rgb(65 101 73 / 0.72) 0 8%,
+      transparent 9%
+    ),
+    radial-gradient(
+      circle at 35% 31%,
+      #73b8e8 0%,
+      #347eb8 43%,
+      #123b68 72%,
+      #07111c 100%
+    );
+  box-shadow:
+    inset -4rem -1.5rem 5rem rgb(0 13 31 / 0.72),
+    0 0 0 0.45rem rgb(87 174 226 / 0.05),
+    0 0 4rem rgb(67 149 215 / 0.22);
+}
+
+.visual[data-planet="earth"] .visualOrb::after {
+  inset: -1.5%;
+  border-color: rgb(115 197 246 / 0.36);
+  box-shadow: 0 0 1.4rem rgb(90 180 238 / 0.32);
+}
+
+/* Jupiter: scale communicated through a cropped, banded mass. */
+.page[data-planet="jupiter"] {
+  --page-bg: linear-gradient(180deg, #090807 0%, #110d0b 48%, #07080c 100%);
+  --page-glow: rgb(198 145 105 / 0.18);
+}
+
+.page[data-planet="jupiter"] .hero {
+  grid-template-columns: minmax(0, 0.72fr) minmax(25rem, 1.28fr);
+}
+
+.visual[data-planet="jupiter"] .visualOrb {
+  right: -18%;
+  width: min(48vw, 38rem);
+  min-width: 28rem;
+  background:
+    radial-gradient(
+      ellipse at 61% 63%,
+      rgb(145 62 39 / 0.88) 0 6%,
+      transparent 7%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      #c89b75 0 8%,
+      #f0dcc3 9% 15%,
+      #8f634c 16% 21%,
+      #d9b18c 22% 29%
+    );
+  box-shadow:
+    inset -6rem -1rem 7rem rgb(39 19 14 / 0.62),
+    0 0 6rem rgb(198 145 105 / 0.16);
+  transform: rotate(-4deg);
+}
+
+.visual[data-planet="jupiter"] .visualAxis {
+  opacity: 0.2;
+  transform: rotate(3deg);
+}
+
+/* Saturn: ring plane is the composition, not a decorative afterthought. */
+.page[data-planet="saturn"] {
+  --page-bg: linear-gradient(180deg, #090806 0%, #11100b 50%, #07080c 100%);
+  --page-glow: rgb(216 193 138 / 0.18);
+}
+
+.visual[data-planet="saturn"] .visualOrb {
+  width: min(30vw, 23rem);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      #cbb789 0 10%,
+      #e0d1aa 11% 17%,
+      #a99570 18% 23%
+    ),
+    radial-gradient(circle, #d8c18a, #6d624c);
+}
+
+.visual[data-planet="saturn"] .visualRing {
+  z-index: 2;
+  width: min(52vw, 46rem);
+  border: 1.1rem double rgb(222 207 170 / 0.45);
+  opacity: 1;
+  box-shadow:
+    0 0 0 0.35rem rgb(177 158 116 / 0.18),
+    0 0 3rem rgb(216 193 138 / 0.12);
+  transform: rotate(-14deg);
+}
+
+.visual[data-planet="saturn"] .visualRing::after {
+  position: absolute;
+  inset: 22% -4%;
+  border: 1px solid rgb(255 244 213 / 0.32);
+  border-radius: 50%;
+  content: "";
+}
+
+/* Uranus: axis and ring plane are deliberately diagonal. */
+.page[data-planet="uranus"] {
+  --page-bg: linear-gradient(180deg, #051012 0%, #08181a 50%, #07080c 100%);
+  --page-glow: rgb(134 215 222 / 0.2);
+}
+
+.page[data-planet="uranus"] .hero {
+  grid-template-columns: minmax(0, 1.02fr) minmax(22rem, 0.98fr);
+}
+
+.visual[data-planet="uranus"] .visualAxis {
+  height: 86%;
+  transform: rotate(82deg);
+}
+
+.visual[data-planet="uranus"] .visualRing {
+  width: min(40vw, 34rem);
+  border-color: rgb(174 239 242 / 0.24);
+  opacity: 1;
+  transform: rotate(76deg);
+}
+
+.visual[data-planet="uranus"] .visualOrb {
+  width: min(29vw, 22rem);
+  background: radial-gradient(
+    circle at 34% 30%,
+    #d0f4f2 0%,
+    #86d7de 40%,
+    #3d8f98 70%,
+    #0b2227 100%
+  );
+  box-shadow:
+    inset -3.5rem -1rem 4rem rgb(2 38 43 / 0.62),
+    0 0 5rem rgb(134 215 222 / 0.22);
+}
+
+/* Neptune: distance is expressed by a smaller orb and deep concentric field. */
+.page[data-planet="neptune"] {
+  --page-bg: linear-gradient(180deg, #03050c 0%, #05091b 52%, #07080c 100%);
+  --page-glow: rgb(65 105 216 / 0.22);
+}
+
+.visual[data-planet="neptune"] .visualField {
+  inset: 1%;
+  border-color: rgb(98 130 226 / 0.15);
+  box-shadow:
+    0 0 0 3rem rgb(65 105 216 / 0.025),
+    0 0 0 7rem rgb(65 105 216 / 0.018),
+    0 0 0 11rem rgb(65 105 216 / 0.012);
+}
+
+.visual[data-planet="neptune"] .visualOrbit {
+  width: min(49vw, 43rem);
+  border-color: rgb(105 135 229 / 0.2);
+  transform: rotate(-6deg);
+}
+
+.visual[data-planet="neptune"] .visualOrb {
+  width: min(23vw, 18rem);
+  min-width: 14rem;
+  background:
+    radial-gradient(
+      ellipse at 58% 38%,
+      rgb(39 61 150 / 0.7) 0 11%,
+      transparent 12%
+    ),
+    radial-gradient(
+      circle at 34% 30%,
+      #6687ef 0%,
+      #3559c9 43%,
+      #162f85 72%,
+      #05091b 100%
+    );
+  box-shadow:
+    inset -3rem -1rem 4rem rgb(2 8 39 / 0.74),
+    0 0 6rem rgb(65 105 216 / 0.26);
+}
+
+@media (max-width: 980px) {
+  .hero,
+  .page[data-planet="jupiter"] .hero,
+  .page[data-planet="mercury"] .hero,
+  .page[data-planet="uranus"] .hero {
+    min-height: auto;
+    grid-template-columns: 1fr;
+    padding-top: 4.5rem;
+  }
+
+  .page[data-planet="venus"] .heroCopy,
+  .page[data-planet="venus"] .heroVisualWrap {
+    order: initial;
+  }
+
+  .heroCopy {
+    max-width: 44rem;
+  }
+
+  .heroVisualWrap {
+    min-height: 32rem;
+  }
+
+  .visualOrb,
+  .visual[data-planet="jupiter"] .visualOrb {
+    right: auto;
+    width: min(58vw, 26rem);
+    min-width: 20rem;
+  }
+
+  .visualOrbit,
+  .visual[data-planet="neptune"] .visualOrbit {
+    width: min(80vw, 40rem);
+  }
+
+  .visualRing,
+  .visual[data-planet="saturn"] .visualRing {
+    width: min(82vw, 43rem);
+  }
+
+  .humanScale {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero {
+    gap: 1rem;
+    padding-right: 1.25rem;
+    padding-left: 1.25rem;
+  }
+
+  .hero h1 {
+    font-size: clamp(4.8rem, 24vw, 7rem);
+  }
+
+  .heroVisualWrap {
+    min-height: 25rem;
+  }
+
+  .visualOrb,
+  .visual[data-planet="jupiter"] .visualOrb,
+  .visual[data-planet="saturn"] .visualOrb,
+  .visual[data-planet="uranus"] .visualOrb,
+  .visual[data-planet="neptune"] .visualOrb,
+  .visual[data-planet="mercury"] .visualOrb,
+  .visual[data-planet="venus"] .visualOrb,
+  .visual[data-planet="earth"] .visualOrb {
+    width: min(70vw, 20rem);
+    min-width: 0;
+  }
+
+  .visual[data-planet="mercury"] .visualOrb,
+  .visual[data-planet="neptune"] .visualOrb {
+    width: min(58vw, 16rem);
+  }
+
+  .heroCaption {
+    bottom: 0;
+    left: 0;
+    max-width: 14rem;
+    font-size: 0.55rem;
+  }
+
+  .heroMeta {
+    right: 0;
+    bottom: 0;
+  }
+
+  .content {
+    width: min(100% - 2rem, 80rem);
+  }
+
+  .narrativeBlock,
+  .missionItem {
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+  }
+
+  .factGrid,
+  .referenceLedger {
+    grid-template-columns: 1fr;
+  }
+
+  .referenceLedger div,
+  .referenceLedger div:nth-child(odd),
+  .referenceLedger div:nth-child(even) {
+    padding: 1rem 0;
+    border-right: 0;
+  }
+
+  .planetNav {
+    grid-template-columns: 1fr;
+  }
+
+  .planetNav a:last-child {
+    justify-items: start;
+    border-top: 1px solid var(--helios-color-line);
+    text-align: left;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroLinks a {
+    transition: none;
+  }
+}

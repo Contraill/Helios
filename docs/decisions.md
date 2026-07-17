@@ -198,3 +198,35 @@
 - **Karar:** İlk tam detay dikeyi Mars'tır. Sayfa; editoryal hero, kaynaklı referans değerler, kişisel ağırlık karşılaştırması, metodoloji ve kaynak provenansını birlikte doğrular. Güncel hava veya rover gözlemi bu dilimde gösterilmez.
 - **Gerekçe:** Dünya'ya yakın gün uzunluğu, düşük yerçekimi, ince atmosfer ve su geçmişi güçlü bir insan ölçeği anlatısı kurarken kararsız dinamik veri iddialarından kaçınmaya izin verir.
 - **Not:** Bu karar Faz 6'yı tamamlamaz; kalan yedi gezegen ve ayrı Faz 6 kabul kapısı açıktır.
+
+## Roadmap v1.2 ve Blok B.5 kapısı
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Blok B ile Blok C arasına bağımsız `Blok B.5 — Faz 8.5: Efemeris, Zaman Navigasyonu ve Özgür Kamera` kapısı eklenir. Faz 0–8 kapsamı ve kabul kriterleri ile Faz 9–11 numaraları değişmez. Faz 6, 7 ve 8 ayrı ayrı kapanmadan Blok B.5; Faz 8.5 kapanmadan Blok C başlamaz.
+- **Gerekçe:** Kaynaklı konum, zaman modeli ve kullanıcı kontrollü kamera; içerik/compare/NASA yüzeylerinden ayrı bir veri, etkileşim ve performans riski taşır. Bu çalışma Faz 9 görsel derinliğine sızdırılmadan kendi doğrulama kapısında tamamlanmalıdır.
+- **Etkilenen belge:** `docs/project/05_DEVELOPMENT_ROADMAP.md`
+
+## Faz 8.5 Horizons planlama sözleşmesi
+
+- **Durum:** Planlama kararı; Faz 8.5 başlangıcında yeniden doğrulanacak
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** 3B konum verisi için observer table yerine JPL Horizons Cartesian vector table kullanımı temel alınır. Başlangıç sözleşmesi `EPHEM_TYPE=VECTORS`, `VEC_TABLE=2`, `CENTER=500@10`, `REF_PLANE=ECLIPTIC`, `REF_SYSTEM=ICRF`, `OUT_UNITS=AU-D` ve TDB zaman ölçeğidir. Horizons, APOD/NEO için kurulacak NASA-key client'ına bağlanmaz; ayrı server-only adapter olur.
+- **Gerekçe:** Vector table doğrudan üç boyutlu konum ve hız bileşenleri sağlar. Güneş merkezli, sabit J2000 ekliptik düzlemi sahne koordinatlarını ve kontrollü interpolation testlerini observer-table açılarından daha açık hale getirir. Resmî API'nin hedef, center ve tarih yetenekleri uygulama sırasında yeniden doğrulanmalıdır.
+- **Kapsam sınırı:** Bu kararla Faz 8.5 kodu, target registry veya API çağrısı eklenmemiştir.
+
+## Faz 6 içerik ve kompozisyon sınırı
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Gezegen detayları dört katmana ayrılır: kaynaklı `PlanetData`, gezegene özgü editoryal içerik, ortak veri-sunum primitive'leri ve gezegene özgü sayfa kompozisyonu. Yedi gezegen ortak bir render sözleşmesi kullanabilir; Mars kendi dikey kompozisyonunu korur. Bölüm sırası içerik kaydından gelir ve bütün gezegenlerde aynı olmak zorunda değildir.
+- **Gerekçe:** Kaynak, hesaplama, erişilebilirlik ve navigasyon tekrarını azaltırken tek bir koşullu `PlanetDetailTemplate` veya renk değiştiren sekiz kopya üretmez.
+- **Etkilenen dosyalar:** `src/content/planet-details/*`, `src/features/planet-details/components/*`, `src/features/planet-details/lib/planet-detail-model.ts`
+
+## Faz 6 görev provenansı
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Gezegen sayfalarındaki görev özetleri, görev başına resmî NASA kaynağına bağlanır. Mission freshness değeri görev durumuna göre `historical` veya `latest-available` olarak tutulur; görev özeti canlı telemetri sayılmaz.
+- **Gerekçe:** Editoryal keşif anlatısını güncel görev statüsü ve referans gezegen değerlerinden ayırır.
+- **Etkilenen dosyalar:** `src/content/sources/planetary-reference.ts`, `src/content/planet-details/*`

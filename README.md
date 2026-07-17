@@ -6,15 +6,9 @@ The project combines a cinematic 3D experience with sourced planetary data, pers
 
 ## Current status
 
-Block B has started with a controlled opening slice. The work currently includes:
+Phase 6 is complete. All eight planet detail routes now provide distinct, server-rendered editorial experiences with sourced reference values, human-scale calculations, mission context, methodology and visible provenance. The pages are statically generated and remain meaningful without Canvas or WebGL.
 
-- a collapsible, persisted simulation control deck and responsive tablet/mobile layout,
-- scientific-scale locator discs that preserve real mesh scale while making planets readable,
-- shared editorial primitives for metrics, facts, methodology, freshness and sources,
-- pure comparison helpers and a server-only NASA adapter foundation,
-- a complete Mars detail vertical slice with sourced reference data and a personal gravity comparison.
-
-Phases 6, 7 and 8 remain separate acceptance gates. Mars defines the quality bar for the remaining planet pages; no NASA surface or comparison experience is presented as complete yet.
+Roadmap v1.2 also defines a future Block B.5 quality gate for sourced JPL Horizons ephemerides, time navigation and free camera control. That work has not started. Phase 7 NASA data surfaces and Phase 8 comparison remain the open Block B acceptance gates.
 
 ## Stack
 
@@ -100,4 +94,5 @@ pnpm dev
 - [`docs/project/05_DEVELOPMENT_ROADMAP.md`](docs/project/05_DEVELOPMENT_ROADMAP.md) — phase plan and acceptance criteria
 - [`docs/project/06_TESTING_QUALITY_RELEASE.md`](docs/project/06_TESTING_QUALITY_RELEASE.md) — quality and release standard
 - [`docs/decisions.md`](docs/decisions.md) — decision log
-- [`docs/block-b-opening-report.md`](docs/block-b-opening-report.md) — current Block B opening slice
+- [`docs/phase-6-report.md`](docs/phase-6-report.md) — completed planet-detail acceptance gate
+- [`docs/block-b-opening-report.md`](docs/block-b-opening-report.md) — historical Block B opening slice
