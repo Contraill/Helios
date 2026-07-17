@@ -1,0 +1,43 @@
+@import "tailwindcss";
+@import "../styles/tokens.css";
+
+/*
+ * Map Helios tokens into Tailwind v4 theme variables.
+ * Tokens (src/styles/tokens.css) stay the source of truth; this block only
+ * exposes them as utilities (bg-background, bg-surface, text-foreground,
+ * text-muted, border-line, font-display, text-display, rounded-md, ...).
+ */
+@theme inline {
+  --color-background: var(--helios-color-bg);
+  --color-surface: var(--helios-color-surface);
+  --color-foreground: var(--helios-color-text-primary);
+  --color-muted: var(--helios-color-text-secondary);
+  --color-line: var(--helios-color-line);
+  --color-focus: var(--helios-color-focus);
+
+  --font-display: var(--helios-font-display);
+  --font-body: var(--helios-font-body);
+  --font-mono: var(--helios-font-mono);
+
+  --text-display: var(--helios-text-display);
+  --text-display--line-height: var(--helios-text-display--line-height);
+
+  /* Tailwind's entire spacing scale derives from the Helios spacing unit. */
+  --spacing: var(--helios-space-unit);
+
+  --radius-sm: var(--helios-radius-sm);
+  --radius-md: var(--helios-radius-md);
+  --radius-lg: var(--helios-radius-lg);
+  --radius-full: var(--helios-radius-full);
+}
+
+body {
+  background-color: var(--helios-color-bg);
+  color: var(--helios-color-text-primary);
+  font-family: var(--helios-font-body);
+}
+
+:focus-visible {
+  outline: 2px solid var(--helios-color-focus);
+  outline-offset: 2px;
+}
