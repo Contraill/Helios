@@ -6,17 +6,18 @@ The project combines a cinematic 3D experience with sourced planetary data, pers
 
 ## Current status
 
-Phase 3 is complete. The `/explore` route now contains a lightweight, data-driven 3D overview with:
+Phase 4 implementation is complete and the non-browser acceptance gates pass. The `/explore` route now supports a complete first interaction loop:
 
-- the Sun and all eight planets,
-- exploration-scale radii and orbital distances,
-- elliptical orbit paths, orbital inclination and axial tilt,
-- frame-rate independent orbital and axial motion, including retrograde rotation,
-- a deterministic point-based star field,
-- responsive overview framing, loading and WebGL fallback states,
-- reduced-motion support and a semantic planet list outside the canvas.
+- hover, click and touch selection on the rendered planets,
+- a semantic keyboard-accessible navigator outside the canvas,
+- a central camera rig with overview, transition and focus states,
+- frame-rate independent camera movement that follows orbiting planets,
+- immediate replacement of an in-flight transition when another planet is selected,
+- Escape and explicit overview controls with focus restoration,
+- visible in-scene labels, selection emphasis and a sourced summary panel,
+- reduced-motion behavior that snaps rather than animates the camera.
 
-Planet selection and camera focus are intentionally reserved for Phase 4.
+Simulation controls, scale switching, quality levels and preference persistence remain Phase 5 work.
 
 ## Stack
 
@@ -24,6 +25,7 @@ Planet selection and camera focus are intentionally reserved for Phase 4.
 - React 19
 - TypeScript strict mode
 - Three.js and React Three Fiber
+- Zustand for bounded client interaction state
 - Tailwind CSS v4 with project-owned design tokens
 - Zod
 - Vitest and React Testing Library
@@ -31,7 +33,7 @@ Planet selection and camera focus are intentionally reserved for Phase 4.
 - pnpm
 - GitHub Actions
 
-Drei, Zustand, Motion and post-processing are added only when a phase has a concrete need for them. Helios does not use a UI component kit.
+Drei, Motion and post-processing are added only when a phase has a concrete need for them. Helios does not use a UI component kit.
 
 ## Project structure
 
@@ -43,13 +45,14 @@ src/
 │   ├── planets/               # eight validated planet records
 │   └── sources/               # NASA/JPL source registry
 ├── features/
-│   └── solar-system/          # scene components and deterministic motion
+│   └── solar-system/          # scene, interaction and camera orchestration
 ├── hooks/                     # client capability and preference hooks
 ├── lib/
 │   ├── calculations/          # pure domain calculations
 │   ├── data/schemas/          # Zod contracts
 │   ├── env/                   # server-only environment validation
 │   └── i18n/                  # shared UI copy
+├── stores/                    # bounded client interaction state
 └── styles/                    # design tokens
 ```
 
@@ -80,12 +83,14 @@ pnpm dev
 | `pnpm format:check` | Check formatting                                      |
 | `pnpm verify`       | Run format, lint, typecheck, unit tests and build     |
 
-## Rendering and data policy
+## Rendering and interaction policy
 
 - Planetary physical parameters and approximate orbital elements come from NASA/JPL.
 - Approximate elements drive explanatory motion; the scene is not presented as precise ephemeris output.
 - Planet radii and distances use separate exploration-scale transforms so the whole system remains legible.
-- Texture-heavy rendering, atmosphere shaders, rings and bloom remain outside the Phase 3 baseline.
+- Camera state is centralized; planet components publish selection events and never move the camera directly.
+- Frame loops mutate Three.js objects without writing React state every frame.
+- Texture-heavy rendering, atmosphere shaders, rings and bloom remain outside the current baseline.
 - Dynamic NASA data will be normalized and validated on the server before it reaches the UI.
 
 ## Documentation
@@ -94,4 +99,4 @@ pnpm dev
 - [`docs/project/05_DEVELOPMENT_ROADMAP.md`](docs/project/05_DEVELOPMENT_ROADMAP.md) — phase plan and acceptance criteria
 - [`docs/project/06_TESTING_QUALITY_RELEASE.md`](docs/project/06_TESTING_QUALITY_RELEASE.md) — quality and release standard
 - [`docs/decisions.md`](docs/decisions.md) — decision log
-- [`docs/phase-3-report.md`](docs/phase-3-report.md) — latest completed phase report
+- [`docs/phase-4-report.md`](docs/phase-4-report.md) — latest completed phase report

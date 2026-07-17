@@ -84,3 +84,40 @@
 - **Tarih:** 17 Temmuz 2026
 - **Karar:** Bu fazda yalnızca `three`, `@react-three/fiber` ve gerekli TypeScript tipleri eklenir. Drei, Zustand, Motion ve post-processing somut ihtiyaç oluşmadan kurulmaz.
 - **Gerekçe:** Başlangıç bundle'ını ve soyutlama maliyetini düşük tutar.
+
+## Faz 4 etkileşim durumu
+
+- **Durum:** Kabul edildi
+- **Tarih:** 17 Temmuz 2026
+- **Karar:** `selectedPlanetId`, `hoveredPlanetId` ve sınırlı kamera modu Zustand store içinde tutulur. Yörünge açısı, gezegen dönüşü, kamera pozisyonu ve look-at hedefi frame düzeyinde store'a yazılmaz.
+- **Gerekçe:** Canvas, semantik gezegen navigator'ı ve DOM özet panelinin aynı düşük frekanslı etkileşim durumunu paylaşması gerekir; hızlı render değerleri React reaktivitesinin dışında kalmalıdır.
+- **Etkilenen dosyalar:** `src/stores/exploration-store.ts`, `src/features/solar-system/components/explore-experience.tsx`, `src/features/solar-system/components/camera-rig.tsx`
+
+## Merkezi CameraRig ve geçiş iptali
+
+- **Durum:** Kabul edildi
+- **Tarih:** 17 Temmuz 2026
+- **Karar:** Kamera yalnızca `CameraRig` tarafından yönetilir. Gezegenler mesh referanslarını sahne içi registry'ye kaydeder ve seçim event'i üretir. Kamera her frame güncel seçimi okuduğu için yeni seçim önceki geçişi promise, timeout veya iptal token zinciri olmadan değiştirir.
+- **Gerekçe:** Hızlı art arda seçimlerde stale completion riskini azaltır, hareketli gezegeni takip eder ve kamera sorumluluğunu gezegen component'lerinden ayırır.
+
+## Klavye ve Canvas eşdeğerliği
+
+- **Durum:** Kabul edildi
+- **Tarih:** 17 Temmuz 2026
+- **Karar:** Canvas seçimi tek erişim yolu değildir. Sekiz gezegen gerçek `button` öğeleriyle aynı store'u kullanır; Tab ve Enter ile seçim, Escape ile overview'e dönüş ve seçilen düğmeye focus restorasyonu sağlanır. WebGL çalışmasa da seçim ve referans sayfasına geçiş korunur.
+- **Gerekçe:** 3B sahne ekran okuyucu ve klavye kullanıcıları için kara kutu olmamalıdır.
+
+## Faz 4 görsel sınırı
+
+- **Durum:** Kabul edildi
+- **Tarih:** 17 Temmuz 2026
+- **Karar:** Hover ve selection vurgusu emissive değişimi, hafif wireframe küre, yörünge vurgusu ve geçici sprite etiketiyle sınırlıdır. Texture, atmosfer shader'ı, halka geometrisi, bloom ve yoğun post-processing eklenmez.
+- **Gerekçe:** Etkileşimin okunabilirliğini Faz 9 görsel derinlik işlerinden ayırır.
+
+## Explore client veri sınırı
+
+- **Durum:** Kabul edildi
+- **Tarih:** 17 Temmuz 2026
+- **Karar:** Tam `PlanetData` kataloğu, Zod schema ve kaynak registry'si Explore client graph'ına girmez. Server yalnızca `ScenePlanet` ve `ExplorePlanetSummary` görünüm modellerini üretip serileştirir.
+- **Gerekçe:** Bilimsel doğrulama katmanını server tarafında tutar, client'ın gereksiz veri ve validation kodu yüklemesini engeller.
+- **Etkilenen dosyalar:** `src/app/explore/page.tsx`, `src/features/solar-system/lib/scene-planets.ts`, `src/features/solar-system/lib/explore-planets.ts`

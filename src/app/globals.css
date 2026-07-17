@@ -103,3 +103,7 @@ a {
   font-size: 0.7rem;
   background: rgb(7 8 12 / 0.78);
 }
+
+.solar-canvas-shell--interactive canvas {
+  cursor: pointer;
+}

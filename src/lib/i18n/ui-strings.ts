@@ -44,6 +44,28 @@ export const uiStrings = {
       fallbackBody:
         "The planet list and reference pages remain available without WebGL.",
       planetListLabel: "Planets ordered from the Sun",
+      returnToOverview: "Overview",
+      returnToOverviewLabel: "Return to the Solar System overview",
+      keyboardHint:
+        "Use Tab to reach a planet, Enter to focus, and Escape to return.",
+      gravityLabel: "Gravity",
+      yearLabel: "Orbital year",
+      lightLabel: "Sunlight travel",
+      openPlanetPage: (name: string): string =>
+        `Open the ${name} reference page`,
+      cameraStatus: (
+        name: string | undefined,
+        mode: "overview" | "transition" | "focus",
+      ): string => {
+        if (!name) {
+          return mode === "transition"
+            ? "Returning to the Solar System overview."
+            : "Solar System overview.";
+        }
+        return mode === "focus"
+          ? `${name} is in focus.`
+          : `Moving toward ${name}.`;
+      },
       motionPaused: "Motion is paused because reduced motion is enabled.",
     },
     compare: {

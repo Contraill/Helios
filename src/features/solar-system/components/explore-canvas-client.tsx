@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 
+import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
 import { uiStrings } from "@/lib/i18n/ui-strings";
 
 const SolarSystemCanvas = dynamic(
@@ -17,6 +18,12 @@ const SolarSystemCanvas = dynamic(
   },
 );
 
-export function ExploreCanvasClient() {
-  return <SolarSystemCanvas />;
+interface ExploreCanvasClientProps {
+  scenePlanets: readonly ScenePlanet[];
+}
+
+export function ExploreCanvasClient({
+  scenePlanets,
+}: ExploreCanvasClientProps) {
+  return <SolarSystemCanvas scenePlanets={scenePlanets} />;
 }

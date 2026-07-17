@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { scenePlanets } from "./scene-planets";
+import { planets } from "@/content/planets";
+
+import { createScenePlanets } from "./scene-planets";
+
+const scenePlanets = createScenePlanets(planets);
 
 describe("scene planet catalog", () => {
   it("contains the eight planets in increasing orbital distance", () => {

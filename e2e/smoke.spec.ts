@@ -56,5 +56,66 @@ test("explore exposes all eight planets outside the canvas", async ({
   page,
 }) => {
   await page.goto("/explore");
-  await expect(page.locator('a[href^="/planet/"]')).toHaveCount(8);
+  const navigator = page.getByRole("complementary");
+  await expect(navigator.getByRole("button", { pressed: false })).toHaveCount(
+    8,
+  );
+});
+
+test("explore selection, rapid change and Escape stay synchronized", async ({
+  page,
+}) => {
+  await page.goto("/explore");
+
+  const mars = page.getByRole("button", { name: "Mars" });
+  const neptune = page.getByRole("button", { name: "Neptune" });
+
+  await mars.click();
+  await neptune.click();
+
+  await expect(neptune).toHaveAttribute("aria-pressed", "true");
+  await expect(mars).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("heading", { name: "Neptune" })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Open the Neptune reference page" }),
+  ).toHaveAttribute("href", "/planet/neptune");
+
+  await page.keyboard.press("Escape");
+  await expect(neptune).toBeFocused();
+  await expect(neptune).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("heading", { name: "Neptune" })).toHaveCount(0);
+});
+
+test.describe("mobile explore", () => {
+  test.use({
+    hasTouch: true,
+    viewport: { width: 390, height: 844 },
+  });
+
+  test("keeps selection and controls usable on a narrow touch viewport", async ({
+    page,
+  }) => {
+    await page.goto("/explore");
+
+    const jupiter = page.getByRole("button", { name: "Jupiter" });
+    await jupiter.tap();
+
+    const panel = page.getByRole("region", { name: "Jupiter" });
+    await expect(panel).toBeVisible();
+    await expect(jupiter).toHaveAttribute("aria-pressed", "true");
+
+    const panelBox = await panel.boundingBox();
+    expect(panelBox).not.toBeNull();
+    expect(panelBox?.x ?? -1).toBeGreaterThanOrEqual(0);
+    expect((panelBox?.x ?? 0) + (panelBox?.width ?? 0)).toBeLessThanOrEqual(
+      390,
+    );
+
+    const targetBox = await jupiter.boundingBox();
+    expect(targetBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+
+    await page.getByRole("button", { name: "Overview" }).tap();
+    await expect(jupiter).toHaveAttribute("aria-pressed", "false");
+    await expect(panel).toHaveCount(0);
+  });
 });

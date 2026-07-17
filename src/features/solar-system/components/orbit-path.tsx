@@ -4,11 +4,18 @@ import { useEffect, useMemo } from "react";
 import { BufferGeometry, EllipseCurve, Vector3 } from "three";
 
 interface OrbitPathProps {
+  active: boolean;
+  color: string;
   semiMajorAxis: number;
   semiMinorAxis: number;
 }
 
-export function OrbitPath({ semiMajorAxis, semiMinorAxis }: OrbitPathProps) {
+export function OrbitPath({
+  active,
+  color,
+  semiMajorAxis,
+  semiMinorAxis,
+}: OrbitPathProps) {
   const geometry = useMemo(() => {
     const curve = new EllipseCurve(
       0,
@@ -27,11 +34,11 @@ export function OrbitPath({ semiMajorAxis, semiMinorAxis }: OrbitPathProps) {
   useEffect(() => () => geometry.dispose(), [geometry]);
 
   return (
-    <lineLoop geometry={geometry} renderOrder={-1}>
+    <lineLoop geometry={geometry} raycast={() => undefined} renderOrder={-1}>
       <lineBasicMaterial
-        color="#7c8ca8"
+        color={active ? color : "#7c8ca8"}
         depthWrite={false}
-        opacity={0.2}
+        opacity={active ? 0.58 : 0.2}
         transparent
       />
     </lineLoop>
