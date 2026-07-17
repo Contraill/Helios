@@ -6,18 +6,17 @@ The project combines a cinematic 3D experience with sourced planetary data, pers
 
 ## Current status
 
-Phase 4 implementation is complete and the non-browser acceptance gates pass. The `/explore` route now supports a complete first interaction loop:
+Phase 5 implementation is complete. The `/explore` route now has a stable simulation and preference layer on top of the Phase 4 interaction loop:
 
-- hover, click and touch selection on the rendered planets,
-- a semantic keyboard-accessible navigator outside the canvas,
-- a central camera rig with overview, transition and focus states,
-- frame-rate independent camera movement that follows orbiting planets,
-- immediate replacement of an in-flight transition when another planet is selected,
-- Escape and explicit overview controls with focus restoration,
-- visible in-scene labels, selection emphasis and a sourced summary panel,
-- reduced-motion behavior that snaps rather than animates the camera.
+- pause, resume, four time speeds and deterministic reset,
+- exploration and scientific scale modes with explicit scale explanations,
+- orbit-path and planet-label visibility controls,
+- low, medium and high render quality with measurable DPR and geometry differences,
+- system, reduced and standard motion preferences,
+- local persistence for viewing preferences and time speed,
+- scientific-scale position markers that do not pretend to enlarge the planets.
 
-Simulation controls, scale switching, quality levels and preference persistence remain Phase 5 work.
+The next implementation block combines planet details, the first NASA adapters and comparison infrastructure while keeping separate Phase 6, 7 and 8 acceptance gates.
 
 ## Stack
 
@@ -87,10 +86,10 @@ pnpm dev
 
 - Planetary physical parameters and approximate orbital elements come from NASA/JPL.
 - Approximate elements drive explanatory motion; the scene is not presented as precise ephemeris output.
-- Planet radii and distances use separate exploration-scale transforms so the whole system remains legible.
+- Exploration mode uses separate presentation transforms for legibility; scientific mode uses one shared linear ratio for radii and distance.
 - Camera state is centralized; planet components publish selection events and never move the camera directly.
 - Frame loops mutate Three.js objects without writing React state every frame.
-- Texture-heavy rendering, atmosphere shaders, rings and bloom remain outside the current baseline.
+- Quality levels currently scale DPR, star density, sphere detail and orbit sampling; texture-heavy rendering, atmosphere shaders, rings and bloom remain outside the current baseline.
 - Dynamic NASA data will be normalized and validated on the server before it reaches the UI.
 
 ## Documentation
@@ -99,4 +98,4 @@ pnpm dev
 - [`docs/project/05_DEVELOPMENT_ROADMAP.md`](docs/project/05_DEVELOPMENT_ROADMAP.md) — phase plan and acceptance criteria
 - [`docs/project/06_TESTING_QUALITY_RELEASE.md`](docs/project/06_TESTING_QUALITY_RELEASE.md) — quality and release standard
 - [`docs/decisions.md`](docs/decisions.md) — decision log
-- [`docs/phase-4-report.md`](docs/phase-4-report.md) — latest completed phase report
+- [`docs/phase-5-report.md`](docs/phase-5-report.md) — latest completed phase report

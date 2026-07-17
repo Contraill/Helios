@@ -13,10 +13,12 @@ import styles from "@/app/explore/explore.module.css";
 import type { ExplorePlanetSummary } from "@/features/solar-system/lib/explore-planets";
 import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
 import type { PlanetId } from "@/lib/data/schemas/planet";
+import { useHydrateExperienceSettings } from "@/hooks/use-hydrate-experience-settings";
 import { uiStrings } from "@/lib/i18n/ui-strings";
 import { useExplorationStore } from "@/stores/exploration-store";
 
 import { ExploreCanvasClient } from "./explore-canvas-client";
+import { SimulationControls } from "./simulation-controls";
 
 const numberFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
@@ -36,6 +38,7 @@ export function ExploreExperience({
   scenePlanets,
 }: ExploreExperienceProps) {
   const copy = uiStrings.pages.explore;
+  useHydrateExperienceSettings();
   const selectedPlanetId = useExplorationStore(
     (state) => state.selectedPlanetId,
   );
@@ -84,7 +87,7 @@ export function ExploreExperience({
   return (
     <>
       <section
-        aria-describedby="exploration-scale-notice"
+        aria-describedby="experience-scale-description"
         aria-label={copy.sceneLabel}
         className={styles.scene}
       >
@@ -156,6 +159,8 @@ export function ExploreExperience({
         </section>
       ) : null}
 
+      <SimulationControls />
+
       <aside aria-label={copy.planetListLabel} className={styles.navigator}>
         <div className={styles.navigatorHeader}>
           <p className={styles.navigatorLabel}>{copy.planetListLabel}</p>
@@ -202,10 +207,6 @@ export function ExploreExperience({
         </ol>
         <p className={styles.keyboardHint}>{copy.keyboardHint}</p>
       </aside>
-
-      <p className={styles.scaleNotice} id="exploration-scale-notice">
-        {copy.scaleNotice}
-      </p>
     </>
   );
 }

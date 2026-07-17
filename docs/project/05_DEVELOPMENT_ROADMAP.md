@@ -1,8 +1,17 @@
 # HELIOS — GELİŞTİRME YOL HARİTASI
 
+**Belge sürümü:** 1.1  
+**Güncelleme tarihi:** 17 Temmuz 2026  
+**Yürürlük:** Faz 4 tamamlandıktan sonra  
+**Koruma notu:** Faz 0–4 kapsamı, görevleri ve kabul kriterleri bu güncellemeyle değiştirilmemiştir.
+
 ## 1. Genel yaklaşım
 
-Proje faz bazlı geliştirilecektir. Her faz, çalışır ve doğrulanmış bir dikey veya yatay parça üretir. Bir fazın kabul kriterleri sağlanmadan sonraki faz başlamaz. Kabul kriterleri gerçek repository üzerinde doğrulandığında ve açık blocker kalmadığında, yol haritasındaki bir sonraki güvenli işe geçilebilir.
+Proje faz bazlı geliştirilecektir. Her faz, çalışır ve doğrulanmış bir dikey veya yatay parça üretir. Bir fazın kabul kriterleri sağlanmadan sonraki faz otomatik başlamaz.
+
+Fazlar ürün kapsamını ve kabul kriterlerini tanımlamaya devam eder. Faz 4 tamamlandıktan sonra, ortak altyapıyı tekrar tekrar kurmamak ve bağlam geçişlerini azaltmak amacıyla Faz 5–11 dört birleşik çalışma bloğu içinde yürütülür. **Birleşen şey kabul kriterleri değil, uygulama akışıdır.** Her faz kendi kalite kapısını, testlerini ve tamamlanma kaydını korur.
+
+Görsel kalite yalnızca Faz 9’a ertelenmez. Faz 5’ten itibaren oluşturulan her kullanıcı yüzeyi; sinematik kompozisyon, gezegene özgü kimlik, responsive davranış, hareket kalitesi ve düşük kalite fallback’i açısından tamamlanmış kabul edilmelidir. Faz 9, bu temelin üzerine ileri 3B görsel derinlik ekler.
 
 Öncelik sırası:
 
@@ -175,7 +184,65 @@ docs/
 
 ---
 
+## Faz 4 sonrası hızlandırılmış yürütme modeli
+
+Bu model yalnızca Faz 4’ün mevcut kabul kriterleri tamamlandıktan sonra yürürlüğe girer. Devam eden Faz 4 geliştirmesine yeni kapsam eklenmez; Faz 5’e ait kontrol, persistence veya kalite seviyesi işleri Faz 4’e taşınmaz.
+
+### Blok A — Faz 5: Etkileşim sistemini sabitleme
+
+Faz 5 bağımsız tamamlanır. Simülasyon, ölçek, kalite, hareket ve tercih state sözleşmeleri sonraki sayfa ve veri çalışmalarından önce kararlı hale getirilir.
+
+### Blok B — Faz 6 + Faz 7 + Faz 8: İçerik, dinamik veri ve karşılaştırma
+
+Bu fazlar ortak veri sunumu ve içerik altyapısı üzerinden aynı çalışma bloğunda geliştirilir. Uygulama sırası:
+
+1. Ortak içerik, kaynak, güncellik, birim ve hesaplama bileşenleri
+2. Bir gezegen için tam görsel ve işlevsel dikey örnek
+3. Sekiz gezegenin özgün detay sayfaları
+4. NASA server adapter, doğrulama, cache ve fallback altyapısı
+5. APOD ve NEO yüzeyleri
+6. Karşılaştırma deneyimi
+7. Blok geneli mobil, klavye, E2E ve görsel kontrol
+
+Faz 6, 7 ve 8’in kabul kriterleri ayrı ayrı doğrulanır. Bir fazın eksikleri diğerinin tamamlanmış görünmesiyle gizlenmez.
+
+### Blok C — Faz 9 + Faz 10: Görsel derinlik, performans ve erişilebilirlik
+
+Her ileri görsel özellik; performans bütçesi, düşük kalite karşılığı, mobil bellek etkisi, reduced-motion davranışı ve fallback’iyle birlikte geliştirilir. Faz 10 blok sonunda ayrıca kapsamlı final audit olarak çalıştırılır.
+
+### Blok D — Faz 11: Yayın ve case study
+
+Faz 11 ayrı kapanış bloğudur. Ölçümler, karar notları ve attribution önceki bloklarda biriktirilir; ancak final deployment, ekran görüntüleri, case study ve release kontrolü ürün stabil olduktan sonra tamamlanır.
+
+### Birleşik blokların değişmez kalite kapıları
+
+Her alt faz veya anlamlı dikey dilim sonunda:
+
+- lint, typecheck, ilgili unit/component testleri ve build çalışır
+- kritik kullanıcı akışları gerektiğinde E2E ile doğrulanır
+- masaüstü ve mobil görsel kontrol yapılır
+- klavye ve reduced-motion etkisi değerlendirilir
+- API, performans veya bilimsel veri etkisi kaydedilir
+- geri dönüş noktası oluşturan yerel commit hazırlanır
+- ilgili faz kabul kriterleri ayrı checklist olarak kapanır
+
+Birleşik blok tamamlanmadan sonraki bloğa geçilmez. Blok büyüklüğü nedeniyle bir kalite kapısı başarısız olursa kapsam küçültülmez; sorun aynı blok içinde düzeltilir.
+
+### Maksimum görsel kalite kuralı
+
+- Gezegen detayları tek şablonun renk değiştiren kopyaları olamaz.
+- Ortak component kullanımı, ortak kompozisyon zorunluluğu anlamına gelmez.
+- Her gezegenin tipografi, ritim, hareket, vurgu, veri hiyerarşisi ve çevresel anlatımı kendi karakterine göre düzenlenir.
+- Low/medium/high kalite seviyeleri görsel yönü değiştirmez; yalnızca teknik maliyeti ölçekler.
+- Yüksek kalite hedefi masaüstüne özel bir vitrin olarak kalmaz; mobil için aynı sanat yönünün kontrollü karşılığı tasarlanır.
+- Atmosfer, shader, bloom ve texture çalışmaları içerik ve UI okunabilirliğini bastıramaz.
+- Görsel onay yalnızca kodun çalışmasıyla verilmez; gerçek viewport’larda ekran görüntüsü ve etkileşim kontrolü gerekir.
+
+---
+
 ## Faz 5 — Simülasyon kontrolleri
+
+**Yürütme bloğu:** Blok A — bağımsız kalite kapısı
 
 ### Görevler
 
@@ -201,6 +268,8 @@ docs/
 ---
 
 ## Faz 6 — Gezegen detay sayfaları
+
+**Yürütme bloğu:** Blok B — Faz 7 ve Faz 8 ile ortak uygulama akışı; ayrı kabul kapısı
 
 ### Görevler
 
@@ -230,6 +299,8 @@ docs/
 ---
 
 ## Faz 7 — İlk NASA entegrasyonları
+
+**Yürütme bloğu:** Blok B — Faz 6 ve Faz 8 ile ortak uygulama akışı; ayrı kabul kapısı
 
 Önerilen ilk iki entegrasyon:
 
@@ -264,6 +335,8 @@ Mars görsel veya ölçüm entegrasyonu, endpoint güncelliği doğrulandıktan 
 
 ## Faz 8 — Karşılaştırma
 
+**Yürütme bloğu:** Blok B — Faz 6 ve Faz 7 ile ortak uygulama akışı; ayrı kabul kapısı
+
 ### Görevler
 
 - iki selector
@@ -289,6 +362,8 @@ Mars görsel veya ölçüm entegrasyonu, endpoint güncelliği doğrulandıktan 
 
 ## Faz 9 — Görsel derinlik
 
+**Yürütme bloğu:** Blok C — Faz 10 ile sürekli ölçüm ve audit eşliğinde
+
 ### Görevler
 
 - atmosfer shader
@@ -311,6 +386,8 @@ Mars görsel veya ölçüm entegrasyonu, endpoint güncelliği doğrulandıktan 
 ---
 
 ## Faz 10 — Performans ve erişilebilirlik
+
+**Yürütme bloğu:** Blok C — Faz 9 boyunca sürekli; blok sonunda bağımsız final audit
 
 ### Görevler
 
@@ -340,6 +417,8 @@ Mars görsel veya ölçüm entegrasyonu, endpoint güncelliği doğrulandıktan 
 
 ## Faz 11 — Case study ve yayın
 
+**Yürütme bloğu:** Blok D — ayrı kapanış ve release kapısı
+
 ### Görevler
 
 - production deploy
@@ -368,14 +447,19 @@ Mars görsel veya ölçüm entegrasyonu, endpoint güncelliği doğrulandıktan 
 
 ---
 
-## 2. Dependency sırası
+## 2. Dependency ve yürütme sırası
 
 - Faz 2, Faz 3’ten önce
 - Faz 3, Faz 4’ten önce
-- Faz 4 ve 5, Faz 6’yı tamamen engellemez; ancak ortak state sözleşmesi gerekir
-- Faz 7, veri politikası doğrulanmadan başlamaz
-- Faz 9, temel etkileşim tamamlanmadan başlamaz
-- Faz 10 sonradan başlayan bir temizlik değildir; önceki fazlarda kalite korunur, burada kapsamlı audit yapılır
+- Bu güncelleme Faz 4 tamamlanmadan uygulama sırasını değiştirmez
+- Faz 4 tamamlanmadan Blok A başlamaz
+- Blok A tamamlanmadan Blok B başlamaz; quality, scale, simulation ve preference state sözleşmeleri kararlı olmalıdır
+- Blok B içinde Faz 6’nın ortak sunum altyapısı önce kurulur; Faz 7 veri politikası doğrulanmadan production adapter’a geçmez
+- Faz 6, 7 ve 8 paralel alt işler içerebilir; ancak her biri kendi kabul kapısını geçmeden Blok B tamamlanmaz
+- Blok C, temel içerik ve etkileşim yüzeyleri tamamlanmadan başlamaz
+- Faz 10 sonradan başlayan bir temizlik değildir; Faz 9 boyunca uygulanır ve Blok C sonunda kapsamlı final audit yapılır
+- Blok D, Blok C’nin performans, erişilebilirlik ve görsel kabul kapıları kapanmadan başlamaz
+- Faz 11 sırasında ürün davranışını değiştiren büyük geliştirme yapılmaz; zorunlu düzeltme çıkarsa ilgili önceki bloğun kabul kriteri yeniden çalıştırılır
 
 ---
 
@@ -482,16 +566,41 @@ Risk: proje “Three.js tutorial” gibi algılanır.
 - case study
 - karşılaştırma
 
+### 4.6 Birleşik blokların kontrolsüz büyümesi
+
+Risk: Faz 6–8 veya Faz 9–10 tek büyük değişiklik yığınına dönüşerek görsel detayların, testlerin ya da erişilebilirlik kontrollerinin atlanması.
+
+Önlem:
+
+- dikey dilim sırası
+- alt faz bazlı ayrı kabul checklist’i
+- yerel commit ve geri dönüş noktaları
+- düzenli build ve E2E
+- gerçek viewport görsel kontrolü
+- başarısız kalite kapısında sonraki alt işe geçmeme
+
 ---
 
-## 5. Faz sonu kararları
+## 5. Faz ve blok sonu kararları
 
-Her fazdan sonra şu sorular cevaplanır:
+Her alt fazdan sonra şu sorular cevaplanır:
 
 - Kullanıcı değeri oluştu mu?
+- Fazın kendi kabul kriterlerinin tamamı geçti mi?
+- Görsel sonuç referans deneyim seviyesinde mi, yoksa yalnızca işlevsel mi?
+- Masaüstü ve mobil sanat yönü tutarlı mı?
 - Yeni teknik borç nedir?
 - Performans geriledi mi?
 - Erişilebilirlik bozuldu mu?
 - Veri kaynağı değişti mi?
 - Doküman güncellenmeli mi?
-- Sonraki faz için blocker var mı?
+- Sonraki alt faz için blocker var mı?
+
+Her birleşik blok sonunda ayrıca:
+
+- Alt fazların ayrı checklist’leri kapandı mı?
+- Ortak altyapı tekrar veya gereksiz soyutlama üretti mi?
+- Görsel kalite blok başındaki hedeften geriledi mi?
+- Low/medium/high kalite seviyeleri aynı tasarım yönünü koruyor mu?
+- E2E, mobil, klavye ve reduced-motion akışları birlikte geçti mi?
+- Sonraki bloğa güvenli geri dönüş noktası oluşturan commit hazır mı?

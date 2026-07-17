@@ -5,6 +5,8 @@ import { planets } from "@/content/planets";
 import { createExplorePlanetSummaries } from "@/features/solar-system/lib/explore-planets";
 import { createScenePlanets } from "@/features/solar-system/lib/scene-planets";
 import { resetExplorationStore } from "@/stores/exploration-store";
+import { resetPreferencesStore } from "@/stores/preferences-store";
+import { resetSimulationStore } from "@/stores/simulation-store";
 
 import { ExploreExperience } from "./explore-experience";
 
@@ -18,7 +20,12 @@ const props = {
 };
 
 describe("ExploreExperience", () => {
-  beforeEach(resetExplorationStore);
+  beforeEach(() => {
+    localStorage.clear();
+    resetExplorationStore();
+    resetPreferencesStore();
+    resetSimulationStore();
+  });
 
   it("selects a planet from the semantic navigator", () => {
     render(<ExploreExperience {...props} />);

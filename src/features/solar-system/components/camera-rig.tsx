@@ -15,11 +15,11 @@ import {
 } from "../lib/camera-poses";
 
 interface CameraRigProps {
-  motionEnabled: boolean;
   planetObjects: PlanetObjectRegistry;
+  reducedMotion: boolean;
 }
 
-export function CameraRig({ motionEnabled, planetObjects }: CameraRigProps) {
+export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
   const camera = useThree((state) => state.camera);
   const width = useThree((state) => state.size.width);
   const height = useThree((state) => state.size.height);
@@ -27,11 +27,17 @@ export function CameraRig({ motionEnabled, planetObjects }: CameraRigProps) {
     (state) => state.selectedPlanetId,
   );
   const cameraMode = useExplorationStore((state) => state.cameraMode);
+  const scaleMode = useExplorationStore((state) => state.scaleMode);
   const settleCamera = useExplorationStore((state) => state.settleCamera);
 
   const overviewPosition = useMemo(
-    () => overviewCameraPosition(Math.max(width, 1), Math.max(height, 1)),
-    [height, width],
+    () =>
+      overviewCameraPosition(
+        Math.max(width, 1),
+        Math.max(height, 1),
+        scaleMode,
+      ),
+    [height, scaleMode, width],
   );
   const currentTarget = useRef(new Vector3());
   const desiredTarget = useRef(new Vector3());
@@ -60,7 +66,7 @@ export function CameraRig({ motionEnabled, planetObjects }: CameraRigProps) {
       desiredPosition.current.set(...overviewPosition);
     }
 
-    const alpha = transitionAlpha(delta, !motionEnabled);
+    const alpha = transitionAlpha(delta, reducedMotion);
     camera.position.lerp(desiredPosition.current, alpha);
     currentTarget.current.lerp(desiredTarget.current, alpha);
     camera.lookAt(currentTarget.current);

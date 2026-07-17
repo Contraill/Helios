@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import {
+  initialExplorationState,
   resetExplorationStore,
   useExplorationStore,
 } from "./exploration-store";
@@ -10,11 +11,17 @@ function state() {
 }
 
 describe("exploration store", () => {
-  beforeEach(resetExplorationStore);
+  beforeEach(() => {
+    localStorage.clear();
+    resetExplorationStore();
+  });
 
-  it("starts in the overview without a selection", () => {
+  it("starts in exploration overview with visible scene layers", () => {
     expect(state().selectedPlanetId).toBeNull();
     expect(state().cameraMode).toBe("overview");
+    expect(state().scaleMode).toBe("exploration");
+    expect(state().orbitsVisible).toBe(true);
+    expect(state().labelsVisible).toBe(true);
   });
 
   it("moves into transition mode when a planet is selected or cleared", () => {
@@ -49,5 +56,30 @@ describe("exploration store", () => {
 
     state().clearHoveredPlanet("earth");
     expect(state().hoveredPlanetId).toBeNull();
+  });
+
+  it("persists scale and scene layers without restoring selection", async () => {
+    useExplorationStore.setState({
+      ...initialExplorationState,
+      selectedPlanetId: "mars",
+    });
+    localStorage.setItem(
+      "helios-exploration",
+      JSON.stringify({
+        state: {
+          scaleMode: "scientific",
+          orbitsVisible: false,
+          labelsVisible: false,
+        },
+        version: 1,
+      }),
+    );
+
+    await useExplorationStore.persist.rehydrate();
+
+    expect(state().scaleMode).toBe("scientific");
+    expect(state().orbitsVisible).toBe(false);
+    expect(state().labelsVisible).toBe(false);
+    expect(state().selectedPlanetId).toBe("mars");
   });
 });

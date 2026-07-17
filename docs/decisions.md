@@ -121,3 +121,40 @@
 - **Karar:** Tam `PlanetData` kataloğu, Zod schema ve kaynak registry'si Explore client graph'ına girmez. Server yalnızca `ScenePlanet` ve `ExplorePlanetSummary` görünüm modellerini üretip serileştirir.
 - **Gerekçe:** Bilimsel doğrulama katmanını server tarafında tutar, client'ın gereksiz veri ve validation kodu yüklemesini engeller.
 - **Etkilenen dosyalar:** `src/app/explore/page.tsx`, `src/features/solar-system/lib/scene-planets.ts`, `src/features/solar-system/lib/explore-planets.ts`
+
+## Faz 4 sonrası yürütme modeli
+
+- **Durum:** Kabul edildi
+- **Tarih:** 17 Temmuz 2026
+- **Karar:** Faz 5 bağımsız Blok A olarak tamamlanır. Faz 6–8 ortak Blok B, Faz 9–10 ortak Blok C ve Faz 11 ayrı Blok D içinde yürütülür. Faz kabul kriterleri birleşmez; yalnızca ortak altyapıyı tekrar kurmamak için uygulama akışı birleştirilir.
+- **Gerekçe:** Bağlam geçişlerini azaltırken her fazın test ve kalite kapısını korur.
+- **Etkilenen belge:** `docs/project/05_DEVELOPMENT_ROADMAP.md`
+
+## Simülasyon ve tercih state sınırları
+
+- **Durum:** Kabul edildi
+- **Tarih:** 17 Temmuz 2026
+- **Karar:** Seçim, kamera modu ve sahne görünürlüğü exploration store'da; pause, zaman hızı ve reset sürümü simulation store'da; kalite ve hareket tercihi preferences store'da tutulur. Frame içi açı, dönüş ve kamera koordinatları store'a yazılmaz.
+- **Gerekçe:** Kalıcı ve düşük frekanslı seçimleri paylaşırken frame döngüsünü React reaktivitesinden ayırır.
+- **Etkilenen dosyalar:** `src/stores/exploration-store.ts`, `src/stores/simulation-store.ts`, `src/stores/preferences-store.ts`
+
+## Bilimsel ölçek görünürlüğü
+
+- **Durum:** Kabul edildi
+- **Tarih:** 17 Temmuz 2026
+- **Karar:** Bilimsel modda Güneş, gezegen yarıçapları ve yörünge mesafeleri aynı doğrusal oranı kullanır. Görünemeyecek kadar küçük gezegenler sabit konum işaretçisiyle bulunabilir; işaretçi boyut temsili olarak sunulmaz.
+- **Gerekçe:** Gerçek oranları bozarken bilimsel mod iddiasında bulunmak yerine, görünürlük yardımını açık bir arayüz katmanı olarak ayırır.
+
+## Kalite seviyelerinin ölçülebilir farkı
+
+- **Durum:** Kabul edildi
+- **Tarih:** 17 Temmuz 2026
+- **Karar:** Low, medium ve high seviyeleri aynı sanat yönünü korur; DPR üst sınırı, yıldız sayısı, küre segmentleri ve yörünge örnekleme sayısı üzerinden render maliyetini değiştirir.
+- **Gerekçe:** Kalite seçimini yalnızca isim değiştiren bir kontrol olmaktan çıkarır ve zayıf cihazlar için gerçek maliyet farkı oluşturur.
+
+## Kalıcı deneyim tercihleri
+
+- **Durum:** Kabul edildi
+- **Tarih:** 17 Temmuz 2026
+- **Karar:** Ölçek modu, yörünge ve etiket görünürlüğü, kalite, hareket tercihi ve zaman hızı cihazda saklanır. Seçili gezegen, hover durumu, kamera geçişi ve pause durumu reload sonrasında geri yüklenmez.
+- **Gerekçe:** Kullanıcının görünüm tercihlerini korurken geçici etkileşim ve yarım kalmış simülasyon durumunu yeni oturuma taşımamayı sağlar.

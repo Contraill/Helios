@@ -7,22 +7,35 @@ import { createScenePlanets } from "./scene-planets";
 const scenePlanets = createScenePlanets(planets);
 
 describe("scene planet catalog", () => {
-  it("contains the eight planets in increasing orbital distance", () => {
+  it("contains the eight planets in increasing orbital distance in both modes", () => {
     expect(scenePlanets).toHaveLength(8);
-    for (let index = 1; index < scenePlanets.length; index += 1) {
-      expect(scenePlanets[index].semiMajorAxis).toBeGreaterThan(
-        scenePlanets[index - 1].semiMajorAxis,
-      );
+    for (const mode of ["exploration", "scientific"] as const) {
+      for (let index = 1; index < scenePlanets.length; index += 1) {
+        expect(scenePlanets[index].scales[mode].semiMajorAxis).toBeGreaterThan(
+          scenePlanets[index - 1].scales[mode].semiMajorAxis,
+        );
+      }
     }
   });
 
-  it("produces finite render values for every planet", () => {
+  it("produces finite render values for every planet and scale mode", () => {
     for (const planet of scenePlanets) {
-      expect(planet.radius).toBeGreaterThan(0);
-      expect(planet.semiMinorAxis).toBeGreaterThan(0);
-      expect(planet.initialPosition.every(Number.isFinite)).toBe(true);
+      for (const mode of ["exploration", "scientific"] as const) {
+        const scale = planet.scales[mode];
+        expect(scale.radius).toBeGreaterThan(0);
+        expect(scale.semiMinorAxis).toBeGreaterThan(0);
+        expect(scale.initialPosition.every(Number.isFinite)).toBe(true);
+      }
       expect(Number.isFinite(planet.orbitalAngularVelocity)).toBe(true);
       expect(Number.isFinite(planet.rotationAngularVelocity)).toBe(true);
     }
+  });
+
+  it("keeps the scientific bodies much smaller than their orbital distances", () => {
+    const earth = scenePlanets.find(({ id }) => id === "earth");
+    expect(earth).toBeDefined();
+    expect(
+      earth!.scales.scientific.semiMajorAxis / earth!.scales.scientific.radius,
+    ).toBeGreaterThan(20_000);
   });
 });

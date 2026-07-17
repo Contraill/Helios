@@ -6,6 +6,7 @@ import { BufferGeometry, EllipseCurve, Vector3 } from "three";
 interface OrbitPathProps {
   active: boolean;
   color: string;
+  segments: number;
   semiMajorAxis: number;
   semiMinorAxis: number;
 }
@@ -13,6 +14,7 @@ interface OrbitPathProps {
 export function OrbitPath({
   active,
   color,
+  segments,
   semiMajorAxis,
   semiMinorAxis,
 }: OrbitPathProps) {
@@ -27,9 +29,11 @@ export function OrbitPath({
       false,
       0,
     );
-    const points = curve.getPoints(128).map(({ x, y }) => new Vector3(x, 0, y));
+    const points = curve
+      .getPoints(segments)
+      .map(({ x, y }) => new Vector3(x, 0, y));
     return new BufferGeometry().setFromPoints(points);
-  }, [semiMajorAxis, semiMinorAxis]);
+  }, [segments, semiMajorAxis, semiMinorAxis]);
 
   useEffect(() => () => geometry.dispose(), [geometry]);
 

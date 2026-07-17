@@ -17,3 +17,12 @@ Helios uses separate review tracks so product, implementation and release decisi
 3. Implementation is validated in the real repository.
 4. A phase report records checks, known limitations and blockers.
 5. The next phase starts only after the current acceptance criteria are met.
+
+## Phase 4 onward
+
+- **Block A:** Phase 5 stabilizes simulation, scale, quality, motion and persisted preference contracts.
+- **Block B:** Phases 6–8 share content, source, freshness and calculation presentation infrastructure while keeping separate acceptance checklists.
+- **Block C:** Phases 9–10 develop visual depth together with continuous performance and accessibility measurement.
+- **Block D:** Phase 11 closes deployment, documentation and the case study.
+
+A combined block never merges acceptance criteria. Each meaningful vertical slice still passes format, lint, typecheck, relevant tests and production build before the next slice begins.

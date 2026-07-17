@@ -1,3 +1,5 @@
+import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
+
 const MIN_FOCUS_DISTANCE = 4.8;
 const RADIUS_DISTANCE_MULTIPLIER = 5.4;
 
@@ -10,14 +12,20 @@ function assertPositiveFinite(value: number, label: string): void {
 export function overviewCameraPosition(
   width: number,
   height: number,
+  scaleMode: ScaleMode = "exploration",
 ): readonly [number, number, number] {
   assertPositiveFinite(width, "Viewport width");
   assertPositiveFinite(height, "Viewport height");
 
   const aspect = width / height;
   const portrait = aspect < 0.85;
-  const distance = portrait ? 128 : aspect < 1.2 ? 108 : 90;
 
+  if (scaleMode === "scientific") {
+    const distance = portrait ? 3_650 : aspect < 1.2 ? 3_250 : 2_850;
+    return [0, distance * (portrait ? 0.68 : 0.46), distance];
+  }
+
+  const distance = portrait ? 128 : aspect < 1.2 ? 108 : 90;
   return [0, distance * (portrait ? 0.74 : 0.52), distance];
 }
 

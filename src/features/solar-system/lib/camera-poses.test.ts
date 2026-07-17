@@ -15,6 +15,12 @@ describe("camera poses", () => {
     expect(portrait[1]).toBeGreaterThan(landscape[1]);
   });
 
+  it("frames the complete scientific scale from much farther away", () => {
+    const exploration = overviewCameraPosition(1440, 900, "exploration");
+    const scientific = overviewCameraPosition(1440, 900, "scientific");
+    expect(scientific[2]).toBeGreaterThan(exploration[2] * 20);
+  });
+
   it("keeps the focus camera outside the selected planet", () => {
     const radius = 2;
     const offset = focusCameraOffset(radius, 16 / 9);

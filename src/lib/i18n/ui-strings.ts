@@ -27,7 +27,7 @@ export const uiStrings = {
       intro:
         "Helios connects planetary science to human scale: your weight on Mars, the length of a day on Venus, or the time sunlight needs to reach Neptune.",
       status:
-        "The sourced planet catalog now drives a lightweight 3D overview. Camera focus and selection arrive in the next interaction phase.",
+        "The sourced planet catalog now drives an interactive 3D system with camera focus, simulation speed, scale modes and persistent viewing preferences.",
       cta: "Explore the system",
     },
     explore: {
@@ -66,7 +66,42 @@ export const uiStrings = {
           ? `${name} is in focus.`
           : `Moving toward ${name}.`;
       },
-      motionPaused: "Motion is paused because reduced motion is enabled.",
+      motionPaused:
+        "Continuous motion is paused by the current motion preference.",
+      controls: {
+        label: "Simulation controls",
+        eyebrow: "System state",
+        pause: "Pause",
+        resume: "Resume",
+        reset: "Reset",
+        speed: "Time speed",
+        scale: "Scale model",
+        scene: "Scene layers",
+        orbits: "Orbit paths",
+        labels: "Planet labels",
+        quality: "Render quality",
+        motion: "Motion",
+        scaleOptions: {
+          exploration: "Explore",
+          scientific: "Scientific",
+        },
+        qualityOptions: {
+          low: "Low",
+          medium: "Medium",
+          high: "High",
+        },
+        motionOptions: {
+          system: "System",
+          reduced: "Reduced",
+          standard: "Standard",
+        },
+        scaleDescriptions: {
+          exploration:
+            "Exploration scale enlarges bodies and compresses distance for legibility. It is intentionally not to scale.",
+          scientific:
+            "Scientific scale uses one shared ratio for radii and distance. Wire markers show position only and do not enlarge a planet.",
+        },
+      },
     },
     compare: {
       title: "Compare",

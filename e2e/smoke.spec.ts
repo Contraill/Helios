@@ -119,3 +119,78 @@ test.describe("mobile explore", () => {
     await expect(panel).toHaveCount(0);
   });
 });
+
+test("simulation controls pause, reset and explain scale honestly", async ({
+  page,
+}) => {
+  await page.goto("/explore");
+  const controls = page.getByRole("complementary", {
+    name: "Simulation controls",
+  });
+
+  await controls.getByRole("button", { name: "Pause" }).click();
+  await expect(
+    controls.getByRole("button", { name: "Resume" }),
+  ).toHaveAttribute("aria-pressed", "true");
+
+  await controls.getByRole("button", { name: "16×" }).click();
+  await expect(controls.getByRole("button", { name: "16×" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+
+  await controls.getByRole("button", { name: "Scientific" }).click();
+  await expect(
+    page.getByText(/one shared ratio for radii and distance/i),
+  ).toBeVisible();
+
+  await controls.getByRole("button", { name: "Reset" }).click();
+  await expect(controls.getByRole("button", { name: "Pause" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+  await expect(controls.getByRole("button", { name: "1×" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+});
+
+test("viewing preferences survive reload", async ({ page }) => {
+  await page.goto("/explore");
+  const controls = page.getByRole("complementary", {
+    name: "Simulation controls",
+  });
+
+  await controls.getByRole("button", { name: "Scientific" }).click();
+  await controls.getByRole("button", { name: "Orbit paths" }).click();
+  await controls.getByRole("button", { name: "Planet labels" }).click();
+  await controls.getByRole("button", { name: "Low" }).click();
+  await controls.getByRole("button", { name: "Reduced" }).click();
+  await controls.getByRole("button", { name: "4×" }).click();
+
+  await page.reload();
+
+  const restored = page.getByRole("complementary", {
+    name: "Simulation controls",
+  });
+  await expect(
+    restored.getByRole("button", { name: "Scientific" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    restored.getByRole("button", { name: "Orbit paths" }),
+  ).toHaveAttribute("aria-pressed", "false");
+  await expect(
+    restored.getByRole("button", { name: "Planet labels" }),
+  ).toHaveAttribute("aria-pressed", "false");
+  await expect(restored.getByRole("button", { name: "Low" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(
+    restored.getByRole("button", { name: "Reduced" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(restored.getByRole("button", { name: "4×" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+});
