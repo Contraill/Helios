@@ -11,7 +11,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: {
     default: uiStrings.site.name,
-    template: `%s \u2014 ${uiStrings.site.name}`,
+    template: `%s · ${uiStrings.site.name}`,
   },
   description: uiStrings.site.tagline,
 };
@@ -21,15 +21,10 @@ export default function RootLayout({
 }: Readonly<{ children: ReactNode }>) {
   return (
     <html lang="en">
-      <body className="flex min-h-dvh flex-col antialiased">
+      <body>
         <SkipLink />
         <SiteHeader />
-        <main
-          id="main-content"
-          className="mx-auto w-full max-w-3xl flex-1 px-6 py-12"
-        >
-          {children}
-        </main>
+        <main id="main-content">{children}</main>
         <SiteFooter />
       </body>
     </html>

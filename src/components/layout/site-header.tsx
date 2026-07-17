@@ -3,29 +3,32 @@ import Link from "next/link";
 import { uiStrings } from "@/lib/i18n/ui-strings";
 
 const navItems = [
-  { href: "/explore", label: uiStrings.nav.explore },
-  { href: "/compare", label: uiStrings.nav.compare },
-  { href: "/data", label: uiStrings.nav.data },
-  { href: "/about", label: uiStrings.nav.about },
-  { href: "/case-study", label: uiStrings.nav.caseStudy },
+  ["/explore", uiStrings.nav.explore],
+  ["/compare", uiStrings.nav.compare],
+  ["/data", uiStrings.nav.data],
+  ["/about", uiStrings.nav.about],
+  ["/case-study", uiStrings.nav.caseStudy],
 ] as const;
 
 export function SiteHeader() {
   return (
-    <header className="border-b border-line">
-      <div className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-6 py-4">
-        <Link href="/" className="font-display text-lg tracking-wide">
+    <header className="border-b border-line bg-background/90">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4">
+        <Link
+          href="/"
+          className="font-display text-lg tracking-[0.2em] uppercase"
+        >
           {uiStrings.site.name}
         </Link>
         <nav aria-label={uiStrings.a11y.mainNavLabel}>
-          <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
-            {navItems.map((item) => (
-              <li key={item.href}>
+          <ul className="flex flex-wrap gap-4 text-sm text-muted">
+            {navItems.map(([href, label]) => (
+              <li key={href}>
                 <Link
-                  href={item.href}
-                  className="hover:text-foreground focus-visible:text-foreground"
+                  href={href}
+                  className="transition-colors hover:text-foreground"
                 >
-                  {item.label}
+                  {label}
                 </Link>
               </li>
             ))}

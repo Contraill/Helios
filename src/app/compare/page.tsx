@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <article className="flex flex-col gap-6">
+    <article className="mx-auto grid min-h-[60vh] max-w-4xl content-center gap-5 px-5 py-16">
       <h1 className="font-display text-3xl">{copy.title}</h1>
       <p className="max-w-prose text-muted">{copy.description}</p>
       <PhasePlaceholder description={copy.placeholder} />

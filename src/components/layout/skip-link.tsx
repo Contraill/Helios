@@ -1,9 +1,5 @@
 import { uiStrings } from "@/lib/i18n/ui-strings";
 
-/**
- * First focusable element on every page (02 §13, 06 §9): keyboard users can
- * jump straight to the main content landmark.
- */
 export function SkipLink() {
   return (
     <a

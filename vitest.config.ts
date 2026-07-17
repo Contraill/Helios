@@ -8,8 +8,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
-      // See test/stubs/server-only.ts — the real package throws outside
-      // Next's react-server condition by design.
       "server-only": fileURLToPath(
         new URL("./test/stubs/server-only.ts", import.meta.url),
       ),

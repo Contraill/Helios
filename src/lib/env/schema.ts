@@ -1,18 +1,7 @@
 import { z } from "zod";
 
-/**
- * Server environment schema (03 §18, 05 — Faz 1).
- *
- * - NASA_API_KEY stays optional until Phase 7 (first NASA integrations),
- *   where it becomes required. It is server-only by design and must never be
- *   exposed as NEXT_PUBLIC_*.
- * - Validation is a pure function so it can be unit tested without touching
- *   process.env; the cached, server-only accessor lives in ./server.ts.
- * - Error messages name variables and reasons but NEVER echo values.
- */
 const serverEnvSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).optional(),
-  // Server-only. Optional until Phase 7 — see docs/decisions.md.
   NASA_API_KEY: z
     .string()
     .min(1, "must be a non-empty string when set")
@@ -33,24 +22,17 @@ export class EnvValidationError extends Error {
   }
 }
 
-/**
- * Keys that must never exist: they would ship secrets to the client bundle.
- */
 const FORBIDDEN_PUBLIC_KEYS = ["NEXT_PUBLIC_NASA_API_KEY"] as const;
 
 export function parseServerEnv(
   raw: Record<string, string | undefined>,
 ): ServerEnv {
   const issues: string[] = [];
-
   for (const key of FORBIDDEN_PUBLIC_KEYS) {
     if (raw[key] !== undefined) {
-      issues.push(
-        `${key}: must not be defined \u2014 the NASA key is server-only (03 \u00a718); use NASA_API_KEY instead`,
-      );
+      issues.push(`${key}: must not be defined; use NASA_API_KEY instead`);
     }
   }
-
   const result = serverEnvSchema.safeParse(raw);
   if (!result.success) {
     issues.push(
@@ -59,10 +41,7 @@ export function parseServerEnv(
       ),
     );
   }
-
-  if (!result.success || issues.length > 0) {
+  if (!result.success || issues.length > 0)
     throw new EnvValidationError(issues);
-  }
-
   return result.data;
 }

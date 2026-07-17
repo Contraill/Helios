@@ -1,22 +1,9 @@
-/**
- * Single source of truth for user-facing UI copy.
- *
- * Language decision (docs/decisions.md — "Dil stratejisi"):
- * - The product ships in English by default; Turkish is added before the MVP
- *   release is complete.
- * - Phase 1 intentionally does NOT include a translation system or a language
- *   switcher. What it does guarantee is that no UI string is hard-coded inside
- *   components, so the future locale pass only needs to touch this module (and
- *   the Phase 2+ content model, which carries its own localized fields).
- *
- * This module is plain data — safe to import from server and client components.
- */
-
+/** Shared UI copy. Planet content carries its own EN/TR fields. */
 export const uiStrings = {
   site: {
     name: "Helios",
     tagline:
-      "An interactive Solar System explorer that turns scientific data into a cinematic, personal experience.",
+      "An interactive Solar System explorer built around scale, place and perspective.",
   },
   a11y: {
     skipToContent: "Skip to main content",
@@ -30,58 +17,67 @@ export const uiStrings = {
     caseStudy: "Case study",
   },
   footer: {
-    line: "Helios is a portfolio project in early development. Scientific honesty and data transparency are core goals — the Data page will document every source and its freshness.",
+    line: "A portfolio project by İzzet Can Öztozlu. Sources and scientific limits are documented throughout the project.",
   },
   placeholder: {
-    label: "Under construction",
+    label: "In development",
   },
   pages: {
     home: {
       intro:
-        "Helios sets out to answer questions like \u201cwhat would my weight feel like on Mars?\u201d \u2014 not just \u201cwhat is Mars\u2019 diameter?\u201d. It pairs a cinematic 3D scene with honest scale modes, sourced reference data and clearly labelled NASA integrations.",
+        "Helios connects planetary science to human scale: your weight on Mars, the length of a day on Venus, or the time sunlight needs to reach Neptune.",
       status:
-        "Current status: Phase 1 \u2014 project foundation. The 3D exploration scene, planet pages, comparison tools and NASA data integrations arrive in later phases. Nothing on this site pretends to work before it does.",
+        "The sourced planet catalog now drives a lightweight 3D overview. Camera focus and selection arrive in the next interaction phase.",
       cta: "Explore the system",
     },
     explore: {
       title: "Explore",
       description:
-        "The interactive 3D Solar System — selectable planets, cinematic camera, time controls and honest scale modes.",
-      placeholder:
-        "The 3D exploration experience will be built here in Phases 3\u20135. A semantic, keyboard-friendly planet list will accompany the canvas from the start.",
+        "A moving overview of the Sun and eight planets, built from the sourced Helios catalog.",
+      eyebrow: "Solar System overview",
+      scaleNotice:
+        "Exploration scale enlarges planets and compresses distances so the full system remains legible. It is not a true-scale astronomical view.",
+      sceneLabel:
+        "Animated exploration-scale model of the Sun and the eight planets",
+      loading: "Preparing the Solar System",
+      fallbackTitle: "The 3D view is unavailable",
+      fallbackBody:
+        "The planet list and reference pages remain available without WebGL.",
+      planetListLabel: "Planets ordered from the Sun",
+      motionPaused: "Motion is paused because reduced motion is enabled.",
     },
     compare: {
       title: "Compare",
       description:
-        "Side-by-side planet comparison with proportional visuals and shareable links.",
+        "Compare two worlds through size, gravity, time, atmosphere and personal measurements.",
       placeholder:
-        "Planet-to-planet comparison (diameter, gravity, day length, your weight, and more) is planned for Phase 8.",
+        "The comparison view will follow the core exploration and planet-detail work.",
     },
     data: {
       title: "Data",
       description:
-        "How Helios handles data sources, freshness labels and scientific limits.",
+        "Sources, freshness labels, scale transforms and the limits of each dataset.",
       placeholder:
-        "This page will document every data source, the freshness taxonomy (reference / historical / latest-available / near-live / live) and the scientific limits of Helios, as real data lands in Phases 2 and 7.",
+        "The source registry is active. This page will expose it through a readable methodology view.",
     },
     about: {
       title: "About",
-      description: "What Helios is and why it exists.",
+      description:
+        "Why Helios exists and how its constraints shape the product.",
       placeholder:
-        "The story behind the project — goals, non-goals and the people/tools involved — is written in Phase 11.",
+        "The project story will be published with the first complete release.",
     },
     caseStudy: {
       title: "Case study",
       description:
-        "Architecture decisions, scale problems, performance work and honest limitations.",
+        "Design decisions, engineering trade-offs, measurements and known limits.",
       placeholder:
-        "The full case study — decisions, mistakes, measurements and trade-offs — is assembled in Phase 11, from the decision records kept throughout development.",
+        "The case study is assembled from decision records and measured development results.",
     },
     planet: {
-      descriptionFor: (name: string): string =>
-        `${name} in Helios \u2014 planet detail page (in development).`,
+      referenceDataReady: "Reference data verified",
       placeholderFor: (name: string): string =>
-        `The reference data and editorial page for ${name} arrive with Phase 2 (sourced domain model) and Phase 6 (planet detail pages). No scientific values are shown until they are sourced and verified.`,
+        `${name} is connected to the validated planet catalog. Its full editorial page and personal calculations are scheduled for the planet-detail phase.`,
       backToExplore: "Back to Explore",
     },
     notFound: {

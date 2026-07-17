@@ -13,14 +13,16 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "server-only": "^0.0.1",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "@react-three/fiber": "9.6.1",
+    "three": "0.185.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
@@ -38,7 +40,9 @@
     "prettier": "^3.9.5",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "@types/three": "0.185.1",
+    "@testing-library/dom": "10.4.1"
   },
   "engines": {
     "node": ">=20.9.0"

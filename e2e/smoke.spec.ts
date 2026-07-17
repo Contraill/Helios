@@ -3,7 +3,14 @@ import { expect, test } from "@playwright/test";
 const routes = [
   { path: "/", heading: "Helios" },
   { path: "/explore", heading: "Explore" },
+  { path: "/planet/mercury", heading: "Mercury" },
+  { path: "/planet/venus", heading: "Venus" },
+  { path: "/planet/earth", heading: "Earth" },
   { path: "/planet/mars", heading: "Mars" },
+  { path: "/planet/jupiter", heading: "Jupiter" },
+  { path: "/planet/saturn", heading: "Saturn" },
+  { path: "/planet/uranus", heading: "Uranus" },
+  { path: "/planet/neptune", heading: "Neptune" },
   { path: "/compare", heading: "Compare" },
   { path: "/data", heading: "Data" },
   { path: "/about", heading: "About" },
@@ -43,4 +50,11 @@ test("the skip link is the first focusable element and targets main content", as
   const skipLink = page.getByRole("link", { name: "Skip to main content" });
   await expect(skipLink).toBeFocused();
   await expect(skipLink).toHaveAttribute("href", "#main-content");
+});
+
+test("explore exposes all eight planets outside the canvas", async ({
+  page,
+}) => {
+  await page.goto("/explore");
+  await expect(page.locator('a[href^="/planet/"]')).toHaveCount(8);
 });

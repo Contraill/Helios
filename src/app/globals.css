@@ -1,12 +1,6 @@
 @import "tailwindcss";
 @import "../styles/tokens.css";
 
-/*
- * Map Helios tokens into Tailwind v4 theme variables.
- * Tokens (src/styles/tokens.css) stay the source of truth; this block only
- * exposes them as utilities (bg-background, bg-surface, text-foreground,
- * text-muted, border-line, font-display, text-display, rounded-md, ...).
- */
 @theme inline {
   --color-background: var(--helios-color-bg);
   --color-surface: var(--helios-color-surface);
@@ -14,30 +8,98 @@
   --color-muted: var(--helios-color-text-secondary);
   --color-line: var(--helios-color-line);
   --color-focus: var(--helios-color-focus);
-
   --font-display: var(--helios-font-display);
   --font-body: var(--helios-font-body);
   --font-mono: var(--helios-font-mono);
-
   --text-display: var(--helios-text-display);
   --text-display--line-height: var(--helios-text-display--line-height);
-
-  /* Tailwind's entire spacing scale derives from the Helios spacing unit. */
   --spacing: var(--helios-space-unit);
-
   --radius-sm: var(--helios-radius-sm);
   --radius-md: var(--helios-radius-md);
   --radius-lg: var(--helios-radius-lg);
   --radius-full: var(--helios-radius-full);
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--helios-color-bg);
+}
+
 body {
+  min-width: 320px;
+  margin: 0;
   background-color: var(--helios-color-bg);
   color: var(--helios-color-text-primary);
   font-family: var(--helios-font-body);
 }
 
+a {
+  color: inherit;
+}
+
 :focus-visible {
   outline: 2px solid var(--helios-color-focus);
   outline-offset: 2px;
+}
+
+.solar-canvas-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.solar-canvas-shell canvas {
+  display: block;
+}
+
+.scene-loading,
+.scene-fallback {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-height: 24rem;
+  place-content: center;
+  gap: 0.5rem;
+  padding: 2rem;
+  color: var(--helios-color-text-secondary);
+  text-align: center;
+  background:
+    radial-gradient(circle, rgb(38 52 78 / 0.28), transparent 36%), #03050a;
+}
+
+.scene-loading span {
+  font-size: 0.76rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.scene-fallback strong {
+  color: var(--helios-color-text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.scene-fallback span {
+  max-width: 30rem;
+  line-height: 1.6;
+}
+
+.scene-loading--route {
+  min-height: calc(100svh - 8rem);
+}
+
+.motion-notice {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--helios-color-line);
+  border-radius: var(--helios-radius-full);
+  color: var(--helios-color-text-secondary);
+  font-size: 0.7rem;
+  background: rgb(7 8 12 / 0.78);
 }

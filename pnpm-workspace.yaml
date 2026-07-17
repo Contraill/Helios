@@ -1,5 +1,4 @@
 # pnpm build-script allowlist (pnpm >= 10 security model).
-# sharp: Next.js image optimization; unrs-resolver: eslint-config-next module resolver.
 allowBuilds:
   sharp: true
   unrs-resolver: true
