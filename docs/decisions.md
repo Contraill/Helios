@@ -230,3 +230,27 @@
 - **Karar:** Gezegen sayfalarındaki görev özetleri, görev başına resmî NASA kaynağına bağlanır. Mission freshness değeri görev durumuna göre `historical` veya `latest-available` olarak tutulur; görev özeti canlı telemetri sayılmaz.
 - **Gerekçe:** Editoryal keşif anlatısını güncel görev statüsü ve referans gezegen değerlerinden ayırır.
 - **Etkilenen dosyalar:** `src/content/sources/planetary-reference.ts`, `src/content/planet-details/*`
+
+## Faz 8.5 Horizons uygulama sözleşmesi
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Sekiz gezegen `199`–`899` body ID'lerini taşıyan tek target registry üzerinden, ayrı `server-only` Horizons adapter'ıyla sorgulanır. Normalize model Güneş gövde merkezi `500@10`, Ecliptic J2000, ICRF, AU/AU-day ve TDB metadata'sını zorunlu tutar. Kullanıcı zamanı UTC olarak girilir; `requestedAt`, TDB vector epoch'u olan `observedAt` ve `retrievedAt` ayrı alanlardır. Horizons için `NASA_API_KEY` kullanılmaz.
+- **Gerekçe:** Ham text/CSV'yi ve koordinat sabitlerini component'lerden çıkarır; observer açılarından 3B konum türetmek yerine doğrudan kaynaklı Cartesian state vector kullanır.
+- **Doğrulama:** Güncel API response signature `1.2` olarak gözlendi. Mevcut, 15 Ocak 2024 geçmiş ve 15 Ocak 2030 gelecek Dünya örnekleri aynı sözleşmeyle doğrudan alındı.
+
+## Efemeris örnekleri arası hareket
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Server istek zamanı altı saatlik kararlı sample epoch'una yuvarlanır. Client, source position+velocity state'inden iki-cisim oskülatör yörünge elemanlarını türetir ve hareketi en fazla ±370 gün yayar; sınır yaklaşınca yeni Horizons örneği ister. Exploration ölçeği yalnız mesafe sunumunu non-lineer dönüştürür; scientific ölçek tek doğrusal AU oranını kullanır.
+- **Gerekçe:** Frame loop içinde API çağrısı veya frame-rate'e bağlı sahte başlangıç açısı üretmeden akıcı hareket sağlar. Sınırlı yayılım, JPL çözümü ile görsel interpolation arasındaki ayrımı görünür tutar.
+- **Doğrulama:** 18 Temmuz 2026 state'inden 30 gün yayılan Dünya ve Merkür konumları, doğrudan 17 Ağustos 2026 Horizons referanslarıyla karşılaştırıldı; hata her iki hedefte de `0.005 AU` eşiğinin altında kaldı.
+
+## Merkezi zaman ve serbest kamera otoritesi
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Simulation store tek tarih-saat anchor'ını, pause ve hız sözleşmesini taşır; frame döngüsü bu saatten okur fakat her frame store'a yazmaz. URL `at` parametresi, UTC date/time, Now, ±1/±30 gün ve timeline aynı modele bağlanır. `overview`, `focus`, `transition` ve `free` tek `CameraRig` içindeki tek OrbitControls örneğiyle yönetilir. Free mod mouse/touch orbit-pan-zoom ve form alanlarını yakalamayan ok-tuşu pan desteği verir.
+- **Gerekçe:** React render döngüsünü zaman akışından ayırır; iki rakip kamera controller'ı, stale focus hedefi ve reload sonrası boş uzay konumu üretmez.
+- **Kamera güvenliği:** Exploration için `6`, scientific için `2` minimum camera distance; ölçeğe göre `360/2400` maksimum distance uygulanır. Escape guided moda döner; scale değişimi free otoritesini güvenli geçişe bırakır.

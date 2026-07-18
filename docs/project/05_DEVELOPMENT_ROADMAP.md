@@ -388,7 +388,7 @@ Doğru ürün dili:
 
 ### Veri ve efemeris görevleri
 
-**Planlama doğrulaması — 18 Temmuz 2026:** Resmî JPL Horizons API v1.3, Cartesian `VECTORS` çıktısını ve `CENTER`, `REF_PLANE`, `REF_SYSTEM`, `OUT_UNITS`, `VEC_TABLE`, `CSV_FORMAT` ayarlarını destekler. Faz 8.5 için başlangıç teknik sözleşmesi; `EPHEM_TYPE=VECTORS`, konum ve hız sağlayan `VEC_TABLE=2`, Güneş gövde merkezi `CENTER=500@10`, J2000 ekliptik düzlemi `REF_PLANE=ECLIPTIC`, `REF_SYSTEM=ICRF`, `OUT_UNITS=AU-D` ve TDB zaman ölçeğidir. Bu bir uygulama değildir; target registry, örnekleme aralığı ve desteklenen tarih sınırları Faz 8.5 başladığında resmî time-span çıktılarıyla yeniden doğrulanır.
+**Uygulama doğrulaması — 18 Temmuz 2026:** Resmî JPL Horizons endpoint'inin güncel response signature değeri `1.2` olarak gözlendi; Cartesian `VECTORS` çıktısı ve `CENTER`, `REF_PLANE`, `REF_SYSTEM`, `OUT_UNITS`, `VEC_TABLE`, `CSV_FORMAT` ayarları doğrudan doğrulandı. Faz 8.5 teknik sözleşmesi; `EPHEM_TYPE=VECTORS`, konum ve hız sağlayan `VEC_TABLE=2`, Güneş gövde merkezi `CENTER=500@10`, J2000 ekliptik düzlemi `REF_PLANE=ECLIPTIC`, `REF_SYSTEM=ICRF`, `OUT_UNITS=AU-D` ve TDB zaman ölçeğidir. Merkezi target registry, altı saatlik kararlı örnek epoch'u ve 1900–2100 kullanıcı tarih sınırı uygulandı.
 
 - Resmî JPL Horizons API’yi ana efemeris kaynağı olarak doğrula
 - 3B sahne için observer table yerine Cartesian vector table yaklaşımını değerlendir ve teknik seçimi kaydet

@@ -5,6 +5,7 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://127.0.0.1:${PORT}`;
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 const useServerlessChromium =
   process.env.PLAYWRIGHT_CHROMIUM_FLAVOR === "serverless";
+const useExternalServer = process.env.PLAYWRIGHT_EXTERNAL_SERVER === "1";
 
 const localChromiumArgs = useServerlessChromium
   ? [
@@ -48,10 +49,12 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: "pnpm build && pnpm start",
-    url: baseURL,
-    timeout: 240_000,
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: useExternalServer
+    ? undefined
+    : {
+        command: "pnpm build && pnpm start",
+        url: baseURL,
+        timeout: 240_000,
+        reuseExistingServer: !process.env.CI,
+      },
 });

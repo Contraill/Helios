@@ -8,6 +8,8 @@ import styles from "./home.module.css";
 
 const copy = uiStrings.pages.home;
 
+export const revalidate = 60;
+
 export default async function HomePage() {
   const apod = await loadApodArchive();
   return (

@@ -52,9 +52,13 @@ export function SimulationControls() {
   const scaleMode = useExplorationStore((state) => state.scaleMode);
   const orbitsVisible = useExplorationStore((state) => state.orbitsVisible);
   const labelsVisible = useExplorationStore((state) => state.labelsVisible);
+  const cameraMode = useExplorationStore((state) => state.cameraMode);
   const setScaleMode = useExplorationStore((state) => state.setScaleMode);
   const toggleOrbits = useExplorationStore((state) => state.toggleOrbits);
   const toggleLabels = useExplorationStore((state) => state.toggleLabels);
+  const enterFreeCamera = useExplorationStore((state) => state.enterFreeCamera);
+  const exitFreeCamera = useExplorationStore((state) => state.exitFreeCamera);
+  const clearSelection = useExplorationStore((state) => state.clearSelection);
 
   const controlDeckExpanded = usePreferencesStore(
     (state) => state.controlDeckExpanded,
@@ -206,6 +210,29 @@ export function SimulationControls() {
                 value={level}
               />
             ))}
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>{copy.camera}</legend>
+          <div className={styles.toggleControls}>
+            <button
+              aria-pressed={cameraMode === "free"}
+              onClick={enterFreeCamera}
+              type="button"
+            >
+              {copy.freeCamera}
+            </button>
+            <button
+              aria-pressed={cameraMode !== "free"}
+              onClick={exitFreeCamera}
+              type="button"
+            >
+              {copy.guidedCamera}
+            </button>
+            <button onClick={clearSelection} type="button">
+              {copy.resetView}
+            </button>
           </div>
         </fieldset>
 

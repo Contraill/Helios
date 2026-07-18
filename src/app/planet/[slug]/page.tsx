@@ -18,6 +18,8 @@ interface PlanetPageProps {
   params: Promise<{ slug: string }>;
 }
 
+export const revalidate = 60;
+
 export function generateStaticParams() {
   return planetIds.map((slug) => ({ slug }));
 }

@@ -10,14 +10,16 @@ import {
   sceneScaleFor,
   type ScenePlanet,
 } from "@/features/solar-system/lib/scene-planets";
-import {
-  advanceAngle,
-  orbitalPosition,
-} from "@/features/solar-system/lib/orbital-motion";
+import { ephemerisScenePosition } from "@/lib/data/ephemeris/positions";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { uiStrings } from "@/lib/i18n/ui-strings";
 import { useExplorationStore } from "@/stores/exploration-store";
+import { useEphemerisStore } from "@/stores/ephemeris-store";
+import {
+  currentSimulationTimeMs,
+  useSimulationStore,
+} from "@/stores/simulation-store";
 
 import { OrbitPath } from "./orbit-path";
 import { PlanetLabel, type ScientificLabelPlacement } from "./planet-label";
@@ -61,7 +63,6 @@ export function PlanetSystem({
 }: PlanetSystemProps) {
   const bodyRef = useRef<Group>(null);
   const surfaceRef = useRef<Mesh>(null);
-  const angleRef = useRef(planet.initialAngle);
   const selected = useExplorationStore(
     (state) => state.selectedPlanetId === planet.id,
   );
@@ -77,6 +78,11 @@ export function PlanetSystem({
   );
   const active = selected || hovered;
   const scale = sceneScaleFor(planet, scaleMode);
+  const observedAt = useEphemerisStore((state) => state.bundle.observedAt);
+  const vector = useEphemerisStore((state) =>
+    state.bundle.vectors.find(({ planetId }) => planetId === planet.id),
+  );
+  const simulationAtMs = useSimulationStore((state) => state.simulationAtMs);
   const interactionRadius = Math.max(
     scale.radius * 1.65,
     scaleMode === "scientific" ? 0.32 : 0.72,
@@ -98,42 +104,42 @@ export function PlanetSystem({
   }, [planet.id, planetObjects, scale.radius]);
 
   useLayoutEffect(() => {
-    angleRef.current = planet.initialAngle;
-    if (bodyRef.current) {
-      bodyRef.current.position.set(...scale.initialPosition);
+    if (bodyRef.current && vector) {
+      bodyRef.current.position.set(
+        ...ephemerisScenePosition(
+          vector,
+          observedAt,
+          simulationAtMs,
+          scaleMode,
+        ),
+      );
     }
     if (surfaceRef.current) {
       surfaceRef.current.rotation.y = 0;
     }
-  }, [planet.initialAngle, resetVersion, scale.initialPosition]);
-
-  useLayoutEffect(() => {
-    if (!bodyRef.current) return;
-    bodyRef.current.position.set(
-      ...orbitalPosition(
-        angleRef.current,
-        scale.semiMajorAxis,
-        scale.semiMinorAxis,
-      ),
-    );
-  }, [scale.semiMajorAxis, scale.semiMinorAxis]);
+  }, [observedAt, resetVersion, scaleMode, simulationAtMs, vector]);
 
   useFrame((_, delta) => {
-    if (!motionEnabled || !bodyRef.current || !surfaceRef.current) return;
+    if (!bodyRef.current || !surfaceRef.current) return;
+
+    const currentBundle = useEphemerisStore.getState().bundle;
+    const currentVector = currentBundle.vectors.find(
+      ({ planetId }) => planetId === planet.id,
+    );
+    if (currentVector) {
+      bodyRef.current.position.set(
+        ...ephemerisScenePosition(
+          currentVector,
+          currentBundle.observedAt,
+          currentSimulationTimeMs(useSimulationStore.getState()),
+          useExplorationStore.getState().scaleMode,
+        ),
+      );
+    }
+
+    if (!motionEnabled) return;
 
     const scaledDelta = delta * timeScale;
-    angleRef.current = advanceAngle(
-      angleRef.current,
-      planet.orbitalAngularVelocity,
-      scaledDelta,
-    );
-    bodyRef.current.position.set(
-      ...orbitalPosition(
-        angleRef.current,
-        scale.semiMajorAxis,
-        scale.semiMinorAxis,
-      ),
-    );
     surfaceRef.current.rotation.y +=
       planet.rotationAngularVelocity * scaledDelta;
   });
@@ -154,15 +160,17 @@ export function PlanetSystem({
   };
 
   return (
-    <group rotation-z={planet.inclinationRadians}>
+    <>
       {orbitsVisible ? (
-        <OrbitPath
-          active={active}
-          color={planet.color}
-          segments={quality.orbitSegments}
-          semiMajorAxis={scale.semiMajorAxis}
-          semiMinorAxis={scale.semiMinorAxis}
-        />
+        <group rotation-x={planet.inclinationRadians}>
+          <OrbitPath
+            active={active}
+            color={planet.color}
+            segments={quality.orbitSegments}
+            semiMajorAxis={scale.semiMajorAxis}
+            semiMinorAxis={scale.semiMinorAxis}
+          />
+        </group>
       ) : null}
       <group ref={bodyRef} position={scale.initialPosition}>
         <group rotation-z={planet.axialTiltRadians}>
@@ -241,6 +249,6 @@ export function PlanetSystem({
           />
         ) : null}
       </group>
-    </group>
+    </>
   );
 }

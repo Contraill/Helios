@@ -46,12 +46,183 @@
 }
 
 .scene {
-  height: clamp(38rem, calc(100svh - 8rem), 58rem);
-  min-height: 38rem;
+  height: clamp(54rem, calc(100svh - 8rem), 58rem);
+  min-height: 54rem;
 }
 
 .interfaceStack {
   display: contents;
+}
+
+.timePanel {
+  position: absolute;
+  z-index: 4;
+  top: 14.5rem;
+  left: clamp(1.25rem, 4vw, 3rem);
+  width: min(30rem, calc(100% - 26rem));
+  min-width: 0;
+  padding: 0.8rem;
+  border: 1px solid var(--helios-color-line);
+  border-radius: var(--helios-radius-lg);
+  background: rgb(7 8 12 / 0.82);
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.18);
+  backdrop-filter: blur(12px);
+}
+
+.timeHeader,
+.timeFooter,
+.timeForm {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+}
+
+.timeHeader time {
+  display: block;
+  font-family: var(--helios-font-mono);
+  font-size: 0.76rem;
+  font-weight: 620;
+}
+
+.timeEyebrow {
+  margin: 0 0 0.2rem;
+  color: var(--helios-color-text-secondary);
+  font-size: 0.52rem;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.sourceStatus {
+  flex: 0 0 auto;
+  padding: 0.3rem 0.45rem;
+  border: 1px solid rgb(120 194 156 / 0.3);
+  border-radius: 999px;
+  background: rgb(120 194 156 / 0.07);
+  color: #a8d8bd;
+  font-family: var(--helios-font-mono);
+  font-size: 0.52rem;
+}
+
+.sourceStatus[data-status="loading"] {
+  border-color: rgb(232 165 75 / 0.38);
+  color: #e8bd82;
+}
+
+.sourceStatus[data-status="error"],
+.sourceStatus[data-status="fallback"] {
+  border-color: rgb(197 152 111 / 0.34);
+  color: #d4b28f;
+}
+
+.timeForm {
+  margin-top: 0.65rem;
+}
+
+.timePanel button,
+.dateTimeField input {
+  appearance: none;
+  min-height: 2rem;
+  border: 1px solid var(--helios-color-line);
+  border-radius: var(--helios-radius-sm);
+  background: rgb(255 255 255 / 0.025);
+  color: var(--helios-color-text-secondary);
+  font: inherit;
+  font-size: 0.61rem;
+}
+
+.timePanel button {
+  padding: 0.3rem 0.48rem;
+  cursor: pointer;
+  transition:
+    color var(--helios-duration-fast) var(--helios-ease-out),
+    border-color var(--helios-duration-fast) var(--helios-ease-out),
+    background var(--helios-duration-fast) var(--helios-ease-out);
+}
+
+.timePanel button:hover,
+.timePanel button:focus-visible,
+.timePanel .applyTimeButton {
+  border-color: rgb(232 165 75 / 0.45);
+  background: rgb(232 165 75 / 0.08);
+  color: var(--helios-color-text-primary);
+}
+
+.timePanel button:disabled {
+  opacity: 0.45;
+  cursor: progress;
+}
+
+.timeSteps {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.22rem;
+}
+
+.dateTimeField {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.dateTimeField span,
+.timelineField span {
+  color: var(--helios-color-text-secondary);
+  font-size: 0.5rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.dateTimeField input {
+  width: 100%;
+  padding: 0.25rem 0.38rem;
+  color-scheme: dark;
+  font-family: var(--helios-font-mono);
+}
+
+.timelineField {
+  display: grid;
+  grid-template-columns: 10.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0.58rem;
+}
+
+.timelineField input {
+  width: 100%;
+  accent-color: #e8a54b;
+}
+
+.timeFooter {
+  align-items: flex-start;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--helios-color-line);
+}
+
+.timeFooter p,
+.ephemerisMethod {
+  margin: 0;
+  color: var(--helios-color-text-secondary);
+  font-size: 0.54rem;
+  line-height: 1.45;
+}
+
+.timeFooter p {
+  max-width: 18rem;
+}
+
+.timeFooter div {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.3rem;
+}
+
+.ephemerisMethod {
+  margin-top: 0.45rem;
 }
 
 .summaryPanel,
@@ -67,6 +238,8 @@
 }
 
 .summaryPanel {
+  display: grid;
+  grid-template-rows: auto minmax(4.7rem, auto) auto auto;
   top: clamp(1.25rem, 4vw, 3rem);
   padding: 1.15rem;
   border-top-color: color-mix(
@@ -161,14 +334,36 @@
 }
 
 .detailsLink {
-  display: inline-flex;
+  display: flex;
+  width: 100%;
   align-items: center;
-  min-height: 2.5rem;
-  margin-top: 1rem;
+  justify-content: space-between;
+  min-height: 3rem;
+  margin-top: 1.15rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--planet-accent), transparent 54%);
+  border-radius: var(--helios-radius-sm);
+  background: color-mix(in srgb, var(--planet-accent) 9%, transparent);
   color: var(--helios-color-text-primary);
   font-size: 0.82rem;
-  text-decoration-color: var(--planet-accent);
-  text-underline-offset: 0.3rem;
+  text-decoration: none;
+  transition:
+    background var(--helios-duration-fast) var(--helios-ease-out),
+    border-color var(--helios-duration-fast) var(--helios-ease-out),
+    transform var(--helios-duration-fast) var(--helios-ease-out);
+}
+
+.detailsLink::after {
+  content: "→";
+  color: var(--planet-accent);
+  font-family: var(--helios-font-mono);
+}
+
+.detailsLink:hover,
+.detailsLink:focus-visible {
+  border-color: var(--planet-accent);
+  background: color-mix(in srgb, var(--planet-accent) 16%, transparent);
+  transform: translateY(-1px);
 }
 
 .navigator {
@@ -337,6 +532,7 @@
 
   .summaryPanel {
     grid-column: 1 / -1;
+    grid-template-rows: auto auto auto auto;
   }
 
   .navigator ol {
@@ -601,7 +797,7 @@
 }
 
 .controlGrid .motionFieldset {
-  grid-column: span 2;
+  grid-column: auto;
 }
 
 .scaleExplanation {
@@ -614,6 +810,14 @@
 }
 
 @media (max-width: 1180px) and (min-width: 761px) {
+  .timePanel {
+    top: 12.5rem;
+    left: clamp(1.25rem, 4vw, 3rem);
+    width: min(28rem, calc(100% - 24rem));
+    min-width: 0;
+    transform: none;
+  }
+
   .controlDeck {
     width: min(28rem, calc(100% - 24rem));
   }
@@ -628,6 +832,17 @@
 }
 
 @media (max-width: 900px) {
+  .timePanel {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    min-width: 0;
+    grid-column: 1 / -1;
+    backdrop-filter: none;
+    transform: none;
+  }
+
   .controlDeck,
   .controlDock {
     position: relative;
@@ -658,9 +873,41 @@
   .controlDeck .collapseControl {
     width: 2.75rem;
   }
+
+  .timePanel button,
+  .dateTimeField input {
+    min-height: 2.75rem;
+  }
 }
 
 @media (max-width: 430px) {
+  .timeForm {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  .timeSteps {
+    justify-content: stretch;
+  }
+
+  .timeSteps button {
+    flex: 1;
+  }
+
+  .dateTimeField {
+    grid-column: 1 / 2;
+  }
+
+  .timelineField {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .timeFooter {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
   .controlDeckHeader {
     align-items: center;
   }

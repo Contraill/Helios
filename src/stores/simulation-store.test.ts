@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  currentSimulationTimeMs,
   initialSimulationState,
   resetSimulationStore,
   useSimulationStore,
@@ -15,6 +16,8 @@ describe("simulation store", () => {
     localStorage.clear();
     resetSimulationStore();
   });
+
+  afterEach(() => vi.useRealTimers());
 
   it("pauses, changes speed and returns to a deterministic reset state", () => {
     const initialVersion = state().resetVersion;
@@ -41,5 +44,24 @@ describe("simulation store", () => {
 
     expect(state().timeScale).toBe(4);
     expect(state().isPaused).toBe(true);
+  });
+
+  it("uses one central clock for date navigation, speed and pause", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-18T00:00:00.000Z"));
+    state().setSimulationTime(Date.now());
+
+    vi.advanceTimersByTime(1_000);
+    expect(new Date(currentSimulationTimeMs(state())).toISOString()).toBe(
+      "2026-07-18T06:00:00.000Z",
+    );
+
+    state().togglePaused();
+    const pausedAt = state().simulationAtMs;
+    vi.advanceTimersByTime(10_000);
+    expect(state().simulationAtMs).toBe(pausedAt);
+
+    state().stepSimulationDays(-30);
+    expect(state().simulationAtMs).toBe(pausedAt - 30 * 86_400_000);
   });
 });

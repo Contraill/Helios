@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { HORIZONS_SNAPSHOT } from "../src/lib/data/ephemeris/horizons-snapshot";
+
 const routes = [
   { path: "/", heading: "Helios" },
   { path: "/explore", heading: "Explore" },
@@ -144,7 +146,7 @@ test("simulation controls pause, reset and explain scale honestly", async ({
     page.getByText(/one shared ratio for radii and distance/i),
   ).toBeVisible();
 
-  await controls.getByRole("button", { name: "Reset" }).click();
+  await controls.getByRole("button", { name: "Reset", exact: true }).click();
   await expect(controls.getByRole("button", { name: "Pause" })).toHaveAttribute(
     "aria-pressed",
     "false",
@@ -309,6 +311,59 @@ test("scene accessibility name follows scale and reduced motion", async ({
       name: "Static scientific-scale model of the Sun and the eight planets",
     }),
   ).toBeVisible();
+});
+
+test("ephemeris navigation supports a shareable past and future UTC time", async ({
+  page,
+}) => {
+  await page.route("**/api/ephemeris?*", async (route) => {
+    const requestedAt = new URL(route.request().url()).searchParams.get("at")!;
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...HORIZONS_SNAPSHOT,
+        status: "current",
+        requestedAt,
+        observedAt: requestedAt,
+        retrievedAt: requestedAt,
+      }),
+    });
+  });
+  await page.goto("/explore?at=2024-01-15T12%3A30%3A00.000Z");
+
+  const ephemeris = page.getByRole("complementary", {
+    name: "Ephemeris time controls",
+  });
+  await expect(ephemeris.getByText("JPL computed vector")).toBeVisible();
+  await expect(ephemeris.getByLabel("UTC date and time")).toHaveValue(
+    "2024-01-15T12:30",
+  );
+
+  await ephemeris.getByRole("button", { name: "+30d" }).click();
+  await expect(page).toHaveURL(/at=2024-02-14T/);
+  await ephemeris.getByRole("button", { name: "−1d" }).click();
+  await expect(page).toHaveURL(/at=2024-02-13T/);
+  await ephemeris.getByRole("button", { name: "Now" }).click();
+  await expect(page).toHaveURL(/at=20\d{2}-/);
+});
+
+test("free camera has one explicit authority and Escape returns to guided view", async ({
+  page,
+}) => {
+  await page.goto("/explore");
+  const controls = page.getByRole("complementary", {
+    name: "Simulation controls",
+  });
+  const free = controls.getByRole("button", { name: "Free" });
+  const guided = controls.getByRole("button", { name: "Guided" });
+
+  await free.click();
+  await expect(free).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText(/drag or touch to orbit/i)).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(guided).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByText(/Use Tab to reach a planet/i)).toBeVisible();
 });
 
 test("the simulation deck collapses into a compact dock and persists", async ({
@@ -503,7 +558,7 @@ test.describe("Phase 7 external-data surfaces", () => {
       page.getByText("Astronomy Picture of the Day", { exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "The sky keeps a longer memory" }),
+      page.getByRole("heading", { name: "Shadow and Rainbow" }),
     ).toBeVisible();
     await expect(
       page.getByRole("link", { name: "Open official record" }),
@@ -545,13 +600,13 @@ test.describe("Phase 7 external-data surfaces", () => {
     await page.goto("/planet/mars");
     await expect(
       page.getByRole("heading", {
-        name: "Historical InSight weather at Elysium Planitia",
+        name: "On this archived day at Elysium Planitia",
       }),
     ).toBeVisible();
     await expect(
       page.locator('[data-status="historical"]').first(),
     ).toBeVisible();
-    await expect(page.getByText(/not “Mars today.”/i)).toBeVisible();
+    await expect(page.getByText(/not “Mars today”/i)).toBeVisible();
     await expect(
       page.getByRole("heading", {
         name: "Three places, three ways to read relief",

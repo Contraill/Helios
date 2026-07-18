@@ -22,6 +22,7 @@ import { useExplorationStore } from "@/stores/exploration-store";
 import { usePreferencesStore } from "@/stores/preferences-store";
 
 import { ExploreCanvasClient } from "./explore-canvas-client";
+import { EphemerisControls } from "./ephemeris-controls";
 import { SimulationControls } from "./simulation-controls";
 
 interface ExploreExperienceProps {
@@ -44,6 +45,7 @@ export function ExploreExperience({
   const scaleMode = useExplorationStore((state) => state.scaleMode);
   const selectPlanet = useExplorationStore((state) => state.selectPlanet);
   const clearSelection = useExplorationStore((state) => state.clearSelection);
+  const exitFreeCamera = useExplorationStore((state) => state.exitFreeCamera);
   const setHoveredPlanet = useExplorationStore(
     (state) => state.setHoveredPlanet,
   );
@@ -76,14 +78,22 @@ export function ExploreExperience({
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape" || selectedPlanetId === null) return;
+      if (
+        event.key !== "Escape" ||
+        (selectedPlanetId === null && cameraMode !== "free")
+      )
+        return;
       event.preventDefault();
-      returnToOverview(selectedPlanetId);
+      if (cameraMode === "free") {
+        exitFreeCamera();
+      } else {
+        returnToOverview(selectedPlanetId ?? undefined);
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [returnToOverview, selectedPlanetId]);
+  }, [cameraMode, exitFreeCamera, returnToOverview, selectedPlanetId]);
 
   const cameraStatus = copy.cameraStatus(selectedPlanet?.name, cameraMode);
 
@@ -103,6 +113,7 @@ export function ExploreExperience({
 
       <div className={styles.interfaceStack}>
         <p className={styles.scaleNotice}>{copy.scaleNotices[scaleMode]}</p>
+        <EphemerisControls />
         {selectedPlanet ? (
           <section
             aria-labelledby="selected-planet-title"
@@ -179,7 +190,7 @@ export function ExploreExperience({
             <p className={styles.navigatorLabel}>{copy.planetListLabel}</p>
             <button
               className={styles.overviewButton}
-              disabled={selectedPlanetId === null}
+              disabled={selectedPlanetId === null && cameraMode !== "free"}
               onClick={() => returnToOverview(selectedPlanetId ?? undefined)}
               type="button"
             >
@@ -220,7 +231,9 @@ export function ExploreExperience({
               );
             })}
           </ol>
-          <p className={styles.keyboardHint}>{copy.keyboardHint}</p>
+          <p className={styles.keyboardHint}>
+            {cameraMode === "free" ? copy.freeCameraHint : copy.keyboardHint}
+          </p>
         </aside>
       </div>
     </>

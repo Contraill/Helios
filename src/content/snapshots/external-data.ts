@@ -19,15 +19,15 @@ export const apodSnapshot: VerifiedSnapshot<readonly ApodRecord[]> = {
   purpose: "Bundled fallback for the home APOD surface.",
   data: [
     {
-      date: "2026-07-17",
-      title: "The sky keeps a longer memory",
+      date: "2026-07-18",
+      title: "Shadow and Rainbow",
       excerpt:
-        "A dated Astronomy Picture of the Day record remains available through its official source when remote media cannot load.",
+        "Sunlight, cloud droplets and a well-placed observer turn an atmospheric shadow into a compact study of light and color.",
       mediaType: "image",
       mediaUrl:
-        "https://apod.nasa.gov/apod/image/2607/NGC6559_Williams_960.jpg",
+        "https://apod.nasa.gov/apod/image/2607/ShadowandRainbow_Loschiavo1024.jpg",
       serviceVersion: "v1",
-      sourceUrl: "https://apod.nasa.gov/apod/ap260717.html",
+      sourceUrl: "https://apod.nasa.gov/apod/ap260718.html",
     },
   ],
   metadata: {
@@ -35,7 +35,7 @@ export const apodSnapshot: VerifiedSnapshot<readonly ApodRecord[]> = {
     sourceTitle: "Astronomy Picture of the Day",
     sourceUrl: "https://apod.nasa.gov/apod/",
     freshness: "latest-available",
-    observedAt: "2026-07-17T00:00:00.000Z",
+    observedAt: "2026-07-18T00:00:00.000Z",
     retrievedAt,
     attribution: "NASA Astronomy Picture of the Day",
     notes: "Bundled fallback; media date is shown explicitly.",
@@ -47,13 +47,13 @@ export const epicSnapshot: VerifiedSnapshot<readonly EpicRecord[]> = {
   purpose: "Dated Earth-view fallback for the Earth Observatory surface.",
   data: [
     {
-      identifier: "20260717003633",
+      identifier: "20260716000830",
       caption:
         "Earth seen from the DSCOVR spacecraft at the Sun–Earth L1 point.",
-      capturedAt: "2026-07-17T00:36:33.000Z",
+      capturedAt: "2026-07-16T00:03:42.000Z",
       imageUrl:
-        "https://epic.gsfc.nasa.gov/archive/natural/2026/07/17/png/epic_1b_20260717003633.png",
-      centroid: { latitude: 5.12, longitude: 164.8 },
+        "https://epic.gsfc.nasa.gov/archive/natural/2026/07/16/jpg/epic_1b_20260716000830.jpg",
+      centroid: { latitude: 5.04, longitude: 172.54 },
       type: "natural",
     },
   ],
@@ -62,7 +62,7 @@ export const epicSnapshot: VerifiedSnapshot<readonly EpicRecord[]> = {
     sourceTitle: "DSCOVR EPIC Natural Color Archive",
     sourceUrl: "https://epic.gsfc.nasa.gov/",
     freshness: "latest-available",
-    observedAt: "2026-07-17T00:36:33.000Z",
+    observedAt: "2026-07-16T00:03:42.000Z",
     retrievedAt,
     attribution: "NASA/NOAA DSCOVR EPIC",
     notes: "Natural-color composite from the EPIC archive.",
@@ -118,14 +118,25 @@ export const gibsLayers: readonly GibsLayer[] = [
     attribution: "NASA EOSDIS GIBS",
   },
   {
-    id: "MODIS_Combined_Thermal_Anomalies_All",
-    title: "Thermal anomaly analysis",
-    instrument: "Terra and Aqua / MODIS",
+    id: "GOES-East_ABI_FireTemp",
+    title: "GOES-East fire temperature",
+    instrument: "GOES-East / ABI",
+    observedAt: "2026-07-17T12:00:00.000Z",
+    imageUrl:
+      "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/GOES-East_ABI_FireTemp/default/2026-07-17T12:00:00Z/1km/0/0/0.png",
+    colorMode: "analysis",
+    latencyNote: "Analysis layer; color represents estimated fire temperature.",
+    attribution: "NASA EOSDIS GIBS",
+  },
+  {
+    id: "IMERG_Precipitation_Rate",
+    title: "IMERG precipitation rate",
+    instrument: "GPM / IMERG",
     observedAt: "2026-07-17",
     imageUrl:
-      "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Combined_Thermal_Anomalies_All/default/2026-07-17/1km/0/0/0.png",
+      "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/IMERG_Precipitation_Rate/default/2026-07-17/2km/0/0/0.png",
     colorMode: "analysis",
-    latencyNote: "Analysis layer; colored marks are not natural-color terrain.",
+    latencyNote: "Dated precipitation analysis; not a live weather radar.",
     attribution: "NASA EOSDIS GIBS",
   },
 ];
@@ -209,14 +220,14 @@ export const insightSnapshot: VerifiedSnapshot<InsightWeatherRecord> = {
     sol: 675,
     firstUtc: "2020-10-19T18:32:20.000Z",
     lastUtc: "2020-10-20T19:11:55.000Z",
-    temperatureC: { min: -96.4, average: -62.1, max: -17.3 },
-    pressurePa: { min: 718.2, average: 743.1, max: 761.4 },
-    windMps: { min: 0.4, average: 5.8, max: 18.2 },
+    temperatureC: { min: -96.872, average: -62.314, max: -15.908 },
+    pressurePa: { min: 722.0901, average: 750.563, max: 768.791 },
+    windMps: { min: 1.051, average: 7.233, max: 22.455 },
     windDirection: "WNW",
     seasonNorthern: "late autumn",
     seasonSouthern: "late spring",
     valid: true,
-    sampleCount: 1440,
+    sampleCount: 88628,
   },
   metadata: {
     provider: "NASA InSight",

@@ -22,6 +22,10 @@ vi.mock("./explore-canvas-client", () => ({
   ExploreCanvasClient: () => <div data-testid="solar-system-canvas" />,
 }));
 
+vi.mock("./ephemeris-controls", () => ({
+  EphemerisControls: () => <div data-testid="ephemeris-controls" />,
+}));
+
 const props = {
   planetSummaries: createExplorePlanetSummaries(planets),
   scenePlanets: createScenePlanets(planets),

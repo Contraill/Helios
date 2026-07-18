@@ -21,6 +21,8 @@ export const metadata: Metadata = {
     "A dated, sourced view of solar activity, near-Earth space, Earth observation and the Mars archive.",
 };
 
+export const revalidate = 60;
+
 export default async function DataPage() {
   const [apod, donki, neows, cad, epic, eonet, insight, fireballs] =
     await Promise.all([

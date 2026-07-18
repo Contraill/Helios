@@ -6,7 +6,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetId } from "@/lib/data/schemas/planet";
 
-export type CameraMode = "overview" | "transition" | "focus";
+export type CameraMode = "overview" | "transition" | "focus" | "free";
 
 interface ExplorationState {
   selectedPlanetId: PlanetId | null;
@@ -17,6 +17,8 @@ interface ExplorationState {
   labelsVisible: boolean;
   selectPlanet: (planetId: PlanetId) => void;
   clearSelection: () => void;
+  enterFreeCamera: () => void;
+  exitFreeCamera: () => void;
   setHoveredPlanet: (planetId: PlanetId) => void;
   clearHoveredPlanet: (planetId: PlanetId) => void;
   settleCamera: (
@@ -43,7 +45,7 @@ export const useExplorationStore = create<ExplorationState>()(
       ...initialExplorationState,
       selectPlanet: (planetId) =>
         set((state) =>
-          state.selectedPlanetId === planetId
+          state.selectedPlanetId === planetId && state.cameraMode !== "free"
             ? state
             : {
                 selectedPlanetId: planetId,
@@ -52,12 +54,20 @@ export const useExplorationStore = create<ExplorationState>()(
         ),
       clearSelection: () =>
         set((state) =>
-          state.selectedPlanetId === null
+          state.selectedPlanetId === null && state.cameraMode !== "free"
             ? state
             : {
                 selectedPlanetId: null,
                 cameraMode: "transition",
               },
+        ),
+      enterFreeCamera: () =>
+        set((state) =>
+          state.cameraMode === "free" ? state : { cameraMode: "free" },
+        ),
+      exitFreeCamera: () =>
+        set((state) =>
+          state.cameraMode !== "free" ? state : { cameraMode: "transition" },
         ),
       setHoveredPlanet: (planetId) =>
         set((state) =>

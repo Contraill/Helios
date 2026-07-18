@@ -27,12 +27,10 @@ export function MarsArchive({
       >
         <header>
           <p className={styles.eyebrow}>Historical field record</p>
-          <h2 id="insight-heading">
-            Historical InSight weather at Elysium Planitia
-          </h2>
+          <h2 id="insight-heading">On this archived day at Elysium Planitia</h2>
           <p>
-            This is a dated measurement from one landing site. It is not “Mars
-            today.”
+            InSight recorded this sol at one landing site. The date below is
+            historical—not “Mars today” and not a planet-wide forecast.
           </p>
         </header>
         {record ? (

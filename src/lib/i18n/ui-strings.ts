@@ -66,6 +66,8 @@ export const uiStrings = {
       returnToOverviewLabel: "Return to the Solar System overview",
       keyboardHint:
         "Use Tab to reach a planet, Enter to focus, and Escape to return.",
+      freeCameraHint:
+        "Free camera: drag or touch to orbit, wheel or pinch to zoom, arrow keys to pan, and Escape to return to guided view.",
       planetSummaryType: (kind: string, order: number): string => {
         const kinds: Record<string, string> = {
           "gas-giant": "Gas giant",
@@ -92,8 +94,13 @@ export const uiStrings = {
         `Open the ${name} reference page`,
       cameraStatus: (
         name: string | undefined,
-        mode: "overview" | "transition" | "focus",
+        mode: "overview" | "transition" | "focus" | "free",
       ): string => {
+        if (mode === "free") {
+          return name
+            ? `Free camera around ${name}.`
+            : "Free camera around the Solar System.";
+        }
         if (!name) {
           return mode === "transition"
             ? "Returning to the Solar System overview."
@@ -118,13 +125,17 @@ export const uiStrings = {
           speed: number,
           scale: string,
         ): string => `${paused ? "Paused" : `${speed}×`} · ${scale}`,
-        speed: "Time speed",
+        speed: "Time speed · 1× = 6 h/s",
         scale: "Scale model",
         scene: "Scene layers",
         orbits: "Orbit paths",
         labels: "Planet labels",
         quality: "Render quality",
         motion: "Motion",
+        camera: "Camera",
+        freeCamera: "Free",
+        guidedCamera: "Guided",
+        resetView: "Reset view",
         scaleOptions: {
           exploration: "Explore",
           scientific: "Scientific",

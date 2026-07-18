@@ -37,6 +37,23 @@ describe("exploration store", () => {
     expect(state().cameraMode).toBe("transition");
   });
 
+  it("hands camera authority to free controls and returns safely", () => {
+    state().selectPlanet("earth");
+    state().settleCamera("earth", "focus");
+    state().enterFreeCamera();
+    expect(state().cameraMode).toBe("free");
+    expect(state().selectedPlanetId).toBe("earth");
+
+    state().exitFreeCamera();
+    expect(state().cameraMode).toBe("transition");
+    expect(state().selectedPlanetId).toBe("earth");
+
+    state().enterFreeCamera();
+    state().clearSelection();
+    expect(state().cameraMode).toBe("transition");
+    expect(state().selectedPlanetId).toBeNull();
+  });
+
   it("ignores a stale camera completion after a rapid selection change", () => {
     state().selectPlanet("mars");
     state().selectPlanet("venus");

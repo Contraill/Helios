@@ -331,7 +331,7 @@ export async function loadEpic(): Promise<
           identifier: item.identifier,
           caption: item.caption,
           capturedAt: `${item.date.replace(" ", "T")}Z`,
-          imageUrl: `https://epic.gsfc.nasa.gov/archive/natural/${year}/${month}/${day}/png/${item.image}.png`,
+          imageUrl: `https://epic.gsfc.nasa.gov/archive/natural/${year}/${month}/${day}/jpg/${item.image}.jpg`,
           centroid: {
             latitude: item.centroid_coordinates.lat,
             longitude: item.centroid_coordinates.lon,
@@ -638,8 +638,19 @@ export async function loadInsight(): Promise<
 export async function loadMissionMedia(
   query = "Mars Perseverance",
 ): Promise<ExternalResult<readonly MissionMediaRecord[]>> {
+  const queryTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const filteredSnapshot = {
+    ...missionMediaSnapshot,
+    data: missionMediaSnapshot.data.filter((item) => {
+      const haystack = [item.title, ...item.keywords].join(" ").toLowerCase();
+      return queryTerms.some((term) => haystack.includes(term));
+    }),
+  };
   return executeExternal({
-    snapshot: missionMediaSnapshot,
+    snapshot:
+      filteredSnapshot.data.length > 0
+        ? filteredSnapshot
+        : missionMediaSnapshot,
     empty: (data) => data.length === 0,
     currentStatus: "latest-available",
     fetchCurrent: async () => {
