@@ -24,6 +24,8 @@ export interface ScenePlanet {
   readonly initialAngle: number;
   readonly orbitalAngularVelocity: number;
   readonly rotationAngularVelocity: number;
+  readonly retrogradeRotation: boolean;
+  readonly siderealRotationHours: number;
   readonly scales: Readonly<Record<ScaleMode, ScenePlanetScale>>;
 }
 
@@ -89,6 +91,8 @@ export function createScenePlanets(
           planet.rotation.siderealRotationHours.value,
           planet.rotation.retrograde,
         ),
+        retrogradeRotation: planet.rotation.retrograde,
+        siderealRotationHours: planet.rotation.siderealRotationHours.value,
         scales: Object.freeze({
           exploration: createScale(planet, initialAngle, "exploration"),
           scientific: createScale(planet, initialAngle, "scientific"),

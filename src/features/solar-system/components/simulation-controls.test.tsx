@@ -24,7 +24,7 @@ describe("SimulationControls", () => {
     resetSimulationStore();
   });
 
-  it("pauses, changes speed and resets the simulation", () => {
+  it("pauses, changes calendar speed and resets the simulation to real time", () => {
     render(<SimulationControls />);
 
     fireEvent.click(screen.getByRole("button", { name: "Pause" }));
@@ -34,8 +34,8 @@ describe("SimulationControls", () => {
       "true",
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "16×" }));
-    expect(useSimulationStore.getState().timeScale).toBe(16);
+    fireEvent.click(screen.getByRole("button", { name: "1 day / sec" }));
+    expect(useSimulationStore.getState().timeScale).toBe(86_400);
 
     fireEvent.click(screen.getByRole("button", { name: "Reset" }));
     expect(useSimulationStore.getState().isPaused).toBe(false);
@@ -75,7 +75,7 @@ describe("SimulationControls", () => {
 
     const openButton = screen.getByRole("button", { name: /Open controls/i });
     expect(openButton).toHaveAttribute("aria-expanded", "false");
-    expect(screen.getByText(/1× · Explore/)).toBeVisible();
+    expect(screen.getByText(/Real time · Explore/)).toBeVisible();
     expect(usePreferencesStore.getState().controlDeckExpanded).toBe(false);
 
     fireEvent.click(openButton);

@@ -4,6 +4,7 @@ import {
   advanceAngle,
   orbitalAngularVelocity,
   orbitalPosition,
+  rotationAngleAt,
   rotationAngularVelocity,
   wrapAngle,
 } from "./orbital-motion";
@@ -24,6 +25,12 @@ describe("orbital motion", () => {
   it("reverses axial rotation for retrograde planets", () => {
     expect(rotationAngularVelocity(24, false)).toBeGreaterThan(0);
     expect(rotationAngularVelocity(24, true)).toBeLessThan(0);
+  });
+
+  it("derives axial phase from the shared simulation timestamp", () => {
+    const sixHoursMs = 6 * 3_600_000;
+    expect(rotationAngleAt(sixHoursMs, 24, false)).toBeCloseTo(Math.PI / 2);
+    expect(rotationAngleAt(sixHoursMs, 24, true)).toBeCloseTo(-Math.PI / 2);
   });
 
   it("returns the major and minor axis extrema", () => {

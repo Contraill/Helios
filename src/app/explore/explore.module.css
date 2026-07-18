@@ -54,11 +54,15 @@
   display: contents;
 }
 
-.timePanel {
+.timePanel,
+.timeDock {
   position: absolute;
   z-index: 4;
   top: 14.5rem;
   left: clamp(1.25rem, 4vw, 3rem);
+}
+
+.timePanel {
   width: min(30rem, calc(100% - 26rem));
   min-width: 0;
   padding: 0.8rem;
@@ -69,6 +73,59 @@
   backdrop-filter: blur(12px);
 }
 
+.timeDock {
+  width: min(21rem, calc(100% - 26rem));
+  min-width: 17rem;
+}
+
+.timeDockButton {
+  display: grid;
+  width: 100%;
+  min-height: 3.55rem;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.72rem;
+  border: 1px solid var(--helios-color-line);
+  border-radius: var(--helios-radius-lg);
+  background: rgb(7 8 12 / 0.86);
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.18);
+  color: var(--helios-color-text-primary);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+}
+
+.timeDockButton > span:first-child {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.timeDockButton small {
+  color: var(--helios-color-text-secondary);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.timeDockButton time {
+  overflow: hidden;
+  font-family: var(--helios-font-mono);
+  font-weight: 650;
+  font-size: 0.66rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeDockButton:hover,
+.timeDockButton:focus-visible {
+  border-color: rgb(232 165 75 / 0.42);
+  background: rgb(15 16 21 / 0.92);
+}
+
 .timeHeader,
 .timeFooter,
 .timeForm {
@@ -76,6 +133,21 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.55rem;
+}
+
+.timeHeaderActions {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.timePanel .timeCollapseButton {
+  display: grid;
+  width: 2rem;
+  padding: 0;
+  place-items: center;
+  border-radius: 50%;
 }
 
 .timeHeader time {
@@ -810,12 +882,21 @@
 }
 
 @media (max-width: 1180px) and (min-width: 761px) {
-  .timePanel {
+  .timePanel,
+  .timeDock {
     top: 12.5rem;
     left: clamp(1.25rem, 4vw, 3rem);
+    transform: none;
+  }
+
+  .timePanel {
     width: min(28rem, calc(100% - 24rem));
     min-width: 0;
-    transform: none;
+  }
+
+  .timeDock {
+    width: min(21rem, calc(100% - 24rem));
+    min-width: 16rem;
   }
 
   .controlDeck {
@@ -832,7 +913,8 @@
 }
 
 @media (max-width: 900px) {
-  .timePanel {
+  .timePanel,
+  .timeDock {
     position: relative;
     top: auto;
     left: auto;
@@ -841,6 +923,10 @@
     grid-column: 1 / -1;
     backdrop-filter: none;
     transform: none;
+  }
+
+  .timeDockButton {
+    backdrop-filter: none;
   }
 
   .controlDeck,

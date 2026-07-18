@@ -10,6 +10,15 @@ import {
 const MILLISECONDS_PER_DAY = 86_400_000;
 const SOLAR_GRAVITATIONAL_PARAMETER_AU3_PER_DAY2 = 0.000_295_912_208_285_591_1;
 
+interface OsculatingOrbit {
+  readonly basisP: CartesianVector;
+  readonly basisQ: CartesianVector;
+  readonly eccentricity: number;
+  readonly initialMeanAnomaly: number;
+  readonly meanMotion: number;
+  readonly semiMajorAxis: number;
+}
+
 function cross(left: CartesianVector, right: CartesianVector): CartesianVector {
   return {
     x: left.y * right.z - left.z * right.y,
@@ -47,19 +56,7 @@ function solveEccentricAnomaly(
   return eccentricAnomaly;
 }
 
-export function propagatedPositionAu(
-  vector: EphemerisVector,
-  observedAt: string,
-  simulationAtMs: number,
-): CartesianVector {
-  const rawDays =
-    (simulationAtMs - Date.parse(observedAt)) / MILLISECONDS_PER_DAY;
-  const days = Math.max(
-    -MAX_PROPAGATION_DAYS,
-    Math.min(MAX_PROPAGATION_DAYS, rawDays),
-  );
-  if (days === 0) return vector.positionAu;
-
+function osculatingOrbitFor(vector: EphemerisVector): OsculatingOrbit | null {
   const position = vector.positionAu;
   const velocity = vector.velocityAuPerDay;
   const positionMagnitude = magnitude(position);
@@ -91,13 +88,10 @@ export function propagatedPositionAu(
     semiMajorAxis <= 0 ||
     eccentricity >= 1 ||
     eccentricity < 1e-8 ||
-    nodeMagnitude < 1e-10
+    nodeMagnitude < 1e-10 ||
+    angularMomentumMagnitude < 1e-12
   ) {
-    return {
-      x: position.x + velocity.x * days,
-      y: position.y + velocity.y * days,
-      z: position.z + velocity.z * days,
-    };
+    return null;
   }
 
   const inclination = Math.acos(angularMomentum.z / angularMomentumMagnitude);
@@ -123,37 +117,82 @@ export function propagatedPositionAu(
   const meanMotion = Math.sqrt(
     SOLAR_GRAVITATIONAL_PARAMETER_AU3_PER_DAY2 / semiMajorAxis ** 3,
   );
-  const meanAnomaly = wrapRadians(initialMeanAnomaly + meanMotion * days);
-  const eccentricAnomaly = solveEccentricAnomaly(meanAnomaly, eccentricity);
-  const perifocalX =
-    semiMajorAxis * (Math.cos(eccentricAnomaly) - eccentricity);
-  const perifocalY =
-    semiMajorAxis *
-    Math.sqrt(1 - eccentricity ** 2) *
-    Math.sin(eccentricAnomaly);
-
   const cosNode = Math.cos(ascendingNode);
   const sinNode = Math.sin(ascendingNode);
   const cosPeriapsis = Math.cos(argumentOfPeriapsis);
   const sinPeriapsis = Math.sin(argumentOfPeriapsis);
   const cosInclination = Math.cos(inclination);
   const sinInclination = Math.sin(inclination);
-  const basisP = {
-    x: cosNode * cosPeriapsis - sinNode * sinPeriapsis * cosInclination,
-    y: sinNode * cosPeriapsis + cosNode * sinPeriapsis * cosInclination,
-    z: sinPeriapsis * sinInclination,
-  };
-  const basisQ = {
-    x: -cosNode * sinPeriapsis - sinNode * cosPeriapsis * cosInclination,
-    y: -sinNode * sinPeriapsis + cosNode * cosPeriapsis * cosInclination,
-    z: cosPeriapsis * sinInclination,
-  };
 
   return {
-    x: basisP.x * perifocalX + basisQ.x * perifocalY,
-    y: basisP.y * perifocalX + basisQ.y * perifocalY,
-    z: basisP.z * perifocalX + basisQ.z * perifocalY,
+    semiMajorAxis,
+    eccentricity,
+    initialMeanAnomaly,
+    meanMotion,
+    basisP: {
+      x: cosNode * cosPeriapsis - sinNode * sinPeriapsis * cosInclination,
+      y: sinNode * cosPeriapsis + cosNode * sinPeriapsis * cosInclination,
+      z: sinPeriapsis * sinInclination,
+    },
+    basisQ: {
+      x: -cosNode * sinPeriapsis - sinNode * cosPeriapsis * cosInclination,
+      y: -sinNode * sinPeriapsis + cosNode * cosPeriapsis * cosInclination,
+      z: cosPeriapsis * sinInclination,
+    },
   };
+}
+
+function positionOnOrbit(
+  orbit: OsculatingOrbit,
+  days: number,
+): CartesianVector {
+  const meanAnomaly = wrapRadians(
+    orbit.initialMeanAnomaly + orbit.meanMotion * days,
+  );
+  const eccentricAnomaly = solveEccentricAnomaly(
+    meanAnomaly,
+    orbit.eccentricity,
+  );
+  const perifocalX =
+    orbit.semiMajorAxis * (Math.cos(eccentricAnomaly) - orbit.eccentricity);
+  const perifocalY =
+    orbit.semiMajorAxis *
+    Math.sqrt(1 - orbit.eccentricity ** 2) *
+    Math.sin(eccentricAnomaly);
+
+  return {
+    x: orbit.basisP.x * perifocalX + orbit.basisQ.x * perifocalY,
+    y: orbit.basisP.y * perifocalX + orbit.basisQ.y * perifocalY,
+    z: orbit.basisP.z * perifocalX + orbit.basisQ.z * perifocalY,
+  };
+}
+
+function positionAfterDays(
+  vector: EphemerisVector,
+  days: number,
+  orbit = osculatingOrbitFor(vector),
+): CartesianVector {
+  if (days === 0) return vector.positionAu;
+  if (orbit) return positionOnOrbit(orbit, days);
+  return {
+    x: vector.positionAu.x + vector.velocityAuPerDay.x * days,
+    y: vector.positionAu.y + vector.velocityAuPerDay.y * days,
+    z: vector.positionAu.z + vector.velocityAuPerDay.z * days,
+  };
+}
+
+export function propagatedPositionAu(
+  vector: EphemerisVector,
+  observedAt: string,
+  simulationAtMs: number,
+): CartesianVector {
+  const rawDays =
+    (simulationAtMs - Date.parse(observedAt)) / MILLISECONDS_PER_DAY;
+  const days = Math.max(
+    -MAX_PROPAGATION_DAYS,
+    Math.min(MAX_PROPAGATION_DAYS, rawDays),
+  );
+  return positionAfterDays(vector, days);
 }
 
 export function vectorToScenePosition(
@@ -181,5 +220,23 @@ export function ephemerisScenePosition(
   return vectorToScenePosition(
     propagatedPositionAu(vector, observedAt, simulationAtMs),
     scaleMode,
+  );
+}
+
+export function ephemerisOrbitScenePoints(
+  vector: EphemerisVector,
+  scaleMode: ScaleMode,
+  segments: number,
+): ReadonlyArray<readonly [number, number, number]> {
+  const orbit = osculatingOrbitFor(vector);
+  if (!orbit) return [vectorToScenePosition(vector.positionAu, scaleMode)];
+
+  const safeSegments = Math.max(24, Math.floor(segments));
+  const periodDays = (Math.PI * 2) / orbit.meanMotion;
+  return Array.from({ length: safeSegments }, (_, index) =>
+    vectorToScenePosition(
+      positionAfterDays(vector, (periodDays * index) / safeSegments, orbit),
+      scaleMode,
+    ),
   );
 }

@@ -12,6 +12,7 @@ import {
   loadInsight,
   loadNearEarth,
 } from "@/lib/data/external/providers/space-data.server";
+import { preferFreshestResult } from "@/lib/data/external/prefer-result";
 
 import styles from "./data.module.css";
 
@@ -36,12 +37,15 @@ export default async function DataPage() {
       loadFireballs(),
     ]);
   const gibs = loadGibsLayers();
-  const approaches = cad.data?.length ? cad : neows;
+  const approaches = preferFreshestResult(cad, neows);
+  const hasPotentiallyHazardousApproach = Boolean(
+    approaches.data?.some((item) => item.potentiallyHazardous),
+  );
   const services = [
     apod,
     donki,
     neows,
-    cad,
+    ...(approaches === cad ? [cad] : []),
     epic,
     eonet,
     gibs,
@@ -132,11 +136,13 @@ export default async function DataPage() {
         ) : (
           <Empty />
         )}
-        <p className={styles.hazardNote}>
-          <strong>Potentially hazardous</strong> describes an object’s size and
-          orbit relative to Earth. It does not mean the object is predicted to
-          collide with Earth.
-        </p>
+        {hasPotentiallyHazardousApproach ? (
+          <p className={styles.hazardNote}>
+            <strong>Potentially hazardous</strong> describes an object’s size
+            and orbit relative to Earth. It does not mean the object is
+            predicted to collide with Earth.
+          </p>
+        ) : null}
         <DataState metadata={approaches.metadata} status={approaches.status} />
         <h3>Historical atmospheric fireballs</h3>
         {fireballs.data?.length ? (

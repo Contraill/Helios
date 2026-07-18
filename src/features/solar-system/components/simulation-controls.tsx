@@ -3,6 +3,7 @@
 import styles from "@/app/explore/explore.module.css";
 import {
   TIME_SCALE_OPTIONS,
+  timeScaleLabel,
   type MotionPreference,
   type QualityLevel,
   type ScaleMode,
@@ -93,7 +94,7 @@ export function SimulationControls() {
             <small>
               {copy.compactStatus(
                 isPaused,
-                timeScale,
+                timeScaleLabel(timeScale),
                 copy.scaleOptions[scaleMode],
               )}
             </small>
@@ -155,7 +156,7 @@ export function SimulationControls() {
               <SegmentedButton<TimeScale>
                 key={option}
                 active={timeScale === option}
-                label={`${option}×`}
+                label={timeScaleLabel(option)}
                 onSelect={setTimeScale}
                 value={option}
               />

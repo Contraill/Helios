@@ -38,12 +38,23 @@ Güncel endpoint response signature değeri `1.2` olarak gözlendi; plan belgesi
 - UTC `datetime-local`, Now, ±1 gün, ±30 gün ve ±3650 günlük timeline
 - 1900–2100 kullanıcı tarih sınırı
 - URL `?at=<ISO>` ile reload/paylaşım
-- Pause/resume ve `0.25×`, `1×`, `4×`, `16×`; `1× = 6 simülasyon saati / gerçek saniye`
+- Açılışta `Date.now()` tabanlı, duraklatılmamış gerçek zaman (`1 gerçek saniye = 1 simülasyon saniyesi`)
+- Pause/resume ve gerçek saniye başına `6 saat`, `1 gün`, `1 hafta`, `1 ay` hızları
 - Altı saatlik kararlı Horizons sample epoch'u
 - Frame loop API çağrısı yok
 - State vector'dan türetilen, ±370 günle sınırlı oskülatör yörünge yayılımı
 - Exploration modunda yalnız non-lineer mesafe sunumu; scientific modda doğrusal `12 scene unit / AU`
 - Ham CSV/text client'a sızmıyor
+
+## Canlı kabul sonrası onarımlar
+
+- Gezegen gövdeleri ile yörünge çizgileri aynı Horizons state vector'ından ve aynı sahne dönüşümünden üretiliyor; katalog elipsi / efemeris koordinatı ayrışması kaldırıldı.
+- Gezegen eksen dönüşü frame sayısından değil merkezi simülasyon timestamp'inden türetiliyor.
+- Efemeris paneli kalıcı tercihle kompakt dock'a kapanabiliyor ve varsayılan olarak kapalı açılıyor.
+- Canvas üzerinde mouse drag/wheel ve dokunma, ayrıca kontrol düğmesine basmak gerektirmeden free camera yetkisini devralıyor.
+- Ana sayfa ve Mercury hero geçişleri sıfır-alfa uçlar ve geniş bulanık ışık alanlarıyla yumuşatıldı; Mercury'deki sert dikey renk kenarı kaldırıldı.
+- Potentially hazardous açıklaması yalnız görüntülenen kayıtlardan en az biri bu sınıfa sahipse gösteriliyor.
+- Data sayfası dolu bir stale fallback'i güncel sağlayıcı sonucunun önüne geçirmiyor; aynı işlevi gören kullanılmayan stale servis kartı yüzeye eklenmiyor.
 
 ## Kaynak doğrulaması
 
@@ -76,11 +87,11 @@ Interpolation kontrolünde 18 Temmuz 2026 state'inden 30 gün yayılan Earth ve 
 - format: geçti
 - lint: geçti; sıfır hata, sıfır warning
 - typecheck: geçti
-- unit/component: `36` dosyada `128/128` geçti
+- unit/component: `37` dosyada `133/133` geçti
 - production build: geçti; `/api/ephemeris` dynamic route, Explore static shell
 - production route kabulü: ana sayfa, Explore, Compare, Data ve sekiz planet rotası `200`
 - production Horizons API kabulü: sekiz hedef, `current`, tam metadata
-- Playwright Chrome Headless Shell: `78/78` geçti
+- Playwright Chrome Headless Shell: `81/81` geçti
 - masaüstü: `1280×720`, yatay overflow yok, Next error overlay yok
 - tablet: `768×1024`, yatay overflow yok, Next error overlay yok
 - mobil: `390×844`, yatay overflow yok, Next error overlay yok

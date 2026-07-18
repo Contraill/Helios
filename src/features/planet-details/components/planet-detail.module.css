@@ -508,10 +508,13 @@
   border-radius: 0;
   background: linear-gradient(
     90deg,
-    rgb(255 214 144 / 0.16) 0%,
-    rgb(255 214 144 / 0.075) 24%,
-    rgb(255 214 144 / 0.02) 46%,
-    transparent 68%
+    rgb(255 214 144 / 0) 0%,
+    rgb(255 214 144 / 0.035) 10%,
+    rgb(255 214 144 / 0.12) 24%,
+    rgb(255 214 144 / 0.082) 40%,
+    rgb(255 214 144 / 0.04) 57%,
+    rgb(255 214 144 / 0.014) 74%,
+    rgb(255 214 144 / 0) 92%
   );
 }
 
@@ -520,10 +523,17 @@
   top: 4%;
   bottom: 4%;
   left: 11%;
-  width: 1px;
-  background: linear-gradient(transparent, #f6d197, transparent);
+  width: 11rem;
+  background: radial-gradient(
+    ellipse at center,
+    rgb(246 209 151 / 0.12) 0%,
+    rgb(246 209 151 / 0.055) 38%,
+    rgb(246 209 151 / 0.014) 62%,
+    rgb(246 209 151 / 0) 82%
+  );
   content: "";
-  box-shadow: 0 0 3rem #d79b52;
+  filter: blur(18px);
+  transform: translateX(-50%);
 }
 
 .visual[data-planet="mercury"] .visualOrbit {

@@ -36,6 +36,21 @@ export function rotationAngularVelocity(
   return (TAU * simulationHoursPerSecond * direction) / siderealRotationHours;
 }
 
+export function rotationAngleAt(
+  simulationAtMs: number,
+  siderealRotationHours: number,
+  retrograde: boolean,
+): number {
+  if (!Number.isFinite(simulationAtMs)) {
+    throw new RangeError("Simulation time must be finite.");
+  }
+  assertPositiveFinite(siderealRotationHours, "Rotation period");
+  const periodMs = siderealRotationHours * 3_600_000;
+  const phaseMs = ((simulationAtMs % periodMs) + periodMs) % periodMs;
+  const angle = (phaseMs / periodMs) * TAU;
+  return retrograde ? -angle : angle;
+}
+
 export function advanceAngle(
   angle: number,
   angularVelocity: number,

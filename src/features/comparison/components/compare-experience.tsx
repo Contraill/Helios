@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 import type { ComparePlanet } from "@/features/comparison/types/comparison";
 import type { PlanetId } from "@/lib/data/schemas/planet";
@@ -16,7 +16,6 @@ export function CompareExperience({
 }: {
   readonly planets: readonly ComparePlanet[];
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const search = useSearchParams();
   const validIds = useMemo(
@@ -38,7 +37,7 @@ export function CompareExperience({
   function select(side: "a" | "b", id: PlanetId) {
     const params = new URLSearchParams(search.toString());
     params.set(side, id);
-    router.push(`${pathname}?${params.toString()}`);
+    window.history.pushState(null, "", `${pathname}?${params.toString()}`);
   }
 
   const maxRadius = Math.max(first.radiusKm, second.radiusKm);

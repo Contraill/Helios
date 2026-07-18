@@ -78,7 +78,7 @@ const policies = {
   cad: {
     providerId: "cneos-cad",
     revalidateSeconds: 10800,
-    timeoutMs: 5000,
+    timeoutMs: 10000,
     cacheTag: "cneos-cad",
   },
   fireball: {

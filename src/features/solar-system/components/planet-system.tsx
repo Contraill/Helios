@@ -1,16 +1,20 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
 import type { Group, Mesh } from "three";
 
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
+import { rotationAngleAt } from "@/features/solar-system/lib/orbital-motion";
 import {
   sceneScaleFor,
   type ScenePlanet,
 } from "@/features/solar-system/lib/scene-planets";
-import { ephemerisScenePosition } from "@/lib/data/ephemeris/positions";
+import {
+  ephemerisOrbitScenePoints,
+  ephemerisScenePosition,
+} from "@/lib/data/ephemeris/positions";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { uiStrings } from "@/lib/i18n/ui-strings";
@@ -40,26 +44,22 @@ const SCIENTIFIC_LABEL_PLACEMENTS: Readonly<
 
 interface PlanetSystemProps {
   labelsVisible: boolean;
-  motionEnabled: boolean;
   orbitsVisible: boolean;
   planet: ScenePlanet;
   planetObjects: PlanetObjectRegistry;
   quality: SceneQuality;
   resetVersion: number;
   scaleMode: ScaleMode;
-  timeScale: number;
 }
 
 export function PlanetSystem({
   labelsVisible,
-  motionEnabled,
   orbitsVisible,
   planet,
   planetObjects,
   quality,
   resetVersion,
   scaleMode,
-  timeScale,
 }: PlanetSystemProps) {
   const bodyRef = useRef<Group>(null);
   const surfaceRef = useRef<Mesh>(null);
@@ -83,6 +83,13 @@ export function PlanetSystem({
     state.bundle.vectors.find(({ planetId }) => planetId === planet.id),
   );
   const simulationAtMs = useSimulationStore((state) => state.simulationAtMs);
+  const orbitPoints = useMemo(
+    () =>
+      vector
+        ? ephemerisOrbitScenePoints(vector, scaleMode, quality.orbitSegments)
+        : undefined,
+    [quality.orbitSegments, scaleMode, vector],
+  );
   const interactionRadius = Math.max(
     scale.radius * 1.65,
     scaleMode === "scientific" ? 0.32 : 0.72,
@@ -115,11 +122,23 @@ export function PlanetSystem({
       );
     }
     if (surfaceRef.current) {
-      surfaceRef.current.rotation.y = 0;
+      surfaceRef.current.rotation.y = rotationAngleAt(
+        simulationAtMs,
+        planet.siderealRotationHours,
+        planet.retrogradeRotation,
+      );
     }
-  }, [observedAt, resetVersion, scaleMode, simulationAtMs, vector]);
+  }, [
+    observedAt,
+    planet.retrogradeRotation,
+    planet.siderealRotationHours,
+    resetVersion,
+    scaleMode,
+    simulationAtMs,
+    vector,
+  ]);
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     if (!bodyRef.current || !surfaceRef.current) return;
 
     const currentBundle = useEphemerisStore.getState().bundle;
@@ -137,11 +156,11 @@ export function PlanetSystem({
       );
     }
 
-    if (!motionEnabled) return;
-
-    const scaledDelta = delta * timeScale;
-    surfaceRef.current.rotation.y +=
-      planet.rotationAngularVelocity * scaledDelta;
+    surfaceRef.current.rotation.y = rotationAngleAt(
+      currentSimulationTimeMs(useSimulationStore.getState()),
+      planet.siderealRotationHours,
+      planet.retrogradeRotation,
+    );
   });
 
   const handlePointerOver = (event: ThreeEvent<PointerEvent>) => {
@@ -162,15 +181,26 @@ export function PlanetSystem({
   return (
     <>
       {orbitsVisible ? (
-        <group rotation-x={planet.inclinationRadians}>
+        orbitPoints ? (
           <OrbitPath
             active={active}
             color={planet.color}
+            points={orbitPoints}
             segments={quality.orbitSegments}
             semiMajorAxis={scale.semiMajorAxis}
             semiMinorAxis={scale.semiMinorAxis}
           />
-        </group>
+        ) : (
+          <group rotation-x={planet.inclinationRadians}>
+            <OrbitPath
+              active={active}
+              color={planet.color}
+              segments={quality.orbitSegments}
+              semiMajorAxis={scale.semiMajorAxis}
+              semiMinorAxis={scale.semiMinorAxis}
+            />
+          </group>
+        )
       ) : null}
       <group ref={bodyRef} position={scale.initialPosition}>
         <group rotation-z={planet.axialTiltRadians}>

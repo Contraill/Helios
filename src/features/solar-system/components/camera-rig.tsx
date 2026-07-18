@@ -60,6 +60,21 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
     orbitControls.keyPanSpeed = 18;
     controls.current = orbitControls;
 
+    const activateDirectControl = () => {
+      if (useExplorationStore.getState().cameraMode === "free") return;
+      orbitControls.target.copy(currentTarget.current);
+      orbitControls.enabled = true;
+      useExplorationStore.getState().enterFreeCamera();
+    };
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+      activateDirectControl();
+    };
+    const handleWheel = () => activateDirectControl();
+
+    gl.domElement.addEventListener("pointerdown", handlePointerDown, true);
+    gl.domElement.addEventListener("wheel", handleWheel, true);
+
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
         useExplorationStore.getState().cameraMode !== "free" ||
@@ -93,6 +108,8 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
     window.addEventListener("keydown", handleKeyDown);
 
     return () => {
+      gl.domElement.removeEventListener("pointerdown", handlePointerDown, true);
+      gl.domElement.removeEventListener("wheel", handleWheel, true);
       window.removeEventListener("keydown", handleKeyDown);
       orbitControls.dispose();
       controls.current = null;
@@ -120,7 +137,10 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       desiredPosition.current.set(...overviewPosition);
     }
 
-    if (cameraMode === "free" && controls.current) {
+    if (
+      useExplorationStore.getState().cameraMode === "free" &&
+      controls.current
+    ) {
       controls.current.enabled = true;
       controls.current.target.copy(currentTarget.current);
       controls.current.update();

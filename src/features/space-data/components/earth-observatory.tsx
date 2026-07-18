@@ -227,10 +227,13 @@ export function EarthObservatory({
           ) : (
             <p className={styles.empty}>No close approach is available.</p>
           )}
-          <p className={styles.contextNote}>
-            <strong>Potentially hazardous</strong> is an orbital classification.
-            It is not a prediction that an object will strike Earth.
-          </p>
+          {approach?.potentiallyHazardous ? (
+            <p className={styles.contextNote}>
+              <strong>Potentially hazardous</strong> is an orbital
+              classification. It is not a prediction that an object will strike
+              Earth.
+            </p>
+          ) : null}
           <DataState
             compact
             metadata={nearEarth.metadata}

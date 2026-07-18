@@ -65,7 +65,7 @@ export const uiStrings = {
       returnToOverview: "Overview",
       returnToOverviewLabel: "Return to the Solar System overview",
       keyboardHint:
-        "Use Tab to reach a planet, Enter to focus, and Escape to return.",
+        "Drag or touch the scene to control the camera. Use Tab and Enter to focus a planet; Escape returns to guided view.",
       freeCameraHint:
         "Free camera: drag or touch to orbit, wheel or pinch to zoom, arrow keys to pan, and Escape to return to guided view.",
       planetSummaryType: (kind: string, order: number): string => {
@@ -122,10 +122,10 @@ export const uiStrings = {
         openControls: "Open controls",
         compactStatus: (
           paused: boolean,
-          speed: number,
+          speed: string,
           scale: string,
-        ): string => `${paused ? "Paused" : `${speed}×`} · ${scale}`,
-        speed: "Time speed · 1× = 6 h/s",
+        ): string => `${paused ? "Paused" : speed} · ${scale}`,
+        speed: "Simulation advance per real second",
         scale: "Scale model",
         scene: "Scene layers",
         orbits: "Orbit paths",

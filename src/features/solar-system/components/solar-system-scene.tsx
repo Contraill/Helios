@@ -37,6 +37,7 @@ export function SolarSystemScene({
   const resetVersion = useSimulationStore((state) => state.resetVersion);
   const quality = SCENE_QUALITY[qualityLevel];
   const simulationMotionEnabled = !isPaused && !reducedMotion;
+  const visualMotionScale = 1 + Math.log10(timeScale);
 
   return (
     <>
@@ -57,7 +58,7 @@ export function SolarSystemScene({
         scaleMode={scaleMode}
         starCount={quality.starCount}
         starSize={quality.starSize}
-        timeScale={timeScale}
+        timeScale={visualMotionScale}
       />
       <Sun
         motionEnabled={simulationMotionEnabled}
@@ -65,20 +66,18 @@ export function SolarSystemScene({
         scaleMode={scaleMode}
         segments={quality.planetSegments}
         sun={sceneSun}
-        timeScale={timeScale}
+        timeScale={visualMotionScale}
       />
       {scenePlanets.map((planet) => (
         <PlanetSystem
           key={planet.id}
           labelsVisible={labelsVisible}
-          motionEnabled={simulationMotionEnabled}
           orbitsVisible={orbitsVisible}
           planet={planet}
           planetObjects={planetObjects}
           quality={quality}
           resetVersion={resetVersion}
           scaleMode={scaleMode}
-          timeScale={timeScale}
         />
       ))}
     </>

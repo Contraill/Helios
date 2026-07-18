@@ -120,6 +120,23 @@ test.describe("mobile explore", () => {
     await expect(jupiter).toHaveAttribute("aria-pressed", "false");
     await expect(panel).toHaveCount(0);
   });
+
+  test("touching the scene directly enables touch camera control", async ({
+    page,
+  }) => {
+    await page.goto("/explore");
+    const shell = page.locator(".solar-canvas-shell");
+    await expect(shell).toHaveAttribute("data-camera-mode", "overview");
+
+    const canvasBox = await page.locator("canvas").boundingBox();
+    expect(canvasBox).not.toBeNull();
+    await page.touchscreen.tap(
+      canvasBox!.x + canvasBox!.width * 0.5,
+      canvasBox!.y + canvasBox!.height * 0.32,
+    );
+
+    await expect(shell).toHaveAttribute("data-camera-mode", "free");
+  });
 });
 
 test("simulation controls pause, reset and explain scale honestly", async ({
@@ -135,11 +152,10 @@ test("simulation controls pause, reset and explain scale honestly", async ({
     controls.getByRole("button", { name: "Resume" }),
   ).toHaveAttribute("aria-pressed", "true");
 
-  await controls.getByRole("button", { name: "16×" }).click();
-  await expect(controls.getByRole("button", { name: "16×" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await controls.getByRole("button", { name: "1 day / sec" }).click();
+  await expect(
+    controls.getByRole("button", { name: "1 day / sec" }),
+  ).toHaveAttribute("aria-pressed", "true");
 
   await controls.getByRole("button", { name: "Scientific" }).click();
   await expect(
@@ -151,10 +167,9 @@ test("simulation controls pause, reset and explain scale honestly", async ({
     "aria-pressed",
     "false",
   );
-  await expect(controls.getByRole("button", { name: "1×" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(
+    controls.getByRole("button", { name: "Real time" }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
 test("viewing preferences survive reload", async ({ page }) => {
@@ -168,7 +183,7 @@ test("viewing preferences survive reload", async ({ page }) => {
   await controls.getByRole("button", { name: "Planet labels" }).click();
   await controls.getByRole("button", { name: "Low" }).click();
   await controls.getByRole("button", { name: "Reduced" }).click();
-  await controls.getByRole("button", { name: "4×" }).click();
+  await controls.getByRole("button", { name: "1 week / sec" }).click();
 
   await page.reload();
 
@@ -191,10 +206,9 @@ test("viewing preferences survive reload", async ({ page }) => {
   await expect(
     restored.getByRole("button", { name: "Reduced" }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(restored.getByRole("button", { name: "4×" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(
+    restored.getByRole("button", { name: "1 week / sec" }),
+  ).toHaveAttribute("aria-pressed", "true");
 });
 
 async function expectNoHorizontalOverflow(
@@ -334,7 +348,13 @@ test("ephemeris navigation supports a shareable past and future UTC time", async
   const ephemeris = page.getByRole("complementary", {
     name: "Ephemeris time controls",
   });
-  await expect(ephemeris.getByText("JPL computed vector")).toBeVisible();
+  await expect(ephemeris.locator("[data-status]")).not.toHaveAttribute(
+    "data-status",
+    "loading",
+  );
+  await ephemeris
+    .getByRole("button", { name: "Open ephemeris time controls" })
+    .click();
   await expect(ephemeris.getByLabel("UTC date and time")).toHaveValue(
     "2024-01-15T12:30",
   );
@@ -363,7 +383,65 @@ test("free camera has one explicit authority and Escape returns to guided view",
 
   await page.keyboard.press("Escape");
   await expect(guided).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByText(/Use Tab to reach a planet/i)).toBeVisible();
+  await expect(page.getByText(/Drag or touch the scene/i)).toBeVisible();
+});
+
+test("dragging the scene directly hands camera control to mouse input", async ({
+  page,
+}) => {
+  await page.goto("/explore");
+  const shell = page.locator(".solar-canvas-shell");
+  await expect(shell).toHaveAttribute("data-camera-mode", "overview");
+
+  const canvas = page.locator("canvas");
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+  const x = box!.x + box!.width * 0.52;
+  const y = box!.y + box!.height * 0.52;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x + 80, y + 35, { steps: 8 });
+  await page.mouse.up();
+
+  await expect(shell).toHaveAttribute("data-camera-mode", "free");
+  await expect(page.getByRole("button", { name: "Free" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+});
+
+test("ephemeris clock starts in real time and its panel stays collapsible", async ({
+  page,
+}) => {
+  await page.goto("/explore");
+  const ephemeris = page.getByRole("complementary", {
+    name: "Ephemeris time controls",
+  });
+  const open = ephemeris.getByRole("button", {
+    name: "Open ephemeris time controls",
+  });
+  await expect(open).toBeVisible();
+  await expect(ephemeris.locator("[data-status]")).not.toHaveAttribute(
+    "data-status",
+    "loading",
+  );
+  const before = Date.parse(
+    (await ephemeris.locator("time").getAttribute("datetime"))!,
+  );
+  await page.waitForTimeout(1_200);
+  const after = Date.parse(
+    (await ephemeris.locator("time").getAttribute("datetime"))!,
+  );
+  expect(after - before).toBeGreaterThanOrEqual(500);
+  expect(after - before).toBeLessThan(3_000);
+
+  await open.click();
+  const collapse = ephemeris.getByRole("button", {
+    name: "Collapse ephemeris time controls",
+  });
+  await expect(collapse).toBeVisible();
+  await collapse.click();
+  await expect(open).toBeVisible();
 });
 
 test("the simulation deck collapses into a compact dock and persists", async ({
@@ -586,7 +664,7 @@ test.describe("Phase 7 external-data surfaces", () => {
     await expect(
       page.getByRole("heading", { name: "The Sun does not stop at the sky" }),
     ).toBeVisible();
-    await expect(page.getByText(/orbital classification/i)).toBeVisible();
+    await expect(page.getByText(/orbital classification/i)).toHaveCount(0);
 
     await page.getByLabel("Category").selectOption("seaLakeIce");
     await expect(
@@ -641,9 +719,19 @@ test.describe("Phase 7 external-data surfaces", () => {
     ]) {
       await expect(page.getByRole("heading", { name: heading })).toBeVisible();
     }
-    await expect(
-      page.getByText(/does not mean the object is predicted to collide/i),
-    ).toBeVisible();
+    const hazardousRows = page.getByText(
+      "Potentially hazardous classification",
+      { exact: true },
+    );
+    if ((await hazardousRows.count()) === 0) {
+      await expect(
+        page.getByText(/does not mean the object is predicted to collide/i),
+      ).toHaveCount(0);
+    } else {
+      await expect(
+        page.getByText(/does not mean the object is predicted to collide/i),
+      ).toBeVisible();
+    }
     await expect(page.locator('[data-status="stale"]').first()).toBeVisible();
     await expect(
       page.locator('[data-status="historical"]').first(),

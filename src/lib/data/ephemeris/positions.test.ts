@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { HORIZONS_SNAPSHOT } from "./horizons-snapshot";
-import { propagatedPositionAu, vectorToScenePosition } from "./positions";
+import {
+  ephemerisOrbitScenePoints,
+  ephemerisScenePosition,
+  propagatedPositionAu,
+  vectorToScenePosition,
+} from "./positions";
 
 const earth = HORIZONS_SNAPSHOT.vectors.find(
   ({ planetId }) => planetId === "earth",
@@ -69,5 +74,23 @@ describe("ephemeris scene positions", () => {
     const vector = { x: 30, y: 0, z: 0 };
     expect(vectorToScenePosition(vector, "scientific")).toEqual([360, 0, -0]);
     expect(vectorToScenePosition(vector, "exploration")[0]).toBeLessThan(70);
+  });
+
+  it("draws every orbit from the same Horizons vector and scene transform as its planet", () => {
+    const observedAtMs = Date.parse(HORIZONS_SNAPSHOT.observedAt);
+
+    for (const vector of HORIZONS_SNAPSHOT.vectors) {
+      const points = ephemerisOrbitScenePoints(vector, "exploration", 96);
+      expect(points).toHaveLength(96);
+      expect(points[0]).toEqual(
+        ephemerisScenePosition(
+          vector,
+          HORIZONS_SNAPSHOT.observedAt,
+          observedAtMs,
+          "exploration",
+        ),
+      );
+      expect(points.flat().every(Number.isFinite)).toBe(true);
+    }
   });
 });

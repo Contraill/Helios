@@ -9,7 +9,6 @@ import {
 } from "@/features/solar-system/types/experience-settings";
 import { HORIZONS_SNAPSHOT_OBSERVED_AT } from "@/lib/data/ephemeris/horizons-snapshot";
 
-const SIMULATION_MILLISECONDS_PER_REAL_MILLISECOND = 21_600;
 const MILLISECONDS_PER_DAY = 86_400_000;
 
 export interface SimulationState {
@@ -44,12 +43,7 @@ export function currentSimulationTimeMs(
     return state.simulationAtMs;
   }
   const elapsedRealMs = Math.max(0, realNowMs - state.clockAnchorRealMs);
-  return (
-    state.simulationAtMs +
-    elapsedRealMs *
-      state.timeScale *
-      SIMULATION_MILLISECONDS_PER_REAL_MILLISECOND
-  );
+  return state.simulationAtMs + elapsedRealMs * state.timeScale;
 }
 
 export const useSimulationStore = create<SimulationState>()(
@@ -105,8 +99,19 @@ export const useSimulationStore = create<SimulationState>()(
     }),
     {
       name: "helios-simulation",
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
+      migrate: (persistedState) => {
+        const persisted = persistedState as Partial<SimulationState>;
+        return {
+          ...persisted,
+          timeScale:
+            typeof persisted.timeScale === "number" &&
+            isTimeScale(persisted.timeScale)
+              ? persisted.timeScale
+              : 1,
+        };
+      },
       partialize: ({ timeScale }) => ({ timeScale }),
       skipHydration: true,
     },

@@ -19,13 +19,14 @@ describe("simulation store", () => {
 
   afterEach(() => vi.useRealTimers());
 
-  it("pauses, changes speed and returns to a deterministic reset state", () => {
+  it("starts in real time, pauses, changes speed and resets to real time", () => {
     const initialVersion = state().resetVersion;
+    expect(state().isPaused).toBe(false);
     state().togglePaused();
-    state().setTimeScale(16);
+    state().setTimeScale(86_400);
 
     expect(state().isPaused).toBe(true);
-    expect(state().timeScale).toBe(16);
+    expect(state().timeScale).toBe(86_400);
 
     state().resetSimulation();
     expect(state().isPaused).toBe(false);
@@ -42,7 +43,7 @@ describe("simulation store", () => {
 
     await useSimulationStore.persist.rehydrate();
 
-    expect(state().timeScale).toBe(4);
+    expect(state().timeScale).toBe(1);
     expect(state().isPaused).toBe(true);
   });
 
@@ -53,7 +54,13 @@ describe("simulation store", () => {
 
     vi.advanceTimersByTime(1_000);
     expect(new Date(currentSimulationTimeMs(state())).toISOString()).toBe(
-      "2026-07-18T06:00:00.000Z",
+      "2026-07-18T00:00:01.000Z",
+    );
+
+    state().setTimeScale(21_600);
+    vi.advanceTimersByTime(1_000);
+    expect(new Date(currentSimulationTimeMs(state())).toISOString()).toBe(
+      "2026-07-18T06:00:01.000Z",
     );
 
     state().togglePaused();

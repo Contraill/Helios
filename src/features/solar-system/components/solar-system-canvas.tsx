@@ -30,6 +30,8 @@ export function SolarSystemCanvas({
   const qualityLevel = usePreferencesStore((state) => state.qualityLevel);
   const reducedMotion = useReducedMotionPreference(motionPreference);
   const clearSelection = useExplorationStore((state) => state.clearSelection);
+  const cameraMode = useExplorationStore((state) => state.cameraMode);
+  const enterFreeCamera = useExplorationStore((state) => state.enterFreeCamera);
   const hoveredPlanetId = useExplorationStore((state) => state.hoveredPlanetId);
   const quality = SCENE_QUALITY[qualityLevel];
   const copy = uiStrings.pages.explore;
@@ -37,7 +39,14 @@ export function SolarSystemCanvas({
   return (
     <div
       className={`solar-canvas-shell${hoveredPlanetId ? " solar-canvas-shell--interactive" : ""}`}
+      data-camera-mode={cameraMode}
       data-quality={qualityLevel}
+      onPointerDownCapture={(event) => {
+        if (event.pointerType !== "mouse" || event.button === 0) {
+          enterFreeCamera();
+        }
+      }}
+      onWheelCapture={enterFreeCamera}
     >
       <SceneErrorBoundary fallback={<SceneFallback />}>
         <Canvas
@@ -52,7 +61,11 @@ export function SolarSystemCanvas({
             powerPreference:
               qualityLevel === "low" ? "low-power" : "high-performance",
           }}
-          onPointerMissed={clearSelection}
+          onPointerMissed={() => {
+            if (useExplorationStore.getState().cameraMode !== "free") {
+              clearSelection();
+            }
+          }}
         >
           <Suspense fallback={null}>
             <SolarSystemScene

@@ -8,6 +8,7 @@ import {
   ephemerisBundleSchema,
 } from "@/lib/data/ephemeris/models";
 import { useEphemerisStore } from "@/stores/ephemeris-store";
+import { usePreferencesStore } from "@/stores/preferences-store";
 import {
   currentSimulationTimeMs,
   useSimulationStore,
@@ -57,6 +58,10 @@ export function EphemerisControls() {
   const setBundle = useEphemerisStore((state) => state.setBundle);
   const setError = useEphemerisStore((state) => state.setError);
   const isPaused = useSimulationStore((state) => state.isPaused);
+  const timePanelExpanded = usePreferencesStore(
+    (state) => state.timePanelExpanded,
+  );
+  const toggleTimePanel = usePreferencesStore((state) => state.toggleTimePanel);
   const setSimulationTime = useSimulationStore(
     (state) => state.setSimulationTime,
   );
@@ -133,6 +138,7 @@ export function EphemerisControls() {
         requestedTimestamp <= MAXIMUM_TIME
           ? requestedTimestamp
           : Date.now();
+      setSimulationTime(initialTimestamp);
       void loadAt(initialTimestamp, Boolean(requested));
     };
     void initialize();
@@ -140,7 +146,7 @@ export function EphemerisControls() {
       cancelled = true;
       requestController.current?.abort();
     };
-  }, [loadAt]);
+  }, [loadAt, setSimulationTime]);
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -217,8 +223,38 @@ export function EphemerisControls() {
     window.setTimeout(() => setCopied(false), 1_500);
   };
 
+  if (!timePanelExpanded) {
+    return (
+      <aside aria-label="Ephemeris time controls" className={styles.timeDock}>
+        <button
+          aria-controls="ephemeris-control-panel"
+          aria-expanded="false"
+          aria-label="Open ephemeris time controls"
+          className={styles.timeDockButton}
+          onClick={toggleTimePanel}
+          type="button"
+        >
+          <span>
+            <small>Horizons ephemeris · TDB</small>
+            <time dateTime={new Date(displayedAt).toISOString()}>
+              {currentLabel} UTC
+            </time>
+          </span>
+          <span className={styles.sourceStatus} data-status={loadStatus}>
+            {sourceStatus}
+          </span>
+          <span aria-hidden="true">↓</span>
+        </button>
+      </aside>
+    );
+  }
+
   return (
-    <aside aria-label="Ephemeris time controls" className={styles.timePanel}>
+    <aside
+      aria-label="Ephemeris time controls"
+      className={styles.timePanel}
+      id="ephemeris-control-panel"
+    >
       <div className={styles.timeHeader}>
         <div>
           <p className={styles.timeEyebrow}>Horizons ephemeris · TDB</p>
@@ -226,9 +262,21 @@ export function EphemerisControls() {
             {currentLabel} UTC
           </time>
         </div>
-        <span className={styles.sourceStatus} data-status={loadStatus}>
-          {sourceStatus}
-        </span>
+        <div className={styles.timeHeaderActions}>
+          <span className={styles.sourceStatus} data-status={loadStatus}>
+            {sourceStatus}
+          </span>
+          <button
+            aria-controls="ephemeris-control-panel"
+            aria-expanded="true"
+            aria-label="Collapse ephemeris time controls"
+            className={styles.timeCollapseButton}
+            onClick={toggleTimePanel}
+            type="button"
+          >
+            ↑
+          </button>
+        </div>
       </div>
 
       <form className={styles.timeForm} onSubmit={handleSubmit}>
