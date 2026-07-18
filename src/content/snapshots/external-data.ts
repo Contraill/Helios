@@ -80,6 +80,7 @@ export const eonetSnapshot: VerifiedSnapshot<readonly EonetEvent[]> = {
       category: "wildfires",
       status: "open",
       observedAt: "2026-07-16T18:00:00.000Z",
+      geometryType: "Point",
       coordinates: [-121.2, 39.4],
       sourceUrl: "https://eonet.gsfc.nasa.gov/",
     },
@@ -89,6 +90,7 @@ export const eonetSnapshot: VerifiedSnapshot<readonly EonetEvent[]> = {
       category: "volcanoes",
       status: "open",
       observedAt: "2026-07-15T12:00:00.000Z",
+      geometryType: "Point",
       coordinates: [15.0, 37.75],
       sourceUrl: "https://eonet.gsfc.nasa.gov/",
     },
@@ -112,10 +114,14 @@ export const gibsLayers: readonly GibsLayer[] = [
     instrument: "Terra / MODIS",
     observedAt: "2026-07-17",
     imageUrl:
-      "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2026-07-17/250m/0/0/0.jpg",
+      "https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME=2026-07-17&BBOX=-180,-90,180,90&CRS=EPSG:4326&LAYERS=MODIS_Terra_CorrectedReflectance_TrueColor&FORMAT=image/jpeg&WIDTH=1024&HEIGHT=512",
     colorMode: "natural",
     latencyNote: "Near-real-time imagery may appear hours after observation.",
     attribution: "NASA EOSDIS GIBS",
+    format: "image/jpeg",
+    tileMatrixSet: "250m",
+    extent: [-180, -90, 180, 90],
+    availability: "verified",
   },
   {
     id: "GOES-East_ABI_FireTemp",
@@ -123,10 +129,14 @@ export const gibsLayers: readonly GibsLayer[] = [
     instrument: "GOES-East / ABI",
     observedAt: "2026-07-17T12:00:00.000Z",
     imageUrl:
-      "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/GOES-East_ABI_FireTemp/default/2026-07-17T12:00:00Z/1km/0/0/0.png",
+      "https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME=2026-07-17T12:00:00Z&BBOX=-140,-60,-10,60&CRS=EPSG:4326&LAYERS=GOES-East_ABI_FireTemp&FORMAT=image/png&WIDTH=1024&HEIGHT=640",
     colorMode: "analysis",
     latencyNote: "Analysis layer; color represents estimated fire temperature.",
     attribution: "NASA EOSDIS GIBS",
+    format: "image/png",
+    tileMatrixSet: "1km",
+    extent: [-140, -60, -10, 60],
+    availability: "verified",
   },
   {
     id: "IMERG_Precipitation_Rate",
@@ -134,10 +144,14 @@ export const gibsLayers: readonly GibsLayer[] = [
     instrument: "GPM / IMERG",
     observedAt: "2026-07-17",
     imageUrl:
-      "https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/IMERG_Precipitation_Rate/default/2026-07-17/2km/0/0/0.png",
+      "https://wvs.earthdata.nasa.gov/api/v1/snapshot?REQUEST=GetSnapshot&TIME=2026-07-17&BBOX=-180,-60,180,60&CRS=EPSG:4326&LAYERS=IMERG_Precipitation_Rate&FORMAT=image/png&WIDTH=1024&HEIGHT=384",
     colorMode: "analysis",
     latencyNote: "Dated precipitation analysis; not a live weather radar.",
     attribution: "NASA EOSDIS GIBS",
+    format: "image/png",
+    tileMatrixSet: "2km",
+    extent: [-180, -60, 180, 60],
+    availability: "verified",
   },
 ];
 
@@ -196,6 +210,7 @@ export const nearEarthSnapshot: VerifiedSnapshot<readonly NearEarthApproach[]> =
         diameterMinM: 80,
         diameterMaxM: 180,
         potentiallyHazardous: false,
+        timeScale: "UTC",
         sourceUrl:
           "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=3542519",
       },
@@ -228,6 +243,7 @@ export const insightSnapshot: VerifiedSnapshot<InsightWeatherRecord> = {
     seasonSouthern: "late spring",
     valid: true,
     sampleCount: 88628,
+    archiveMatch: "nearest",
   },
   metadata: {
     provider: "NASA InSight",
@@ -249,34 +265,124 @@ export const missionMediaSnapshot: VerifiedSnapshot<
   purpose: "Curated mission-media fallback for planet pages.",
   data: [
     {
-      nasaId: "PIA24546",
-      title: "Perseverance at Jezero Crater",
+      planetId: "mercury",
+      nasaId: "PIA13823",
+      title: "MESSENGER explores Mercury in color",
       excerpt:
-        "Mission imagery places the rover within the geological context of Jezero Crater.",
-      dateCreated: "2021-02-18T00:00:00.000Z",
+        "MESSENGER color imaging reveals compositional differences across Mercury's cratered surface.",
+      dateCreated: "2011-03-30T00:00:00.000Z",
       center: "JPL",
-      keywords: ["Mars", "Perseverance", "Jezero"],
+      keywords: ["Mercury", "MESSENGER"],
       mediaType: "image",
       thumbnailUrl:
-        "https://images-assets.nasa.gov/image/PIA24546/PIA24546~thumb.jpg",
-      assetUrl:
-        "https://images-assets.nasa.gov/image/PIA24546/PIA24546~orig.jpg",
-      creator: "NASA/JPL-Caltech",
-      sourceUrl: "https://images.nasa.gov/details/PIA24546",
+        "https://images-assets.nasa.gov/image/PIA13823/PIA13823~thumb.jpg",
+      creator: "NASA/JHUAPL/CIW",
+      sourceUrl: "https://images.nasa.gov/details/PIA13823",
     },
     {
-      nasaId: "PIA00015",
-      title: "Magellan radar view of Venus",
+      planetId: "venus",
+      nasaId: "PIA00207",
+      title: "Magellan and Arecibo views of Venus",
       excerpt:
-        "Radar mapping reveals surface structure through Venus's opaque clouds.",
+        "Radar observations compare surface structure hidden beneath Venus's opaque cloud deck.",
       dateCreated: "1996-01-29T00:00:00.000Z",
       center: "JPL",
       keywords: ["Venus", "Magellan", "radar"],
       mediaType: "image",
       thumbnailUrl:
-        "https://images-assets.nasa.gov/image/PIA00015/PIA00015~thumb.jpg",
+        "https://images-assets.nasa.gov/image/PIA00207/PIA00207~thumb.jpg",
       creator: "NASA/JPL",
-      sourceUrl: "https://images.nasa.gov/details/PIA00015",
+      sourceUrl: "https://images.nasa.gov/details/PIA00207",
+    },
+    {
+      planetId: "earth",
+      nasaId: "PIA18033",
+      title: "Earth",
+      excerpt:
+        "A whole-disk Earth view provides mission context without being presented as a live observation.",
+      dateCreated: "2014-02-12T00:00:00.000Z",
+      center: "JPL",
+      keywords: ["Earth", "Blue Marble"],
+      mediaType: "image",
+      thumbnailUrl:
+        "https://images-assets.nasa.gov/image/PIA18033/PIA18033~thumb.jpg",
+      creator: "NASA",
+      sourceUrl: "https://images.nasa.gov/details/PIA18033",
+    },
+    {
+      planetId: "mars",
+      nasaId: "PIA21496",
+      title: "From Tribulation to Perseverance on Mars",
+      excerpt:
+        "A mission image places Mars exploration within a specific rover and surface context.",
+      dateCreated: "2017-02-14T00:00:00.000Z",
+      center: "JPL",
+      keywords: ["Mars", "Perseverance"],
+      mediaType: "image",
+      thumbnailUrl:
+        "https://images-assets.nasa.gov/image/PIA21496/PIA21496~thumb.jpg",
+      creator: "NASA/JPL-Caltech",
+      sourceUrl: "https://images.nasa.gov/details/PIA21496",
+    },
+    {
+      planetId: "jupiter",
+      nasaId: "PIA22968",
+      title: "Juno captures Jupiter lightning",
+      excerpt:
+        "Juno's instruments record lightning within Jupiter's deep and dynamic atmosphere.",
+      dateCreated: "2019-06-11T00:00:00.000Z",
+      center: "JPL",
+      keywords: ["Jupiter", "Juno"],
+      mediaType: "image",
+      thumbnailUrl:
+        "https://images-assets.nasa.gov/image/PIA22968/PIA22968~thumb.jpg",
+      creator: "NASA/JPL-Caltech/SwRI",
+      sourceUrl: "https://images.nasa.gov/details/PIA22968",
+    },
+    {
+      planetId: "saturn",
+      nasaId: "PIA05983",
+      title: "Saturn from far and near",
+      excerpt:
+        "Cassini-Huygens observations resolve Saturn and its rings at mission scale.",
+      dateCreated: "2004-07-01T00:00:00.000Z",
+      center: "JPL",
+      keywords: ["Saturn", "Cassini-Huygens"],
+      mediaType: "image",
+      thumbnailUrl:
+        "https://images-assets.nasa.gov/image/PIA05983/PIA05983~thumb.jpg",
+      creator: "NASA/JPL/Space Science Institute",
+      sourceUrl: "https://images.nasa.gov/details/PIA05983",
+    },
+    {
+      planetId: "uranus",
+      nasaId: "PIA18182",
+      title: "Uranus as seen by Voyager 2",
+      excerpt:
+        "Voyager 2 remains the only spacecraft to have observed Uranus at close range.",
+      dateCreated: "1986-01-25T00:00:00.000Z",
+      center: "JPL",
+      keywords: ["Uranus", "Voyager 2"],
+      mediaType: "image",
+      thumbnailUrl:
+        "https://images-assets.nasa.gov/image/PIA18182/PIA18182~thumb.jpg",
+      creator: "NASA/JPL-Caltech",
+      sourceUrl: "https://images.nasa.gov/details/PIA18182",
+    },
+    {
+      planetId: "neptune",
+      nasaId: "PIA01492",
+      title: "Neptune from Voyager 2",
+      excerpt:
+        "Voyager 2 imaging records Neptune's clouds and deep-blue atmosphere during the 1989 flyby.",
+      dateCreated: "1989-08-25T00:00:00.000Z",
+      center: "JPL",
+      keywords: ["Neptune", "Voyager 2"],
+      mediaType: "image",
+      thumbnailUrl:
+        "https://images-assets.nasa.gov/image/PIA01492/PIA01492~thumb.jpg",
+      creator: "NASA/JPL-Caltech",
+      sourceUrl: "https://images.nasa.gov/details/PIA01492",
     },
   ],
   metadata: {
@@ -343,7 +449,8 @@ export const fireballSnapshot: VerifiedSnapshot<readonly FireballRecord[]> = {
   data: [
     {
       date: "2025-12-03T00:00:00.000Z",
-      energyKt: 0.12,
+      radiatedEnergy10e10J: 0.12,
+      estimatedImpactEnergyKt: 0.35,
       latitude: 12.4,
       longitude: -42.1,
       sourceUrl: "https://cneos.jpl.nasa.gov/fireballs/",

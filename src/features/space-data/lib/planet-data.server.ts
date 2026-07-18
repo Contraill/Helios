@@ -1,5 +1,7 @@
 import "server-only";
 
+import type { PlanetId } from "@/lib/data/schemas/planet";
+
 import {
   loadDonki,
   loadEonet,
@@ -12,19 +14,25 @@ import {
 } from "@/lib/data/external/providers/space-data.server";
 
 export async function loadEarthObservatoryData() {
-  const [epic, eonet, donki, nearEarth] = await Promise.all([
+  const [epic, eonet, gibs, donki, nearEarth, media] = await Promise.all([
     loadEpic(),
     loadEonet(),
+    loadGibsLayers(),
     loadDonki(),
     loadNearEarth(),
+    loadMissionMedia("earth"),
   ]);
-  return { epic, eonet, gibs: loadGibsLayers(), donki, nearEarth };
+  return { epic, eonet, gibs, donki, nearEarth, media };
 }
 
 export async function loadMarsArchiveData() {
   const [weather, media] = await Promise.all([
     loadInsight(),
-    loadMissionMedia("Mars Perseverance InSight MRO"),
+    loadMissionMedia("mars"),
   ]);
   return { weather, media, trek: loadTrekRegions("Mars") };
+}
+
+export function loadPlanetMissionMedia(planetId: PlanetId) {
+  return loadMissionMedia(planetId);
 }

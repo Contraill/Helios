@@ -36,6 +36,7 @@ describe("space data states", () => {
     "near-live",
     "latest-available",
     "historical",
+    "partial",
     "stale",
     "fallback",
     "unavailable",

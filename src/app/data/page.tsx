@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export const revalidate = 60;
 
 export default async function DataPage() {
-  const [apod, donki, neows, cad, epic, eonet, insight, fireballs] =
+  const [apod, donki, neows, cad, epic, eonet, insight, fireballs, gibs] =
     await Promise.all([
       loadApodArchive(),
       loadDonki(),
@@ -35,8 +35,8 @@ export default async function DataPage() {
       loadEonet(),
       loadInsight(),
       loadFireballs(),
+      loadGibsLayers(),
     ]);
-  const gibs = loadGibsLayers();
   const approaches = preferFreshestResult(cad, neows);
   const hasPotentiallyHazardousApproach = Boolean(
     approaches.data?.some((item) => item.potentiallyHazardous),
@@ -108,7 +108,7 @@ export default async function DataPage() {
               <article key={`${item.id}-${item.approachAt}`}>
                 <strong>{item.name}</strong>
                 <time dateTime={item.approachAt}>
-                  {formatDate(item.approachAt)}
+                  {formatDate(item.approachAt)} {item.timeScale}
                 </time>
                 <div className={styles.approachMetrics}>
                   <span>
@@ -118,14 +118,18 @@ export default async function DataPage() {
                     {Math.round(item.relativeVelocityKph).toLocaleString()} km/h
                   </span>
                   <span>
-                    {Math.round(item.diameterMinM)}–
-                    {Math.round(item.diameterMaxM)} m
+                    {item.diameterMinM !== undefined &&
+                    item.diameterMaxM !== undefined
+                      ? `${Math.round(item.diameterMinM)}–${Math.round(item.diameterMaxM)} m`
+                      : "Diameter unavailable"}
                   </span>
                 </div>
                 <small>
-                  {item.potentiallyHazardous
+                  {item.potentiallyHazardous === true
                     ? "Potentially hazardous classification"
-                    : "Not classified as potentially hazardous"}
+                    : item.potentiallyHazardous === false
+                      ? "Not classified as potentially hazardous"
+                      : "Potentially hazardous classification unknown"}
                 </small>
                 <a href={item.sourceUrl} rel="noreferrer" target="_blank">
                   Object/source record
@@ -148,11 +152,20 @@ export default async function DataPage() {
         {fireballs.data?.length ? (
           <ul className={styles.fireballs}>
             {fireballs.data.slice(0, 6).map((event) => (
-              <li key={`${event.date}-${event.energyKt}`}>
+              <li key={event.date}>
                 <time dateTime={event.date}>{formatDate(event.date)}</time>
-                <span>
-                  {event.energyKt.toFixed(2)} kt radiated/impact-energy field
-                </span>
+                {event.radiatedEnergy10e10J !== undefined ? (
+                  <span>
+                    {event.radiatedEnergy10e10J.toFixed(2)} × 10¹⁰ J total
+                    radiated energy
+                  </span>
+                ) : null}
+                {event.estimatedImpactEnergyKt !== undefined ? (
+                  <span>
+                    {event.estimatedImpactEnergyKt.toFixed(2)} kt estimated
+                    impact energy
+                  </span>
+                ) : null}
               </li>
             ))}
           </ul>
@@ -215,11 +228,19 @@ export default async function DataPage() {
             </div>
             <div>
               <dt>Mean temperature</dt>
-              <dd>{insight.data.temperatureC.average.toFixed(1)} °C</dd>
+              <dd>
+                {insight.data.temperatureC
+                  ? `${insight.data.temperatureC.average.toFixed(1)} °C`
+                  : "Unavailable"}
+              </dd>
             </div>
             <div>
               <dt>Mean pressure</dt>
-              <dd>{insight.data.pressurePa.average.toFixed(1)} Pa</dd>
+              <dd>
+                {insight.data.pressurePa
+                  ? `${insight.data.pressurePa.average.toFixed(1)} Pa`
+                  : "Unavailable"}
+              </dd>
             </div>
           </dl>
         ) : (

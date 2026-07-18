@@ -45,6 +45,7 @@ function SegmentedButton<T extends string | number>({
 export function SimulationControls() {
   const copy = uiStrings.pages.explore.controls;
   const isPaused = useSimulationStore((state) => state.isPaused);
+  const boundaryReached = useSimulationStore((state) => state.boundaryReached);
   const timeScale = useSimulationStore((state) => state.timeScale);
   const togglePaused = useSimulationStore((state) => state.togglePaused);
   const setTimeScale = useSimulationStore((state) => state.setTimeScale);
@@ -126,6 +127,7 @@ export function SimulationControls() {
             <button
               aria-pressed={isPaused}
               className={styles.primaryControl}
+              disabled={boundaryReached !== null}
               onClick={togglePaused}
               type="button"
             >

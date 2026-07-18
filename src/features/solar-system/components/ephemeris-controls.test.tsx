@@ -34,7 +34,11 @@ describe("EphemerisControls", () => {
     );
   });
 
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
 
   it("loads now, navigates to a future day and keeps the time in the URL", async () => {
     render(<EphemerisControls />);
@@ -95,5 +99,79 @@ describe("EphemerisControls", () => {
       screen.getByRole("button", { name: "Open ephemeris time controls" }),
     ).toBeVisible();
     expect(screen.getByText("JPL computed vector")).toBeVisible();
+  });
+
+  it("accepts the exact dynamic minimum and maximum and stops request loops at the boundary", async () => {
+    const now = Date.parse("2026-07-18T12:30:00.000Z");
+    vi.spyOn(Date, "now").mockReturnValue(now);
+    resetSimulationStore(now);
+    render(<EphemerisControls />);
+    await screen.findByText("JPL computed vector");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Open ephemeris time controls" }),
+    );
+
+    const input = screen.getByLabelText("UTC date and time");
+    expect(input).toHaveAttribute("min", "1526-07-18T12:30:00.000");
+    expect(input).toHaveAttribute("max", "2626-07-18T12:30:00.000");
+
+    fireEvent.change(input, {
+      target: { value: "1526-07-18T12:30:00.000" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    await waitFor(() =>
+      expect(new URL(window.location.href).searchParams.get("at")).toBe(
+        "1526-07-18T12:30:00.000Z",
+      ),
+    );
+
+    fireEvent.change(input, {
+      target: { value: "2626-07-18T12:30:00.000" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Apply" }));
+    await waitFor(() =>
+      expect(screen.getByText("Maximum supported date reached")).toBeVisible(),
+    );
+    const requestsAtBoundary = vi.mocked(fetch).mock.calls.length;
+    await new Promise((resolve) => window.setTimeout(resolve, 600));
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(requestsAtBoundary);
+    expect(screen.getByRole("button", { name: "+1d" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "+10y" })).toBeDisabled();
+  });
+
+  it("rejects an out-of-range shared URL and initializes from real now", async () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/explore?at=1400-01-01T00%3A00%3A00.000Z",
+    );
+    render(<EphemerisControls />);
+    await screen.findByText("JPL computed vector");
+
+    expect(String(vi.mocked(fetch).mock.calls[0]?.[0])).not.toContain("1400-");
+    expect(new URL(window.location.href).searchParams.get("at")).toMatch(
+      /^20\d{2}-/,
+    );
+  });
+
+  it("previews rapid year scrubbing without a provider request storm", async () => {
+    render(<EphemerisControls />);
+    await screen.findByText("JPL computed vector");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Open ephemeris time controls" }),
+    );
+    const callsBeforeScrub = vi.mocked(fetch).mock.calls.length;
+    const scrubber = screen.getByLabelText(/General date/i);
+
+    fireEvent.change(scrubber, { target: { value: "-100" } });
+    fireEvent.change(scrubber, { target: { value: "20" } });
+    fireEvent.change(scrubber, { target: { value: "120" } });
+
+    expect(vi.mocked(fetch)).toHaveBeenCalledTimes(callsBeforeScrub);
+    expect(screen.getByText("Approximate preview")).toBeVisible();
+    fireEvent.pointerUp(scrubber);
+    await waitFor(() =>
+      expect(vi.mocked(fetch).mock.calls.length).toBe(callsBeforeScrub + 1),
+    );
   });
 });

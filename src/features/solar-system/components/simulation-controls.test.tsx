@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it } from "vitest";
 
+import { SECONDS_PER_JULIAN_YEAR } from "@/features/solar-system/types/experience-settings";
 import {
   resetExplorationStore,
   useExplorationStore,
@@ -36,6 +37,11 @@ describe("SimulationControls", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "1 day / sec" }));
     expect(useSimulationStore.getState().timeScale).toBe(86_400);
+
+    fireEvent.click(screen.getByRole("button", { name: "1 year / sec" }));
+    expect(useSimulationStore.getState().timeScale).toBe(
+      SECONDS_PER_JULIAN_YEAR,
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Reset" }));
     expect(useSimulationStore.getState().isPaused).toBe(false);

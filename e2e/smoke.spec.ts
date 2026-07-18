@@ -183,7 +183,7 @@ test("viewing preferences survive reload", async ({ page }) => {
   await controls.getByRole("button", { name: "Planet labels" }).click();
   await controls.getByRole("button", { name: "Low" }).click();
   await controls.getByRole("button", { name: "Reduced" }).click();
-  await controls.getByRole("button", { name: "1 week / sec" }).click();
+  await controls.getByRole("button", { name: "1 year / sec" }).click();
 
   await page.reload();
 
@@ -207,7 +207,7 @@ test("viewing preferences survive reload", async ({ page }) => {
     restored.getByRole("button", { name: "Reduced" }),
   ).toHaveAttribute("aria-pressed", "true");
   await expect(
-    restored.getByRole("button", { name: "1 week / sec" }),
+    restored.getByRole("button", { name: "1 year / sec" }),
   ).toHaveAttribute("aria-pressed", "true");
 });
 
@@ -355,9 +355,14 @@ test("ephemeris navigation supports a shareable past and future UTC time", async
   await ephemeris
     .getByRole("button", { name: "Open ephemeris time controls" })
     .click();
-  await expect(ephemeris.getByLabel("UTC date and time")).toHaveValue(
-    "2024-01-15T12:30",
+  const selectedValue = await ephemeris
+    .getByLabel("UTC date and time")
+    .inputValue();
+  const selectedAt = Date.parse(`${selectedValue}Z`);
+  expect(selectedAt).toBeGreaterThanOrEqual(
+    Date.parse("2024-01-15T12:30:00.000Z"),
   );
+  expect(selectedAt).toBeLessThan(Date.parse("2024-01-15T12:30:10.000Z"));
 
   await ephemeris.getByRole("button", { name: "+30d" }).click();
   await expect(page).toHaveURL(/at=2024-02-14T/);
@@ -366,6 +371,80 @@ test("ephemeris navigation supports a shareable past and future UTC time", async
   await ephemeris.getByRole("button", { name: "Now" }).click();
   await expect(page).toHaveURL(/at=20\d{2}-/);
 });
+
+test("dynamic range, Julian-year preview and maximum boundary share one clock", async ({
+  page,
+}) => {
+  await page.route("**/api/ephemeris?*", async (route) => {
+    const requestedAt = new URL(route.request().url()).searchParams.get("at")!;
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...HORIZONS_SNAPSHOT,
+        status: "current",
+        requestedAt,
+        observedAt: requestedAt,
+        retrievedAt: requestedAt,
+      }),
+    });
+  });
+  await page.goto("/explore");
+
+  const ephemeris = page.getByRole("complementary", {
+    name: "Ephemeris time controls",
+  });
+  await expect(ephemeris.locator("[data-status]")).not.toHaveAttribute(
+    "data-status",
+    "loading",
+  );
+  await ephemeris
+    .getByRole("button", { name: "Open ephemeris time controls" })
+    .click();
+  const dateInput = ephemeris.getByLabel("UTC date and time");
+  const minimum = (await dateInput.getAttribute("min"))!;
+  const maximum = (await dateInput.getAttribute("max"))!;
+  expect(Number(minimum.slice(0, 4))).toBe(new Date().getUTCFullYear() - 500);
+  expect(Number(maximum.slice(0, 4))).toBe(new Date().getUTCFullYear() + 600);
+
+  const controls = page.getByRole("complementary", {
+    name: "Simulation controls",
+  });
+  await controls.getByRole("button", { name: "1 year / sec" }).click();
+  await expect(ephemeris.getByText("Approximate preview")).toBeVisible();
+
+  await dateInput.fill(maximum);
+  await ephemeris.getByRole("button", { name: "Apply" }).click();
+  await expect(
+    ephemeris.getByText("Maximum supported date reached"),
+  ).toBeVisible();
+  await expect(ephemeris.getByRole("button", { name: "+1d" })).toBeDisabled();
+  await expect(controls.getByRole("button", { name: "Resume" })).toBeDisabled();
+});
+
+for (const viewport of [
+  { width: 390, height: 844 },
+  { width: 768, height: 1024 },
+] as const) {
+  test.describe(`expanded time navigation at ${viewport.width}px`, () => {
+    test.use({ hasTouch: true, viewport });
+    test("keeps the long-range controls inside the viewport", async ({
+      page,
+    }) => {
+      await page.goto("/explore");
+      const ephemeris = page.getByRole("complementary", {
+        name: "Ephemeris time controls",
+      });
+      await ephemeris
+        .getByRole("button", { name: "Open ephemeris time controls" })
+        .tap();
+      await expectNoHorizontalOverflow(page);
+      const box = await ephemeris.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width);
+    });
+  });
+}
 
 test("free camera has one explicit authority and Escape returns to guided view", async ({
   page,
@@ -413,6 +492,20 @@ test("dragging the scene directly hands camera control to mouse input", async ({
 test("ephemeris clock starts in real time and its panel stays collapsible", async ({
   page,
 }) => {
+  await page.route("**/api/ephemeris?*", async (route) => {
+    const requestedAt = new URL(route.request().url()).searchParams.get("at")!;
+    await new Promise((resolve) => setTimeout(resolve, 2_000));
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...HORIZONS_SNAPSHOT,
+        status: "current",
+        requestedAt,
+        observedAt: requestedAt,
+        retrievedAt: requestedAt,
+      }),
+    });
+  });
   await page.goto("/explore");
   const ephemeris = page.getByRole("complementary", {
     name: "Ephemeris time controls",
@@ -421,19 +514,21 @@ test("ephemeris clock starts in real time and its panel stays collapsible", asyn
     name: "Open ephemeris time controls",
   });
   await expect(open).toBeVisible();
-  await expect(ephemeris.locator("[data-status]")).not.toHaveAttribute(
-    "data-status",
-    "loading",
-  );
   const before = Date.parse(
     (await ephemeris.locator("time").getAttribute("datetime"))!,
   );
+  const beforeReal = Date.now();
   await page.waitForTimeout(1_200);
+  const afterReal = Date.now();
   const after = Date.parse(
     (await ephemeris.locator("time").getAttribute("datetime"))!,
   );
-  expect(after - before).toBeGreaterThanOrEqual(500);
-  expect(after - before).toBeLessThan(3_000);
+  const simulatedElapsed = after - before;
+  const realElapsed = afterReal - beforeReal;
+  expect(simulatedElapsed).toBeGreaterThanOrEqual(
+    Math.max(500, realElapsed - 1_500),
+  );
+  expect(simulatedElapsed).toBeLessThan(realElapsed + 2_000);
 
   await open.click();
   const collapse = ephemeris.getByRole("button", {
@@ -442,6 +537,10 @@ test("ephemeris clock starts in real time and its panel stays collapsible", asyn
   await expect(collapse).toBeVisible();
   await collapse.click();
   await expect(open).toBeVisible();
+  await expect(ephemeris.locator("[data-status]")).not.toHaveAttribute(
+    "data-status",
+    "loading",
+  );
 });
 
 test("the simulation deck collapses into a compact dock and persists", async ({
@@ -678,7 +777,7 @@ test.describe("Phase 7 external-data surfaces", () => {
     await page.goto("/planet/mars");
     await expect(
       page.getByRole("heading", {
-        name: "On this archived day at Elysium Planitia",
+        name: /On this day in the InSight archive|Nearest archived observation to/,
       }),
     ).toBeVisible();
     await expect(

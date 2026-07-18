@@ -1,6 +1,7 @@
 import "server-only";
 
 import { getServerEnv } from "@/lib/env/server";
+import { serializeJplSsdRequest } from "@/lib/data/jpl/ssd-request-queue.server";
 
 import { providerPolicies } from "./provider-registry";
 import type { ExternalErrorKind, FetchPolicy } from "./types";
@@ -17,7 +18,7 @@ export class ExternalRequestError extends Error {
   }
 }
 
-interface FetchExternalJsonInput {
+interface FetchExternalInput {
   readonly path: `/${string}`;
   readonly params?: Readonly<
     Record<string, string | number | boolean | undefined>
@@ -29,7 +30,7 @@ export function buildExternalUrl({
   path,
   params,
   policy,
-}: FetchExternalJsonInput): URL {
+}: FetchExternalInput): URL {
   const provider = providerPolicies[policy.providerId];
   const url = new URL(path, provider.origin);
   for (const [key, value] of Object.entries(params ?? {})) {
@@ -48,20 +49,26 @@ export function buildExternalUrl({
   return url;
 }
 
-export async function fetchExternalJson(
-  input: FetchExternalJsonInput,
-): Promise<unknown> {
+async function fetchExternalResponse(
+  input: FetchExternalInput,
+  accept: string,
+): Promise<Response> {
   const url = buildExternalUrl(input);
   let response: Response;
   try {
-    response = await fetch(url, {
-      headers: { Accept: "application/json" },
-      next: {
-        revalidate: input.policy.revalidateSeconds,
-        tags: [input.policy.cacheTag],
-      },
-      signal: AbortSignal.timeout(input.policy.timeoutMs),
-    });
+    const request = () =>
+      fetch(url, {
+        headers: { Accept: accept },
+        next: {
+          revalidate: input.policy.revalidateSeconds,
+          tags: [input.policy.cacheTag],
+        },
+        signal: AbortSignal.timeout(input.policy.timeoutMs),
+      });
+    response =
+      url.hostname === "ssd-api.jpl.nasa.gov"
+        ? await serializeJplSsdRequest(request)
+        : await request();
   } catch (error) {
     const timeout =
       error instanceof DOMException && error.name === "TimeoutError";
@@ -86,6 +93,14 @@ export async function fetchExternalJson(
     );
   }
 
+  return response;
+}
+
+export async function fetchExternalJson(
+  input: FetchExternalInput,
+): Promise<unknown> {
+  const response = await fetchExternalResponse(input, "application/json");
+
   try {
     return await response.json();
   } catch (error) {
@@ -96,4 +111,11 @@ export async function fetchExternalJson(
       { cause: error },
     );
   }
+}
+
+export async function fetchExternalText(
+  input: FetchExternalInput,
+): Promise<string> {
+  const response = await fetchExternalResponse(input, "text/xml");
+  return response.text();
 }

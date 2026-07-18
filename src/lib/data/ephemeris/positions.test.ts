@@ -36,6 +36,25 @@ describe("ephemeris scene positions", () => {
     expect(afterOneYear).not.toEqual(earth.positionAu);
   });
 
+  it("keeps the Julian-year preview moving beyond the source refresh window", () => {
+    const futureAt =
+      Date.parse(HORIZONS_SNAPSHOT.observedAt) + 500 * 86_400_000;
+    const bounded = propagatedPositionAu(
+      earth,
+      HORIZONS_SNAPSHOT.observedAt,
+      futureAt,
+    );
+    const preview = propagatedPositionAu(
+      earth,
+      HORIZONS_SNAPSHOT.observedAt,
+      futureAt,
+      true,
+    );
+
+    expect(Object.values(preview).every(Number.isFinite)).toBe(true);
+    expect(preview).not.toEqual(bounded);
+  });
+
   it("stays close to direct Horizons reference samples 30 days later", () => {
     const references = {
       earth: {

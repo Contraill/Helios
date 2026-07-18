@@ -138,7 +138,8 @@ export function EarthObservatory({
                   {formatDate(event.observedAt)}
                 </time>
                 <small>
-                  {event.status} · {event.coordinates[1].toFixed(2)}°,{" "}
+                  {event.status} · {event.geometryType} ·{" "}
+                  {event.coordinates[1].toFixed(2)}°,{" "}
                   {event.coordinates[0].toFixed(2)}°
                 </small>
                 <a href={event.sourceUrl} rel="noreferrer" target="_blank">
@@ -209,6 +210,13 @@ export function EarthObservatory({
             <p className={styles.empty}>No space-weather event is available.</p>
           )}
           <DataState compact metadata={donki.metadata} status={donki.status} />
+          {donki.metadata.failedEndpoints?.length ? (
+            <p className={styles.contextNote}>
+              Unavailable DONKI families:{" "}
+              {donki.metadata.failedEndpoints.join(", ")}. Other event families
+              remain current.
+            </p>
+          ) : null}
         </div>
         <div className={styles.approachCard}>
           <p className={styles.eyebrow}>Near-Earth space</p>

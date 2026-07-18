@@ -27,7 +27,11 @@ export function MarsArchive({
       >
         <header>
           <p className={styles.eyebrow}>Historical field record</p>
-          <h2 id="insight-heading">On this archived day at Elysium Planitia</h2>
+          <h2 id="insight-heading">
+            {record?.archiveMatch === "on-this-day"
+              ? "On this day in the InSight archive"
+              : `Nearest archived observation to ${new Intl.DateTimeFormat("en", { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date())}`}
+          </h2>
           <p>
             InSight recorded this sol at one landing site. The date below is
             historical—not “Mars today” and not a planet-wide forecast.
@@ -40,31 +44,37 @@ export function MarsArchive({
                 <dt>Sol</dt>
                 <dd>{record.sol}</dd>
               </div>
-              <div>
-                <dt>Temperature °C</dt>
-                <dd>
-                  {record.temperatureC.min.toFixed(1)} /{" "}
-                  {record.temperatureC.average.toFixed(1)} /{" "}
-                  {record.temperatureC.max.toFixed(1)}
-                </dd>
-                <small>min / average / max</small>
-              </div>
-              <div>
-                <dt>Pressure Pa</dt>
-                <dd>
-                  {record.pressurePa.min.toFixed(1)} /{" "}
-                  {record.pressurePa.average.toFixed(1)} /{" "}
-                  {record.pressurePa.max.toFixed(1)}
-                </dd>
-              </div>
-              <div>
-                <dt>Horizontal wind m/s</dt>
-                <dd>
-                  {record.windMps.min.toFixed(1)} /{" "}
-                  {record.windMps.average.toFixed(1)} /{" "}
-                  {record.windMps.max.toFixed(1)}
-                </dd>
-              </div>
+              {record.temperatureC ? (
+                <div>
+                  <dt>Temperature °C</dt>
+                  <dd>
+                    {record.temperatureC.min.toFixed(1)} /{" "}
+                    {record.temperatureC.average.toFixed(1)} /{" "}
+                    {record.temperatureC.max.toFixed(1)}
+                  </dd>
+                  <small>min / average / max</small>
+                </div>
+              ) : null}
+              {record.pressurePa ? (
+                <div>
+                  <dt>Pressure Pa</dt>
+                  <dd>
+                    {record.pressurePa.min.toFixed(1)} /{" "}
+                    {record.pressurePa.average.toFixed(1)} /{" "}
+                    {record.pressurePa.max.toFixed(1)}
+                  </dd>
+                </div>
+              ) : null}
+              {record.windMps ? (
+                <div>
+                  <dt>Horizontal wind m/s</dt>
+                  <dd>
+                    {record.windMps.min.toFixed(1)} /{" "}
+                    {record.windMps.average.toFixed(1)} /{" "}
+                    {record.windMps.max.toFixed(1)}
+                  </dd>
+                </div>
+              ) : null}
               <div>
                 <dt>Common direction</dt>
                 <dd>{record.windDirection}</dd>

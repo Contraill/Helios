@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { SECONDS_PER_JULIAN_YEAR } from "@/features/solar-system/types/experience-settings";
+
 import {
   currentSimulationTimeMs,
-  initialSimulationState,
   resetSimulationStore,
   useSimulationStore,
 } from "./simulation-store";
@@ -13,8 +14,10 @@ function state() {
 
 describe("simulation store", () => {
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-18T00:00:00.000Z"));
     localStorage.clear();
-    resetSimulationStore();
+    resetSimulationStore(Date.now());
   });
 
   afterEach(() => vi.useRealTimers());
@@ -34,8 +37,8 @@ describe("simulation store", () => {
     expect(state().resetVersion).toBe(initialVersion + 1);
   });
 
-  it("rehydrates the persisted time speed without persisting pause", async () => {
-    useSimulationStore.setState({ ...initialSimulationState, isPaused: true });
+  it("rehydrates the persisted time speed without persisting pause or range", async () => {
+    useSimulationStore.setState({ isPaused: true });
     localStorage.setItem(
       "helios-simulation",
       JSON.stringify({ state: { timeScale: 4 }, version: 1 }),
@@ -45,11 +48,12 @@ describe("simulation store", () => {
 
     expect(state().timeScale).toBe(1);
     expect(state().isPaused).toBe(true);
+    expect(new Date(state().range.anchorUtcMs).toISOString()).toBe(
+      "2026-07-18T00:00:00.000Z",
+    );
   });
 
   it("uses one central clock for date navigation, speed and pause", () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-07-18T00:00:00.000Z"));
     state().setSimulationTime(Date.now());
 
     vi.advanceTimersByTime(1_000);
@@ -70,5 +74,50 @@ describe("simulation store", () => {
 
     state().stepSimulationDays(-30);
     expect(state().simulationAtMs).toBe(pausedAt - 30 * 86_400_000);
+  });
+
+  it("advances by one Julian year per real second", () => {
+    const start = Date.now();
+    state().setTimeScale(SECONDS_PER_JULIAN_YEAR);
+
+    vi.advanceTimersByTime(1_000);
+    expect(currentSimulationTimeMs(state())).toBe(
+      start + SECONDS_PER_JULIAN_YEAR * 1_000,
+    );
+  });
+
+  it("clamps max minus 500 ms at month speed and pauses exactly at maximum", () => {
+    const { maximumUtcMs } = state().range;
+    state().setSimulationTime(maximumUtcMs - 500);
+    state().setTimeScale(2_592_000);
+
+    vi.advanceTimersByTime(1_000);
+    expect(state().syncSimulationClock()).toBe(maximumUtcMs);
+    expect(state().simulationAtMs).toBe(maximumUtcMs);
+    expect(state().isPaused).toBe(true);
+    expect(state().boundaryReached).toBe("maximum");
+
+    vi.advanceTimersByTime(10_000);
+    expect(state().syncSimulationClock()).toBe(maximumUtcMs);
+  });
+
+  it("clamps a backward day step at minimum", () => {
+    const { minimumUtcMs } = state().range;
+    state().setSimulationTime(minimumUtcMs + 12 * 60 * 60 * 1_000);
+    state().stepSimulationDays(-1);
+
+    expect(state().simulationAtMs).toBe(minimumUtcMs);
+    expect(state().isPaused).toBe(true);
+    expect(state().boundaryReached).toBe("minimum");
+  });
+
+  it("reanchors Now from the current real UTC instant", () => {
+    vi.setSystemTime(new Date("2026-07-19T03:04:05.000Z"));
+    state().resetSimulation();
+
+    expect(new Date(state().range.anchorUtcMs).toISOString()).toBe(
+      "2026-07-19T03:04:05.000Z",
+    );
+    expect(state().simulationAtMs).toBe(Date.now());
   });
 });

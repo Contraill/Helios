@@ -5,6 +5,7 @@ import {
   MAX_PROPAGATION_DAYS,
   type CartesianVector,
   type EphemerisVector,
+  type EphemerisWindow,
 } from "./models";
 
 const MILLISECONDS_PER_DAY = 86_400_000;
@@ -181,18 +182,63 @@ function positionAfterDays(
   };
 }
 
+function positionFromWindow(
+  window: EphemerisWindow,
+  simulationAtMs: number,
+): CartesianVector | null {
+  const samples = window.samples;
+  const firstAt = Date.parse(samples[0]?.observedAt ?? "");
+  const lastAt = Date.parse(samples.at(-1)?.observedAt ?? "");
+  if (simulationAtMs < firstAt || simulationAtMs > lastAt) return null;
+
+  const upperIndex = samples.findIndex(
+    ({ observedAt }) => Date.parse(observedAt) >= simulationAtMs,
+  );
+  if (upperIndex <= 0) return samples[0]?.positionAu ?? null;
+  const lower = samples[upperIndex - 1];
+  const upper = samples[upperIndex];
+  const lowerAt = Date.parse(lower.observedAt);
+  const upperAt = Date.parse(upper.observedAt);
+  if (simulationAtMs === upperAt) return upper.positionAu;
+
+  const intervalDays = (upperAt - lowerAt) / MILLISECONDS_PER_DAY;
+  const t = (simulationAtMs - lowerAt) / (upperAt - lowerAt);
+  const t2 = t * t;
+  const t3 = t2 * t;
+  const h00 = 2 * t3 - 3 * t2 + 1;
+  const h10 = t3 - 2 * t2 + t;
+  const h01 = -2 * t3 + 3 * t2;
+  const h11 = t3 - t2;
+  const coordinate = (axis: keyof CartesianVector) =>
+    h00 * lower.positionAu[axis] +
+    h10 * intervalDays * lower.velocityAuPerDay[axis] +
+    h01 * upper.positionAu[axis] +
+    h11 * intervalDays * upper.velocityAuPerDay[axis];
+  return { x: coordinate("x"), y: coordinate("y"), z: coordinate("z") };
+}
+
 export function propagatedPositionAu(
   vector: EphemerisVector,
   observedAt: string,
   simulationAtMs: number,
+  allowExtendedOsculatingPreview = false,
+  window?: EphemerisWindow,
 ): CartesianVector {
+  const interpolated = window
+    ? positionFromWindow(window, simulationAtMs)
+    : null;
+  if (interpolated) return interpolated;
   const rawDays =
     (simulationAtMs - Date.parse(observedAt)) / MILLISECONDS_PER_DAY;
+  const orbit = osculatingOrbitFor(vector);
+  if (allowExtendedOsculatingPreview && orbit) {
+    return positionAfterDays(vector, rawDays, orbit);
+  }
   const days = Math.max(
     -MAX_PROPAGATION_DAYS,
     Math.min(MAX_PROPAGATION_DAYS, rawDays),
   );
-  return positionAfterDays(vector, days);
+  return positionAfterDays(vector, days, orbit);
 }
 
 export function vectorToScenePosition(
@@ -216,9 +262,17 @@ export function ephemerisScenePosition(
   observedAt: string,
   simulationAtMs: number,
   scaleMode: ScaleMode,
+  allowExtendedOsculatingPreview = false,
+  window?: EphemerisWindow,
 ): readonly [number, number, number] {
   return vectorToScenePosition(
-    propagatedPositionAu(vector, observedAt, simulationAtMs),
+    propagatedPositionAu(
+      vector,
+      observedAt,
+      simulationAtMs,
+      allowExtendedOsculatingPreview,
+      window,
+    ),
     scaleMode,
   );
 }

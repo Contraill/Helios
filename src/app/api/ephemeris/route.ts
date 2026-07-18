@@ -1,38 +1,51 @@
 import { NextResponse } from "next/server";
 
 import {
+  createSimulationRange,
+  isWithinSimulationRange,
+  type SimulationRange,
+} from "@/features/solar-system/lib/simulation-range";
+import {
   HorizonsError,
   loadHorizonsEphemeris,
 } from "@/lib/data/ephemeris/horizons.server";
 import { fallbackBundleFor } from "@/lib/data/ephemeris/horizons-snapshot";
 
-const MINIMUM_DATE = Date.UTC(1900, 0, 1);
-const MAXIMUM_DATE = Date.UTC(2100, 11, 31, 23, 59, 59, 999);
+const MAXIMUM_ANCHOR_SKEW_MS = 24 * 60 * 60 * 1_000;
 
 export const dynamic = "force-dynamic";
 
-export function requestedDateFrom(value: string | null): Date | null {
+export function requestRangeFrom(
+  anchorValue: string | null,
+  realNowMs = Date.now(),
+): SimulationRange {
+  const requestedAnchor = anchorValue ? Date.parse(anchorValue) : Number.NaN;
+  const anchorUtcMs =
+    Number.isFinite(requestedAnchor) &&
+    Math.abs(requestedAnchor - realNowMs) <= MAXIMUM_ANCHOR_SKEW_MS
+      ? requestedAnchor
+      : realNowMs;
+  return createSimulationRange(anchorUtcMs);
+}
+
+export function requestedDateFrom(
+  value: string | null,
+  range = createSimulationRange(Date.now()),
+): Date | null {
   if (!value) return null;
   const timestamp = Date.parse(value);
-  if (
-    !Number.isFinite(timestamp) ||
-    timestamp < MINIMUM_DATE ||
-    timestamp > MAXIMUM_DATE
-  ) {
-    return null;
-  }
+  if (!isWithinSimulationRange(timestamp, range)) return null;
   return new Date(timestamp);
 }
 
 export async function GET(request: Request) {
-  const requestedAt = requestedDateFrom(
-    new URL(request.url).searchParams.get("at"),
-  );
+  const url = new URL(request.url);
+  const range = requestRangeFrom(url.searchParams.get("anchor"));
+  const requestedAt = requestedDateFrom(url.searchParams.get("at"), range);
   if (!requestedAt) {
     return NextResponse.json(
       {
-        error:
-          "Provide an ISO date between 1900-01-01 and 2100-12-31 in the at parameter.",
+        error: `Provide an ISO date from ${new Date(range.minimumUtcMs).toISOString()} through ${new Date(range.maximumUtcMs).toISOString()} in the at parameter.`,
       },
       { status: 400 },
     );

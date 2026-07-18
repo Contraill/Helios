@@ -10,6 +10,7 @@ const labels: Record<ExternalDataStatus, string> = {
   "near-live": "Near-live source",
   "latest-available": "Latest available",
   historical: "Historical record",
+  partial: "Partial provider response",
   stale: "Cached record",
   fallback: "Verified fallback",
   unavailable: "Unavailable",

@@ -15,7 +15,10 @@ import {
   ephemerisOrbitScenePoints,
   ephemerisScenePosition,
 } from "@/lib/data/ephemeris/positions";
-import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
+import {
+  SECONDS_PER_JULIAN_YEAR,
+  type ScaleMode,
+} from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { uiStrings } from "@/lib/i18n/ui-strings";
 import { useExplorationStore } from "@/stores/exploration-store";
@@ -82,7 +85,12 @@ export function PlanetSystem({
   const vector = useEphemerisStore((state) =>
     state.bundle.vectors.find(({ planetId }) => planetId === planet.id),
   );
+  const vectorWindow = useEphemerisStore((state) =>
+    state.bundle.windows?.find(({ planetId }) => planetId === planet.id),
+  );
   const simulationAtMs = useSimulationStore((state) => state.simulationAtMs);
+  const timeScale = useSimulationStore((state) => state.timeScale);
+  const acceleratedPreview = timeScale === SECONDS_PER_JULIAN_YEAR;
   const orbitPoints = useMemo(
     () =>
       vector
@@ -118,6 +126,8 @@ export function PlanetSystem({
           observedAt,
           simulationAtMs,
           scaleMode,
+          acceleratedPreview,
+          vectorWindow,
         ),
       );
     }
@@ -135,7 +145,9 @@ export function PlanetSystem({
     resetVersion,
     scaleMode,
     simulationAtMs,
+    acceleratedPreview,
     vector,
+    vectorWindow,
   ]);
 
   useFrame(() => {
@@ -145,13 +157,19 @@ export function PlanetSystem({
     const currentVector = currentBundle.vectors.find(
       ({ planetId }) => planetId === planet.id,
     );
+    const currentWindow = currentBundle.windows?.find(
+      ({ planetId }) => planetId === planet.id,
+    );
     if (currentVector) {
+      const simulationState = useSimulationStore.getState();
       bodyRef.current.position.set(
         ...ephemerisScenePosition(
           currentVector,
           currentBundle.observedAt,
-          currentSimulationTimeMs(useSimulationStore.getState()),
+          currentSimulationTimeMs(simulationState),
           useExplorationStore.getState().scaleMode,
+          simulationState.timeScale === SECONDS_PER_JULIAN_YEAR,
+          currentWindow,
         ),
       );
     }

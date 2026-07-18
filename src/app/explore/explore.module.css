@@ -127,8 +127,7 @@
 }
 
 .timeHeader,
-.timeFooter,
-.timeForm {
+.timeFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -189,7 +188,18 @@
 }
 
 .timeForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem 0.55rem;
   margin-top: 0.65rem;
+}
+
+.timeForm > .timeSteps {
+  grid-column: 1 / -1;
+}
+
+.timeForm > .timeSteps:last-child {
+  justify-content: flex-end;
 }
 
 .timePanel button,
@@ -223,12 +233,13 @@
 
 .timePanel button:disabled {
   opacity: 0.45;
-  cursor: progress;
+  cursor: not-allowed;
 }
 
 .timeSteps {
   display: flex;
   flex: 0 0 auto;
+  flex-wrap: wrap;
   gap: 0.22rem;
 }
 
@@ -257,15 +268,35 @@
 
 .timelineField {
   display: grid;
-  grid-template-columns: 10.5rem minmax(0, 1fr);
-  align-items: center;
-  gap: 0.65rem;
+  grid-template-columns: 1fr;
+  gap: 0.32rem;
   margin-top: 0.58rem;
 }
 
 .timelineField input {
   width: 100%;
   accent-color: #e8a54b;
+}
+
+.timelineField .timelineRegions,
+.timelineField .rangeBounds {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.timelineField .timelineRegions {
+  color: rgb(242 239 230 / 0.44);
+  font-size: 0.46rem;
+}
+
+.timelineField .rangeBounds {
+  color: var(--helios-color-text-secondary);
+  font-family: var(--helios-font-mono);
+  font-size: 0.46rem;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .timeFooter {

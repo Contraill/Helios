@@ -5,6 +5,7 @@ export type ExternalDataStatus =
   | "near-live"
   | "latest-available"
   | "historical"
+  | "partial"
   | "stale"
   | "fallback"
   | "unavailable";
@@ -31,6 +32,7 @@ export interface ExternalMetadata {
   readonly retrievedAt: string;
   readonly attribution: string;
   readonly notes?: string;
+  readonly failedEndpoints?: readonly string[];
 }
 
 export interface ExternalResult<T> {

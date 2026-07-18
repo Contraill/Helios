@@ -5,9 +5,11 @@ import { getPlanetDetailContent } from "@/content/planet-details";
 import { getPlanetById, planetIds, planets } from "@/content/planets";
 import { EarthObservatory } from "@/features/space-data/components/earth-observatory";
 import { MarsArchive } from "@/features/space-data/components/mars-archive";
+import { PlanetMissionMedia } from "@/features/space-data/components/planet-mission-media";
 import {
   loadEarthObservatoryData,
   loadMarsArchiveData,
+  loadPlanetMissionMedia,
 } from "@/features/space-data/lib/planet-data.server";
 import { MarsDetailPage } from "@/features/planet-details/components/mars-detail-page";
 import { PlanetDetailPage } from "@/features/planet-details/components/planet-detail-page";
@@ -71,37 +73,52 @@ export default async function PlanetPage({ params }: PlanetPageProps) {
         model={model}
         showHumanScale={false}
         supplement={
-          <EarthObservatory
-            donki={{
-              data: observatory.donki.data ?? [],
-              metadata: observatory.donki.metadata,
-              status: observatory.donki.status,
-            }}
-            eonet={{
-              data: observatory.eonet.data ?? [],
-              metadata: observatory.eonet.metadata,
-              status: observatory.eonet.status,
-            }}
-            epic={{
-              data: observatory.epic.data ?? [],
-              metadata: observatory.epic.metadata,
-              status: observatory.epic.status,
-            }}
-            gibs={{
-              data: observatory.gibs.data ?? [],
-              metadata: observatory.gibs.metadata,
-              status: observatory.gibs.status,
-            }}
-            nearEarth={{
-              data: observatory.nearEarth.data ?? [],
-              metadata: observatory.nearEarth.metadata,
-              status: observatory.nearEarth.status,
-            }}
-          />
+          <>
+            <EarthObservatory
+              donki={{
+                data: observatory.donki.data ?? [],
+                metadata: observatory.donki.metadata,
+                status: observatory.donki.status,
+              }}
+              eonet={{
+                data: observatory.eonet.data ?? [],
+                metadata: observatory.eonet.metadata,
+                status: observatory.eonet.status,
+              }}
+              epic={{
+                data: observatory.epic.data ?? [],
+                metadata: observatory.epic.metadata,
+                status: observatory.epic.status,
+              }}
+              gibs={{
+                data: observatory.gibs.data ?? [],
+                metadata: observatory.gibs.metadata,
+                status: observatory.gibs.status,
+              }}
+              nearEarth={{
+                data: observatory.nearEarth.data ?? [],
+                metadata: observatory.nearEarth.metadata,
+                status: observatory.nearEarth.status,
+              }}
+            />
+            <PlanetMissionMedia
+              media={observatory.media}
+              planetName={planet.name.en}
+            />
+          </>
         }
       />
     );
   }
 
-  return <PlanetDetailPage content={content} model={model} />;
+  const media = await loadPlanetMissionMedia(planet.id);
+  return (
+    <PlanetDetailPage
+      content={content}
+      model={model}
+      supplement={
+        <PlanetMissionMedia media={media} planetName={planet.name.en} />
+      }
+    />
+  );
 }

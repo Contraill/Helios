@@ -8,3 +8,7 @@ export function getServerEnv(): ServerEnv {
   cachedEnv ??= parseServerEnv(process.env);
   return cachedEnv;
 }
+
+export function resetServerEnvCache(): void {
+  cachedEnv = null;
+}

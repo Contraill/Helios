@@ -15,7 +15,7 @@ import {
   trekRegions,
 } from "@/content/snapshots/external-data";
 
-import { executeExternal } from "../execute.server";
+import { executeExternal, isProductionBuild } from "../execute.server";
 import type {
   ApodRecord,
   DonkiEvent,
@@ -29,8 +29,15 @@ import type {
   NearEarthApproach,
   TrekRegion,
 } from "../models";
-import { ExternalRequestError, fetchExternalJson } from "../request.server";
+import {
+  ExternalRequestError,
+  fetchExternalJson,
+  fetchExternalText,
+} from "../request.server";
 import type { ExternalMetadata, ExternalResult, FetchPolicy } from "../types";
+
+const MILLISECONDS_PER_DAY = 86_400_000;
+import type { PlanetId } from "@/lib/data/schemas/planet";
 
 const policies = {
   apod: {
@@ -75,6 +82,12 @@ const policies = {
     timeoutMs: 5000,
     cacheTag: "nasa-images",
   },
+  gibs: {
+    providerId: "gibs",
+    revalidateSeconds: 86400,
+    timeoutMs: 15000,
+    cacheTag: "gibs-capabilities",
+  },
   cad: {
     providerId: "cneos-cad",
     revalidateSeconds: 10800,
@@ -110,24 +123,23 @@ const epicRawSchema = z.array(
   }),
 );
 
-const eonetRawSchema = z.object({
-  events: z.array(
+const eonetRawSchema = z.object({ events: z.array(z.unknown()) });
+
+const eonetEventSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  closed: z.string().nullable().optional(),
+  categories: z.array(z.object({ id: z.string(), title: z.string() })),
+  sources: z
+    .array(z.object({ id: z.string(), url: z.string().url() }))
+    .default([]),
+  geometry: z.array(
     z.object({
-      id: z.string(),
-      title: z.string(),
-      closed: z.string().nullable().optional(),
-      categories: z.array(z.object({ id: z.string(), title: z.string() })),
-      sources: z
-        .array(z.object({ id: z.string(), url: z.string().url() }))
-        .default([]),
-      geometry: z.array(
-        z.object({
-          date: z.string(),
-          magnitudeValue: z.number().nullable().optional(),
-          magnitudeUnit: z.string().nullable().optional(),
-          coordinates: z.tuple([z.number(), z.number()]),
-        }),
-      ),
+      date: z.string(),
+      type: z.enum(["Point", "Polygon"]),
+      magnitudeValue: z.number().nullable().optional(),
+      magnitudeUnit: z.string().nullable().optional(),
+      coordinates: z.unknown(),
     }),
   ),
 });
@@ -187,6 +199,29 @@ const insightRawSchema = z
   })
   .passthrough();
 
+const insightMetricSchema = z.object({
+  mn: z.number(),
+  av: z.number(),
+  mx: z.number(),
+  ct: z.number(),
+});
+
+const insightSolSchema = z.object({
+  First_UTC: z.string(),
+  Last_UTC: z.string(),
+  Season: z.string().optional(),
+  Northern_season: z.string().optional(),
+  Southern_season: z.string().optional(),
+  AT: insightMetricSchema.optional(),
+  PRE: insightMetricSchema.optional(),
+  HWS: insightMetricSchema.optional(),
+  WD: z
+    .object({
+      most_common: z.object({ compass_point: z.string() }).optional(),
+    })
+    .optional(),
+});
+
 const imagesRawSchema = z.object({
   collection: z.object({
     items: z.array(
@@ -224,7 +259,9 @@ const imagesRawSchema = z.object({
 const cneosRawSchema = z.object({
   signature: z.object({ version: z.string() }),
   fields: z.array(z.string()),
-  data: z.array(z.array(z.union([z.string(), z.number(), z.null()]))),
+  data: z
+    .array(z.array(z.union([z.string(), z.number(), z.null()])))
+    .default([]),
 });
 
 function excerpt(value: string, max = 230): string {
@@ -360,6 +397,34 @@ const categoryMap: Readonly<Record<string, EonetCategory | undefined>> = {
   dustHaze: "dustHaze",
 };
 
+function coordinatePairs(value: unknown): Array<readonly [number, number]> {
+  if (
+    Array.isArray(value) &&
+    value.length >= 2 &&
+    typeof value[0] === "number" &&
+    typeof value[1] === "number" &&
+    Number.isFinite(value[0]) &&
+    Number.isFinite(value[1])
+  ) {
+    return [[value[0], value[1]]];
+  }
+  return Array.isArray(value) ? value.flatMap(coordinatePairs) : [];
+}
+
+function representativeCoordinate(
+  type: "Point" | "Polygon",
+  value: unknown,
+): readonly [number, number] | null {
+  const points = coordinatePairs(value);
+  if (points.length === 0) return null;
+  if (type === "Point") return points[0];
+  const totals = points.reduce(
+    (sum, point) => [sum[0] + point[0], sum[1] + point[1]] as const,
+    [0, 0] as const,
+  );
+  return [totals[0] / points.length, totals[1] / points.length];
+}
+
 export async function loadEonet(): Promise<
   ExternalResult<readonly EonetEvent[]>
 > {
@@ -376,12 +441,20 @@ export async function loadEonet(): Promise<
         }),
       );
       return parsed.events
-        .flatMap((event): EonetEvent[] => {
+        .flatMap((rawEvent): EonetEvent[] => {
+          const result = eonetEventSchema.safeParse(rawEvent);
+          if (!result.success) return [];
+          const event = result.data;
           const category = event.categories
             .map((item) => categoryMap[item.id])
             .find(Boolean);
           const geometry = event.geometry.at(-1);
           if (!category || !geometry) return [];
+          const coordinates = representativeCoordinate(
+            geometry.type,
+            geometry.coordinates,
+          );
+          if (!coordinates) return [];
           return [
             {
               id: event.id,
@@ -389,7 +462,8 @@ export async function loadEonet(): Promise<
               category,
               status: event.closed ? "closed" : "open",
               observedAt: geometry.date,
-              coordinates: geometry.coordinates,
+              geometryType: geometry.type,
+              coordinates,
               sourceUrl:
                 event.sources[0]?.url ??
                 `https://eonet.gsfc.nasa.gov/api/v3/events/${event.id}`,
@@ -469,38 +543,75 @@ function normalizeDonki(
 export async function loadDonki(): Promise<
   ExternalResult<readonly DonkiEvent[]>
 > {
-  return executeExternal({
-    snapshot: donkiSnapshot,
-    empty: (data) => data.length === 0,
-    currentStatus: "near-live",
-    fetchCurrent: async () => {
-      const results: DonkiEvent[] = [];
-      for (const [path, type] of [
-        ["/DONKI/FLR", "FLR"],
-        ["/DONKI/CME", "CME"],
-        ["/DONKI/GST", "GST"],
-        ["/DONKI/notifications", "notification"],
-      ] as const) {
-        const records = await fetchDonkiType(path);
-        for (const record of records) {
-          const normalized = normalizeDonki(record, type);
-          if (normalized) results.push(normalized);
-        }
-      }
-      return results
-        .sort((a, b) => b.startAt.localeCompare(a.startAt))
-        .slice(0, 16);
-    },
-    metadata: (data) =>
-      metadata(
-        "NASA DONKI",
-        "Space Weather Database",
-        "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
-        "near-live",
-        data[0]?.startAt,
-        "Events are linked only when official activity IDs match.",
-      ),
-  });
+  const endpoints = [
+    ["/DONKI/FLR", "FLR"],
+    ["/DONKI/CME", "CME"],
+    ["/DONKI/GST", "GST"],
+    ["/DONKI/notifications", "notification"],
+  ] as const;
+
+  if (isProductionBuild()) {
+    return {
+      data: donkiSnapshot.data,
+      status: donkiSnapshot.fallbackStatus ?? "fallback",
+      metadata: donkiSnapshot.metadata,
+      errorKind: "network",
+    };
+  }
+
+  try {
+    const settled = await Promise.allSettled(
+      endpoints.map(async ([path, type]) => ({
+        path,
+        type,
+        records: await fetchDonkiType(path),
+      })),
+    );
+    const failedEndpoints = settled.flatMap((result, index) =>
+      result.status === "rejected" ? [endpoints[index][0]] : [],
+    );
+    const results = settled
+      .flatMap((result): DonkiEvent[] => {
+        if (result.status === "rejected") return [];
+        return result.value.records.flatMap((record) => {
+          const normalized = normalizeDonki(record, result.value.type);
+          return normalized ? [normalized] : [];
+        });
+      })
+      .sort((a, b) => b.startAt.localeCompare(a.startAt))
+      .slice(0, 16);
+
+    if (results.length === 0) {
+      throw new ExternalRequestError(
+        "empty",
+        "DONKI endpoints returned no usable records.",
+      );
+    }
+    return {
+      data: results,
+      status: failedEndpoints.length > 0 ? "partial" : "near-live",
+      metadata: {
+        ...metadata(
+          "NASA DONKI",
+          "Space Weather Database",
+          "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
+          "near-live",
+          results[0]?.startAt,
+          failedEndpoints.length > 0
+            ? `${failedEndpoints.length} endpoint(s) were unavailable; successful event families remain visible.`
+            : "Events are linked only when official activity IDs match.",
+        ),
+        ...(failedEndpoints.length > 0 ? { failedEndpoints } : {}),
+      },
+    };
+  } catch {
+    return {
+      data: donkiSnapshot.data,
+      status: donkiSnapshot.fallbackStatus ?? "fallback",
+      metadata: donkiSnapshot.metadata,
+      errorKind: "upstream",
+    };
+  }
 }
 
 export async function loadNearEarth(): Promise<
@@ -538,6 +649,7 @@ export async function loadNearEarth(): Promise<
               diameterMaxM:
                 item.estimated_diameter.meters.estimated_diameter_max,
               potentiallyHazardous: item.is_potentially_hazardous_asteroid,
+              timeScale: "UTC",
               sourceUrl: item.nasa_jpl_url,
             },
           ];
@@ -574,53 +686,74 @@ export async function loadInsight(): Promise<
         typeof insightRawSchema
       > &
         Record<string, unknown>;
-      const key = parsed.sol_keys.at(-1);
-      if (!key)
+      const candidates = parsed.sol_keys.flatMap((key) => {
+        const result = insightSolSchema.safeParse(parsed[key]);
+        const firstAt = result.success
+          ? Date.parse(result.data.First_UTC)
+          : Number.NaN;
+        return result.success && Number.isFinite(firstAt)
+          ? [{ key, sol: result.data, firstAt }]
+          : [];
+      });
+      if (candidates.length === 0) {
         throw new ExternalRequestError("empty", "InSight returned no sols.");
-      const sol = z
-        .object({
-          First_UTC: z.string(),
-          Last_UTC: z.string(),
-          Season: z.string().optional(),
-          Northern_season: z.string().optional(),
-          Southern_season: z.string().optional(),
-          AT: z.object({
-            mn: z.number(),
-            av: z.number(),
-            mx: z.number(),
-            ct: z.number(),
-          }),
-          PRE: z.object({
-            mn: z.number(),
-            av: z.number(),
-            mx: z.number(),
-            ct: z.number(),
-          }),
-          HWS: z.object({
-            mn: z.number(),
-            av: z.number(),
-            mx: z.number(),
-            ct: z.number(),
-          }),
-          WD: z
-            .object({
-              most_common: z.object({ compass_point: z.string() }).optional(),
-            })
-            .optional(),
-        })
-        .parse(parsed[key]);
+      }
+      const today = new Date();
+      const targetMonth = today.getUTCMonth();
+      const targetDay = today.getUTCDate();
+      const exact = candidates.find(({ firstAt }) => {
+        const date = new Date(firstAt);
+        return (
+          date.getUTCMonth() === targetMonth && date.getUTCDate() === targetDay
+        );
+      });
+      const targetDayIndex =
+        Date.UTC(2000, targetMonth, targetDay) / MILLISECONDS_PER_DAY;
+      const selected =
+        exact ??
+        candidates.reduce((nearest, candidate) => {
+          const date = new Date(candidate.firstAt);
+          const dayIndex =
+            Date.UTC(2000, date.getUTCMonth(), date.getUTCDate()) /
+            MILLISECONDS_PER_DAY;
+          const distance = Math.abs(dayIndex - targetDayIndex);
+          const nearestDate = new Date(nearest.firstAt);
+          const nearestIndex =
+            Date.UTC(
+              2000,
+              nearestDate.getUTCMonth(),
+              nearestDate.getUTCDate(),
+            ) / MILLISECONDS_PER_DAY;
+          const nearestDistance = Math.abs(nearestIndex - targetDayIndex);
+          return Math.min(distance, 366 - distance) <
+            Math.min(nearestDistance, 366 - nearestDistance)
+            ? candidate
+            : nearest;
+        });
+      const { key, sol } = selected;
+      const metric = (
+        value: z.infer<typeof insightMetricSchema> | undefined,
+      ) =>
+        value ? { min: value.mn, average: value.av, max: value.mx } : undefined;
+      const counts = [sol.AT?.ct, sol.PRE?.ct, sol.HWS?.ct].filter(
+        (value): value is number => typeof value === "number",
+      );
+      const temperatureC = metric(sol.AT);
+      const pressurePa = metric(sol.PRE);
+      const windMps = metric(sol.HWS);
       return {
         sol: Number(key),
         firstUtc: sol.First_UTC,
         lastUtc: sol.Last_UTC,
-        temperatureC: { min: sol.AT.mn, average: sol.AT.av, max: sol.AT.mx },
-        pressurePa: { min: sol.PRE.mn, average: sol.PRE.av, max: sol.PRE.mx },
-        windMps: { min: sol.HWS.mn, average: sol.HWS.av, max: sol.HWS.mx },
+        ...(temperatureC ? { temperatureC } : {}),
+        ...(pressurePa ? { pressurePa } : {}),
+        ...(windMps ? { windMps } : {}),
         windDirection: sol.WD?.most_common?.compass_point ?? "not recorded",
         seasonNorthern: sol.Northern_season ?? sol.Season ?? "not recorded",
         seasonSouthern: sol.Southern_season ?? "not recorded",
-        valid: sol.AT.ct > 0 && sol.PRE.ct > 0,
-        sampleCount: Math.min(sol.AT.ct, sol.PRE.ct, sol.HWS.ct),
+        valid: counts.some((count) => count > 0),
+        sampleCount: counts.length > 0 ? Math.max(...counts) : 0,
+        archiveMatch: exact ? "on-this-day" : "nearest",
       };
     },
     metadata: (data) =>
@@ -630,30 +763,71 @@ export async function loadInsight(): Promise<
         "https://api.nasa.gov/insight_weather/",
         "historical",
         data.lastUtc,
-        "Measurement from Elysium Planitia; not current Mars weather.",
+        data.archiveMatch === "on-this-day"
+          ? "Historical observation matching today's UTC month and day at Elysium Planitia."
+          : `Nearest archived observation to ${new Intl.DateTimeFormat("en", { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date())}; not current Mars weather.`,
       ),
   });
 }
 
+const missionMediaQueries: Readonly<Record<PlanetId, string>> = {
+  mercury: "Mercury MESSENGER",
+  venus: "Venus Magellan",
+  earth: "Earth Blue Marble",
+  mars: "Mars Perseverance",
+  jupiter: "Jupiter Juno",
+  saturn: "Saturn Cassini",
+  uranus: "Uranus Voyager 2",
+  neptune: "Neptune Voyager 2",
+};
+
+async function nasaAssetManifest(href: string) {
+  const url = new URL(href);
+  if (url.origin !== "https://images-assets.nasa.gov") {
+    throw new ExternalRequestError(
+      "schema",
+      "NASA media manifest used an unexpected origin.",
+    );
+  }
+  const response = await fetch(url, {
+    headers: { Accept: "application/json" },
+    next: { revalidate: policies.images.revalidateSeconds },
+    signal: AbortSignal.timeout(policies.images.timeoutMs),
+  });
+  if (!response.ok) {
+    throw new ExternalRequestError(
+      "upstream",
+      `NASA media manifest returned ${response.status}.`,
+      response.status,
+    );
+  }
+  return z.array(z.string().url()).parse(await response.json());
+}
+
+function mediaAssets(urls: readonly string[]) {
+  const images = urls.filter((url) => /\.(?:jpe?g|png|webp)$/i.test(url));
+  const thumbnailUrl =
+    images.find((url) => /~thumb\./i.test(url)) ??
+    images.find((url) => /~small\./i.test(url));
+  const assetUrl = images.find((url) => /~orig\./i.test(url)) ?? images.at(-1);
+  return { thumbnailUrl, assetUrl };
+}
+
 export async function loadMissionMedia(
-  query = "Mars Perseverance",
+  planetId: PlanetId,
 ): Promise<ExternalResult<readonly MissionMediaRecord[]>> {
-  const queryTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const query = missionMediaQueries[planetId];
   const filteredSnapshot = {
     ...missionMediaSnapshot,
-    data: missionMediaSnapshot.data.filter((item) => {
-      const haystack = [item.title, ...item.keywords].join(" ").toLowerCase();
-      return queryTerms.some((term) => haystack.includes(term));
-    }),
+    data: missionMediaSnapshot.data.filter(
+      (item) => item.planetId === planetId,
+    ),
   };
-  return executeExternal({
-    snapshot:
-      filteredSnapshot.data.length > 0
-        ? filteredSnapshot
-        : missionMediaSnapshot,
+  return executeExternal<readonly MissionMediaRecord[]>({
+    snapshot: filteredSnapshot,
     empty: (data) => data.length === 0,
     currentStatus: "latest-available",
-    fetchCurrent: async () => {
+    fetchCurrent: async (): Promise<readonly MissionMediaRecord[]> => {
       const parsed = imagesRawSchema.parse(
         await fetchExternalJson({
           path: "/search",
@@ -661,28 +835,39 @@ export async function loadMissionMedia(
           policy: policies.images,
         }),
       );
-      return parsed.collection.items
-        .slice(0, 8)
-        .map((item): MissionMediaRecord => {
+      const records: Array<MissionMediaRecord | null> = await Promise.all(
+        parsed.collection.items.slice(0, 8).map(async (item) => {
           const data = item.data[0];
-          const thumbnail =
-            item.links?.find((link) => link.rel === "preview")?.href ??
-            item.links?.[0]?.href;
-          return {
-            nasaId: data.nasa_id,
-            title: data.title,
-            excerpt: excerpt(data.description ?? data.title, 180),
-            dateCreated: data.date_created,
-            ...(data.center ? { center: data.center } : {}),
-            keywords: data.keywords ?? [],
-            mediaType: data.media_type,
-            ...(thumbnail ? { thumbnailUrl: thumbnail } : {}),
-            ...((data.photographer ?? data.secondary_creator)
-              ? { creator: data.photographer ?? data.secondary_creator }
-              : {}),
-            sourceUrl: `https://images.nasa.gov/details/${encodeURIComponent(data.nasa_id)}`,
-          };
-        });
+          try {
+            const assets = mediaAssets(await nasaAssetManifest(item.href));
+            if (!assets.thumbnailUrl && !assets.assetUrl) return null;
+            const record: MissionMediaRecord = {
+              planetId,
+              nasaId: data.nasa_id,
+              title: data.title,
+              excerpt: excerpt(data.description ?? data.title, 180),
+              dateCreated: data.date_created,
+              ...(data.center ? { center: data.center } : {}),
+              keywords: data.keywords ?? [],
+              mediaType: data.media_type,
+              ...(assets.thumbnailUrl
+                ? { thumbnailUrl: assets.thumbnailUrl }
+                : {}),
+              ...(assets.assetUrl ? { assetUrl: assets.assetUrl } : {}),
+              ...((data.photographer ?? data.secondary_creator)
+                ? { creator: data.photographer ?? data.secondary_creator }
+                : {}),
+              sourceUrl: `https://images.nasa.gov/details/${encodeURIComponent(data.nasa_id)}`,
+            };
+            return record;
+          } catch {
+            return null;
+          }
+        }),
+      );
+      return records.filter(
+        (record): record is MissionMediaRecord => record !== null,
+      );
     },
     metadata: (data) =>
       metadata(
@@ -697,12 +882,12 @@ export async function loadMissionMedia(
 
 function tableRows(
   raw: z.infer<typeof cneosRawSchema>,
-  expectedVersionPrefix: string,
+  supportedVersions: readonly string[],
 ): ReadonlyArray<Record<string, string | number | null>> {
-  if (!raw.signature.version.startsWith(expectedVersionPrefix)) {
+  if (!supportedVersions.includes(raw.signature.version)) {
     throw new ExternalRequestError(
       "version",
-      `Unexpected provider version ${raw.signature.version}.`,
+      `Unexpected provider version ${raw.signature.version}; expected ${supportedVersions.join(" or ")}.`,
     );
   }
   return raw.data.map((row) =>
@@ -724,27 +909,35 @@ export async function loadCneosCad(): Promise<
         await fetchExternalJson({
           path: "/cad.api",
           params: {
-            dist_max: "0.05",
-            date_min: "now",
-            date_max: "+30",
+            "dist-max": "0.05",
+            "date-min": "now",
+            "date-max": "+30",
             sort: "dist",
             limit: 20,
+            diameter: true,
+            fullname: true,
           },
           policy: policies.cad,
         }),
       );
-      return tableRows(raw, "1.")
-        .map((row, index): NearEarthApproach => ({
-          id: String(row.des ?? `cad-${index}`),
-          name: String(row.fullname ?? row.des ?? "Unnamed object").trim(),
-          approachAt: String(row.cd ?? ""),
-          missDistanceKm: Number(row.dist ?? 0) * 149597870.7,
-          relativeVelocityKph: Number(row.v_rel ?? 0) * 3600,
-          diameterMinM: Number(row.diameter ?? 0) * 1000,
-          diameterMaxM: Number(row.diameter ?? 0) * 1000,
-          potentiallyHazardous: false,
-          sourceUrl: "https://cneos.jpl.nasa.gov/ca/",
-        }))
+      return tableRows(raw, ["1.5"])
+        .map((row, index): NearEarthApproach => {
+          const diameterM =
+            row.diameter === null ? null : Number(row.diameter) * 1000;
+          return {
+            id: String(row.des ?? `cad-${index}`),
+            name: String(row.fullname ?? row.des ?? "Unnamed object").trim(),
+            approachAt: String(row.cd ?? ""),
+            missDistanceKm: Number(row.dist ?? 0) * 149597870.7,
+            relativeVelocityKph: Number(row.v_rel ?? 0) * 3600,
+            ...(diameterM !== null && Number.isFinite(diameterM)
+              ? { diameterMinM: diameterM, diameterMaxM: diameterM }
+              : {}),
+            potentiallyHazardous: null,
+            timeScale: "TDB",
+            sourceUrl: "https://cneos.jpl.nasa.gov/ca/",
+          };
+        })
         .filter(
           (item) =>
             Number.isFinite(item.missDistanceKm) && item.missDistanceKm > 0,
@@ -776,14 +969,25 @@ export async function loadFireballs(): Promise<
           policy: policies.fireball,
         }),
       );
-      return tableRows(raw, "1.").flatMap((row): FireballRecord[] => {
+      return tableRows(raw, ["1.2"]).flatMap((row): FireballRecord[] => {
         const date = String(row.date ?? "");
-        const energy = Number(row.energy ?? row.impact_e ?? 0);
-        if (!date || !Number.isFinite(energy)) return [];
+        const radiatedEnergy = row.energy === null ? null : Number(row.energy);
+        const impactEnergy =
+          row["impact-e"] === null ? null : Number(row["impact-e"]);
+        if (
+          !date ||
+          (!Number.isFinite(radiatedEnergy) && !Number.isFinite(impactEnergy))
+        )
+          return [];
         return [
           {
             date,
-            energyKt: energy,
+            ...(Number.isFinite(radiatedEnergy)
+              ? { radiatedEnergy10e10J: radiatedEnergy as number }
+              : {}),
+            ...(Number.isFinite(impactEnergy)
+              ? { estimatedImpactEnergyKt: impactEnergy as number }
+              : {}),
             ...(row.lat
               ? {
                   latitude:
@@ -812,19 +1016,146 @@ export async function loadFireballs(): Promise<
   });
 }
 
-export function loadGibsLayers(): ExternalResult<readonly GibsLayer[]> {
-  return {
-    data: gibsLayers,
-    status: "latest-available",
-    metadata: metadata(
-      "NASA EOSDIS GIBS",
-      "Global Imagery Browse Services",
-      "https://www.earthdata.nasa.gov/eosdis/science-system-description/eosdis-components/gibs",
-      "near-live",
-      `${gibsLayers[0].observedAt}T00:00:00.000Z`,
-      "Curated layers only; color mode and latency are stated per layer.",
-    ),
-  };
+const gibsLayerDefinitions = [
+  {
+    id: "MODIS_Terra_CorrectedReflectance_TrueColor",
+    title: "Terra MODIS true color",
+    instrument: "Terra / MODIS",
+    colorMode: "natural",
+    latencyNote: "Near-real-time imagery may appear hours after observation.",
+    extent: [-180, -90, 180, 90],
+  },
+  {
+    id: "GOES-East_ABI_FireTemp",
+    title: "GOES-East fire temperature",
+    instrument: "GOES-East / ABI",
+    colorMode: "analysis",
+    latencyNote: "Analysis layer; color represents estimated fire temperature.",
+    extent: [-140, -60, -10, 60],
+  },
+  {
+    id: "IMERG_Precipitation_Rate",
+    title: "IMERG precipitation rate",
+    instrument: "GPM / IMERG",
+    colorMode: "analysis",
+    latencyNote: "Dated precipitation analysis; not a live weather radar.",
+    extent: [-180, -60, 180, 60],
+  },
+] as const;
+
+function capabilityLayer(xml: string, id: string): string {
+  const identifier = `<ows:Identifier>${id}</ows:Identifier>`;
+  const identifierAt = xml.indexOf(identifier);
+  const startAt = xml.lastIndexOf("<Layer>", identifierAt);
+  const endAt = xml.indexOf("</Layer>", identifierAt);
+  if (identifierAt < 0 || startAt < 0 || endAt < 0) {
+    throw new ExternalRequestError(
+      "schema",
+      `GIBS capabilities do not contain ${id}.`,
+    );
+  }
+  return xml.slice(startAt, endAt);
+}
+
+function capabilityValue(layer: string, tag: string): string {
+  const match = new RegExp(`<${tag}>([^<]+)</${tag}>`).exec(layer);
+  if (!match?.[1]) {
+    throw new ExternalRequestError("schema", `GIBS layer is missing ${tag}.`);
+  }
+  return match[1];
+}
+
+function gibsSnapshotUrl(
+  id: string,
+  observedAt: string,
+  format: "image/jpeg" | "image/png",
+  extent: readonly [number, number, number, number],
+): string {
+  const url = new URL("https://wvs.earthdata.nasa.gov/api/v1/snapshot");
+  url.searchParams.set("REQUEST", "GetSnapshot");
+  url.searchParams.set("TIME", observedAt);
+  url.searchParams.set("BBOX", extent.join(","));
+  url.searchParams.set("CRS", "EPSG:4326");
+  url.searchParams.set("LAYERS", id);
+  url.searchParams.set("FORMAT", format);
+  url.searchParams.set("WIDTH", "1024");
+  url.searchParams.set("HEIGHT", extent[1] === -90 ? "512" : "640");
+  return url.toString();
+}
+
+function parseGibsCapabilities(xml: string): readonly GibsLayer[] {
+  return gibsLayerDefinitions.map((definition): GibsLayer => {
+    const layer = capabilityLayer(xml, definition.id);
+    const observedAt = capabilityValue(layer, "Default");
+    const rawFormat = capabilityValue(layer, "Format");
+    if (rawFormat !== "image/jpeg" && rawFormat !== "image/png") {
+      throw new ExternalRequestError(
+        "schema",
+        `GIBS ${definition.id} returned unsupported format ${rawFormat}.`,
+      );
+    }
+    const extent = definition.extent as readonly [
+      number,
+      number,
+      number,
+      number,
+    ];
+    return {
+      ...definition,
+      observedAt,
+      imageUrl: gibsSnapshotUrl(definition.id, observedAt, rawFormat, extent),
+      attribution: "NASA EOSDIS GIBS",
+      format: rawFormat,
+      tileMatrixSet: capabilityValue(layer, "TileMatrixSet"),
+      extent,
+      availability: "verified",
+    };
+  });
+}
+
+export async function loadGibsLayers(): Promise<
+  ExternalResult<readonly GibsLayer[]>
+> {
+  return executeExternal({
+    snapshot: {
+      schemaVersion: 1,
+      purpose: "Verified dated GIBS preview fallback.",
+      data: gibsLayers,
+      metadata: {
+        provider: "NASA EOSDIS GIBS",
+        sourceTitle: "Global Imagery Browse Services",
+        sourceUrl:
+          "https://www.earthdata.nasa.gov/eosdis/science-system-description/eosdis-components/gibs",
+        freshness: "reference",
+        observedAt: gibsLayers[0].observedAt,
+        retrievedAt: "2026-07-18T00:00:00.000Z",
+        attribution: "NASA EOSDIS GIBS",
+        notes:
+          "Verified dated fallback previews; not presented as the latest provider response.",
+      },
+    },
+    empty: (data) => data.length !== gibsLayerDefinitions.length,
+    currentStatus: "latest-available",
+    fetchCurrent: async () =>
+      parseGibsCapabilities(
+        await fetchExternalText({
+          path: "/wmts/epsg4326/best/1.0.0/WMTSCapabilities.xml",
+          policy: policies.gibs,
+        }),
+      ),
+    metadata: (data) =>
+      metadata(
+        "NASA EOSDIS GIBS",
+        "Global Imagery Browse Services",
+        "https://www.earthdata.nasa.gov/eosdis/science-system-description/eosdis-components/gibs",
+        "latest-available",
+        data
+          .map(({ observedAt }) => observedAt)
+          .sort()
+          .at(-1),
+        "Layer availability, default date, format and tile matrix were read from the current EPSG:4326 capabilities document.",
+      ),
+  });
 }
 
 export function loadTrekRegions(

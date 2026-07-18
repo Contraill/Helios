@@ -4,6 +4,7 @@ const STATUS_PRIORITY: Readonly<Record<ExternalDataStatus, number>> = {
   current: 6,
   "near-live": 5,
   "latest-available": 5,
+  partial: 5,
   historical: 4,
   stale: 2,
   fallback: 1,

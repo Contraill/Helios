@@ -33,6 +33,7 @@ export interface EonetEvent {
   readonly category: EonetCategory;
   readonly status: "open" | "closed";
   readonly observedAt: string;
+  readonly geometryType: "Point" | "Polygon";
   readonly coordinates: readonly [number, number];
   readonly sourceUrl: string;
   readonly magnitude?: { readonly value: number; readonly unit: string };
@@ -47,6 +48,10 @@ export interface GibsLayer {
   readonly colorMode: "natural" | "false-color" | "analysis";
   readonly latencyNote: string;
   readonly attribution: string;
+  readonly format: "image/jpeg" | "image/png";
+  readonly tileMatrixSet: string;
+  readonly extent: readonly [number, number, number, number];
+  readonly availability: "verified" | "unavailable";
 }
 
 export type DonkiEventType = "FLR" | "CME" | "GST" | "notification";
@@ -68,9 +73,10 @@ export interface NearEarthApproach {
   readonly approachAt: string;
   readonly missDistanceKm: number;
   readonly relativeVelocityKph: number;
-  readonly diameterMinM: number;
-  readonly diameterMaxM: number;
-  readonly potentiallyHazardous: boolean;
+  readonly diameterMinM?: number;
+  readonly diameterMaxM?: number;
+  readonly potentiallyHazardous: boolean | null;
+  readonly timeScale: "UTC" | "TDB";
   readonly sourceUrl: string;
 }
 
@@ -78,17 +84,17 @@ export interface InsightWeatherRecord {
   readonly sol: number;
   readonly firstUtc: string;
   readonly lastUtc: string;
-  readonly temperatureC: {
+  readonly temperatureC?: {
     readonly min: number;
     readonly average: number;
     readonly max: number;
   };
-  readonly pressurePa: {
+  readonly pressurePa?: {
     readonly min: number;
     readonly average: number;
     readonly max: number;
   };
-  readonly windMps: {
+  readonly windMps?: {
     readonly min: number;
     readonly average: number;
     readonly max: number;
@@ -98,9 +104,11 @@ export interface InsightWeatherRecord {
   readonly seasonSouthern: string;
   readonly valid: boolean;
   readonly sampleCount: number;
+  readonly archiveMatch: "on-this-day" | "nearest";
 }
 
 export interface MissionMediaRecord {
+  readonly planetId: PlanetId;
   readonly nasaId: string;
   readonly title: string;
   readonly excerpt: string;
@@ -133,8 +141,10 @@ export interface TrekRegion {
 
 export interface FireballRecord {
   readonly date: string;
-  readonly energyKt: number;
+  readonly radiatedEnergy10e10J?: number;
+  readonly estimatedImpactEnergyKt?: number;
   readonly latitude?: number;
   readonly longitude?: number;
   readonly sourceUrl: string;
 }
+import type { PlanetId } from "@/lib/data/schemas/planet";

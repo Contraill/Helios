@@ -14,10 +14,25 @@ export const cartesianVectorSchema = z.object({
 
 export const ephemerisVectorSchema = z.object({
   planetId: planetIdSchema,
-  targetId: z.string().regex(/^\d{3}$/),
+  targetId: z.string().regex(/^\d{1,3}$/),
   targetName: z.string().min(1),
   positionAu: cartesianVectorSchema,
   velocityAuPerDay: cartesianVectorSchema,
+});
+
+export const ephemerisSampleSchema = z.object({
+  observedAt: z.iso.datetime(),
+  positionAu: cartesianVectorSchema,
+  velocityAuPerDay: cartesianVectorSchema,
+});
+
+export const ephemerisWindowSchema = z.object({
+  planetId: planetIdSchema,
+  targetId: z.string().regex(/^\d{1,3}$/),
+  targetName: z.string().min(1),
+  startAt: z.iso.datetime(),
+  endAt: z.iso.datetime(),
+  samples: z.array(ephemerisSampleSchema).min(2),
 });
 
 export const ephemerisMetadataSchema = z.object({
@@ -30,6 +45,8 @@ export const ephemerisMetadataSchema = z.object({
   timeScale: z.literal("TDB"),
   correction: z.literal("Geometric; no aberration correction"),
   apiVersion: z.string().min(1),
+  targetFrame: z.enum(["planet-centers", "mixed-barycenters"]).optional(),
+  barycenterPlanetIds: z.array(planetIdSchema).optional(),
 });
 
 export const ephemerisBundleSchema = z.object({
@@ -40,11 +57,14 @@ export const ephemerisBundleSchema = z.object({
   retrievedAt: z.iso.datetime(),
   validPropagationDays: z.literal(MAX_PROPAGATION_DAYS),
   vectors: z.array(ephemerisVectorSchema).length(8),
+  windows: z.array(ephemerisWindowSchema).length(8).optional(),
   metadata: ephemerisMetadataSchema,
 });
 
 export type CartesianVector = z.infer<typeof cartesianVectorSchema>;
 export type EphemerisVector = z.infer<typeof ephemerisVectorSchema>;
+export type EphemerisSample = z.infer<typeof ephemerisSampleSchema>;
+export type EphemerisWindow = z.infer<typeof ephemerisWindowSchema>;
 export type EphemerisBundle = z.infer<typeof ephemerisBundleSchema>;
 
 export const EPHEMERIS_METADATA: EphemerisBundle["metadata"] = Object.freeze({
