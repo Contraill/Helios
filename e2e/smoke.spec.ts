@@ -474,9 +474,18 @@ test.describe("Phase 6 mobile overflow", () => {
       await expect(
         page.getByRole("heading", { level: 1, name: planet.name }),
       ).toBeVisible();
-      await expect(
-        page.getByRole("textbox", { name: "Earth scale reading" }),
-      ).toBeVisible();
+      if (planet.id === "earth") {
+        await expect(
+          page.getByRole("textbox", { name: "Earth scale reading" }),
+        ).toHaveCount(0);
+        await expect(
+          page.getByRole("heading", { name: "One planet, several clocks" }),
+        ).toBeVisible();
+      } else {
+        await expect(
+          page.getByRole("textbox", { name: "Earth scale reading" }),
+        ).toBeVisible();
+      }
       await expect(
         page.getByRole("heading", { name: "Sources and provenance" }),
       ).toBeVisible();
@@ -484,3 +493,174 @@ test.describe("Phase 6 mobile overflow", () => {
     });
   }
 });
+
+test.describe("Phase 7 external-data surfaces", () => {
+  test("home APOD preserves date, source and fallback status without a key", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await expect(
+      page.getByText("Astronomy Picture of the Day", { exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "The sky keeps a longer memory" }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Open official record" }),
+    ).toHaveAttribute("href", /^https:\/\//);
+    await expect(page.locator('[data-status="fallback"]')).toBeVisible();
+  });
+
+  test("Earth combines EPIC, EONET, GIBS, DONKI and NEO without a weight calculator", async ({
+    page,
+  }) => {
+    await page.goto("/planet/earth");
+    await expect(
+      page.getByRole("textbox", { name: "Earth scale reading" }),
+    ).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: "One planet, several clocks" }),
+    ).toBeVisible();
+    await expect(page.getByText("Natural-color composite")).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: "Read the event, then read its source",
+      }),
+    ).toBeVisible();
+    await expect(page.getByText("Terra MODIS true color")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "The Sun does not stop at the sky" }),
+    ).toBeVisible();
+    await expect(page.getByText(/orbital classification/i)).toBeVisible();
+
+    await page.getByLabel("Category").selectOption("seaLakeIce");
+    await expect(
+      page.getByText("No events match this category in the current record."),
+    ).toBeVisible();
+  });
+
+  test("Mars labels InSight as historical and exposes Trek and mission provenance", async ({
+    page,
+  }) => {
+    await page.goto("/planet/mars");
+    await expect(
+      page.getByRole("heading", {
+        name: "Historical InSight weather at Elysium Planitia",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.locator('[data-status="historical"]').first(),
+    ).toBeVisible();
+    await expect(page.getByText(/not “Mars today.”/i)).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: "Three places, three ways to read relief",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Jezero Crater", exact: true }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Open Mars Trek" }).first(),
+    ).toHaveAttribute("href", /^https:\/\//);
+    await expect(
+      page.getByRole("heading", {
+        name: "The archive remembers where each image came from",
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "NASA media details" }).first(),
+    ).toHaveAttribute("href", /^https:\/\//);
+  });
+
+  test("data page exposes solar, near-Earth, Earth, Mars, provenance and service states", async ({
+    page,
+  }) => {
+    await page.goto("/data");
+    for (const heading of [
+      "Solar activity",
+      "Near-Earth space",
+      "Earth in observation",
+      "Mars archive",
+      "Provenance and service health",
+    ]) {
+      await expect(page.getByRole("heading", { name: heading })).toBeVisible();
+    }
+    await expect(
+      page.getByText(/does not mean the object is predicted to collide/i),
+    ).toBeVisible();
+    await expect(page.locator('[data-status="stale"]').first()).toBeVisible();
+    await expect(
+      page.locator('[data-status="historical"]').first(),
+    ).toBeVisible();
+  });
+});
+
+test.describe("Phase 8 comparison", () => {
+  test("restores URL state and preserves browser history", async ({ page }) => {
+    await page.goto("/compare?a=earth&b=jupiter");
+    await expect(page.getByLabel("First planet")).toHaveValue("earth");
+    await expect(page.getByLabel("Second planet")).toHaveValue("jupiter");
+    await expect(
+      page.getByText(/one-bar atmospheric reference level/i),
+    ).toBeVisible();
+
+    await page.getByLabel("Second planet").selectOption("mars");
+    await expect(page).toHaveURL(/b=mars/);
+    await page.goBack();
+    await expect(page.getByLabel("Second planet")).toHaveValue("jupiter");
+  });
+
+  test("same-world selection hides difference-only personal comparisons", async ({
+    page,
+  }) => {
+    await page.goto("/compare?a=earth&b=earth");
+    await expect(page.getByRole("status")).toContainText("same world twice");
+    await expect(page.getByText("kg-equivalent")).toHaveCount(0);
+    await expect(page.getByRole("table")).toBeVisible();
+  });
+
+  test("personal comparison remains finite and keyboard reachable", async ({
+    page,
+  }) => {
+    await page.goto("/compare?a=earth&b=mars");
+    await page.getByLabel("Earth weight").fill("70");
+    await page.getByLabel("Earth age").fill("23");
+    await expect(page.getByText("26.5 kg-equivalent")).toBeVisible();
+    await expect(page.getByText(/NaN/)).toHaveCount(0);
+    await page.getByLabel("First planet").focus();
+    await expect(page.getByLabel("First planet")).toBeFocused();
+  });
+});
+
+const finalAcceptanceRoutes = [
+  "/",
+  "/planet/mercury",
+  "/planet/venus",
+  "/planet/earth",
+  "/planet/mars",
+  "/planet/jupiter",
+  "/planet/saturn",
+  "/planet/uranus",
+  "/planet/neptune",
+  "/data",
+  "/compare",
+] as const;
+
+for (const viewport of [
+  { name: "mobile", width: 390, height: 844 },
+  { name: "tablet", width: 768, height: 1024 },
+] as const) {
+  test.describe(`Block B ${viewport.name} overflow`, () => {
+    test.use({
+      hasTouch: true,
+      viewport: { width: viewport.width, height: viewport.height },
+    });
+    for (const route of finalAcceptanceRoutes) {
+      test(`${route} stays within ${viewport.width}px`, async ({ page }) => {
+        await page.goto(route);
+        await expectNoHorizontalOverflow(page);
+      });
+    }
+  });
+}

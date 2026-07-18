@@ -27,14 +27,14 @@ import styles from "./planet-detail.module.css";
 export function PlanetDetailPage({
   content,
   model,
+  supplement,
+  showHumanScale = true,
 }: {
   readonly content: PlanetDetailContent;
   readonly model: PlanetDetailModel;
+  readonly supplement?: ReactNode;
+  readonly showHumanScale?: boolean;
 }) {
-  if (model.id === "mars") {
-    throw new Error("Mars keeps its dedicated composition component.");
-  }
-
   const copy = uiStrings.pages.planet.detail;
   const blocks: Record<string, ReactNode> = {
     metrics: (
@@ -92,7 +92,7 @@ export function PlanetDetailPage({
         </div>
       </ContentSection>
     ),
-    human: (
+    human: showHumanScale ? (
       <ContentSection
         eyebrow={copy.sections.humanEyebrow}
         id="human-scale"
@@ -111,7 +111,7 @@ export function PlanetDetailPage({
           title={content.humanScale.title}
         />
       </ContentSection>
-    ),
+    ) : null,
     signals: (
       <ContentSection
         eyebrow={copy.sections.signalsEyebrow}
@@ -227,6 +227,7 @@ export function PlanetDetailPage({
 
       <div className={styles.content}>
         {content.layout.map((block) => blocks[block])}
+        {supplement}
         <PlanetAdjacentNav model={model} />
       </div>
     </article>

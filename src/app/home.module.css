@@ -1,0 +1,117 @@
+.page {
+  overflow: hidden;
+}
+.hero {
+  position: relative;
+  display: grid;
+  min-height: 72svh;
+  align-content: center;
+  padding: clamp(5rem, 10vw, 9rem) max(1.25rem, calc((100vw - 78rem) / 2));
+  background:
+    radial-gradient(
+      circle at 74% 34%,
+      rgb(255 191 105 / 0.18),
+      transparent 17%
+    ),
+    radial-gradient(
+      circle at 73% 34%,
+      rgb(255 245 214 / 0.08),
+      transparent 34%
+    ),
+    linear-gradient(145deg, #07080c 15%, #0b101b 54%, #07080c 100%);
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  right: clamp(-12rem, -5vw, -2rem);
+  top: 50%;
+  width: clamp(20rem, 43vw, 42rem);
+  aspect-ratio: 1;
+  translate: 0 -50%;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 50%;
+  box-shadow:
+    0 0 90px rgb(255 186 103 / 0.08),
+    inset 0 0 60px rgb(255 255 255 / 0.02);
+}
+.heroCopy {
+  position: relative;
+  z-index: 1;
+  max-width: 50rem;
+}
+.kicker {
+  margin: 0 0 1.2rem;
+  font-family: var(--helios-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--helios-color-text-secondary);
+}
+.hero h1 {
+  max-width: 8ch;
+  margin: 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(4.8rem, 14vw, 10rem);
+  font-weight: 500;
+  line-height: 0.82;
+  letter-spacing: -0.08em;
+}
+.intro {
+  max-width: 42rem;
+  margin: 2rem 0 0;
+  color: var(--helios-color-text-secondary);
+  font-size: clamp(1.05rem, 2vw, 1.35rem);
+  line-height: 1.65;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+.actions a {
+  min-height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  padding: 0.75rem 1.1rem;
+  border: 1px solid var(--helios-color-line);
+  text-decoration: none;
+  background: rgb(13 16 24 / 0.58);
+}
+.apodWrap {
+  max-width: 88rem;
+  margin: 0 auto;
+  padding: clamp(4rem, 8vw, 8rem) 1.25rem;
+}
+.sectionIntro {
+  display: grid;
+  grid-template-columns: 0.7fr 1.3fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+.sectionIntro p {
+  margin: 0;
+  color: var(--helios-color-text-secondary);
+  line-height: 1.7;
+}
+.sectionIntro h2 {
+  margin: 0;
+  max-width: 12ch;
+  font-family: var(--helios-font-display);
+  font-size: clamp(2.4rem, 5vw, 5rem);
+  line-height: 0.95;
+  letter-spacing: -0.055em;
+}
+@media (max-width: 760px) {
+  .hero {
+    min-height: 68svh;
+    padding-top: 6rem;
+  }
+  .hero::after {
+    width: 24rem;
+    opacity: 0.65;
+  }
+  .sectionIntro {
+    grid-template-columns: 1fr;
+  }
+}

@@ -7,7 +7,7 @@ export function PlanetEditorialVisual({
   label,
   order,
 }: {
-  readonly id: Exclude<PlanetId, "mars">;
+  readonly id: PlanetId;
   readonly label: string;
   readonly order: number;
 }) {

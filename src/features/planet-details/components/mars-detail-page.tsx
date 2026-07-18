@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 
 import { marsDetailContent } from "@/content/planet-details/mars";
@@ -22,7 +22,13 @@ import { MarsHumanScale } from "./mars-human-scale";
 import { PlanetMissionList } from "./planet-mission-list";
 import styles from "./mars-detail.module.css";
 
-export function MarsDetailPage({ model }: { model: PlanetDetailModel }) {
+export function MarsDetailPage({
+  model,
+  supplement,
+}: {
+  model: PlanetDetailModel;
+  supplement?: ReactNode;
+}) {
   const copy = uiStrings.pages.planet.mars;
   const content = marsDetailContent;
 
@@ -171,6 +177,8 @@ export function MarsDetailPage({ model }: { model: PlanetDetailModel }) {
         >
           <PlanetMissionList missions={content.missions} />
         </ContentSection>
+
+        {supplement}
 
         <ContentSection
           eyebrow={copy.sections.methodologyEyebrow}

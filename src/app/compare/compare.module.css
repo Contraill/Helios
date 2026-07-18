@@ -1,0 +1,40 @@
+.page {
+  max-width: 92rem;
+  margin: 0 auto;
+  padding: clamp(4rem, 8vw, 8rem) 1.25rem;
+}
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: clamp(2rem, 8vw, 8rem);
+  align-items: end;
+  min-height: 42svh;
+  padding-bottom: 4rem;
+}
+.hero p:first-child {
+  font-family: var(--helios-font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--helios-color-text-secondary);
+}
+.hero h1 {
+  margin: 0.8rem 0 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(4rem, 10vw, 8rem);
+  line-height: 0.86;
+  letter-spacing: -0.075em;
+}
+.hero > p {
+  margin: 0;
+  max-width: 42rem;
+  color: var(--helios-color-text-secondary);
+  line-height: 1.8;
+}
+@media (max-width: 800px) {
+  .hero {
+    grid-template-columns: 1fr;
+    min-height: auto;
+    padding-top: 2rem;
+  }
+}

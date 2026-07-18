@@ -1,0 +1,204 @@
+.experience {
+  display: grid;
+  gap: clamp(4rem, 8vw, 8rem);
+}
+.selectors {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem;
+  align-items: end;
+}
+.selectors label,
+.inputs label {
+  display: grid;
+  gap: 0.55rem;
+  font-family: var(--helios-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--helios-color-text-secondary);
+}
+.selectors select,
+.inputs input {
+  min-height: 3rem;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--helios-color-line);
+  background: #0b0d13;
+  color: var(--helios-color-text-primary);
+  font: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+}
+.selectors > span {
+  padding-bottom: 0.9rem;
+  color: var(--helios-color-text-secondary);
+}
+.sameWorld {
+  padding: 1rem 1.2rem;
+  border-left: 2px solid #d6b56d;
+  background: rgb(214 181 109/0.07);
+  color: var(--helios-color-text-secondary);
+}
+.scaleStage,
+.personal,
+.tableSection {
+  display: grid;
+  grid-template-columns: minmax(14rem, 0.55fr) minmax(0, 1.45fr);
+  gap: clamp(2rem, 7vw, 7rem);
+  padding-top: clamp(3rem, 6vw, 6rem);
+  border-top: 1px solid var(--helios-color-line);
+}
+.scaleStage header p,
+.personal header p,
+.tableSection header p {
+  font-family: var(--helios-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--helios-color-text-secondary);
+}
+.scaleStage h2,
+.personal h2,
+.tableSection h2 {
+  margin: 0.8rem 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(2.2rem, 4vw, 4.3rem);
+  line-height: 0.96;
+  letter-spacing: -0.055em;
+}
+.scaleStage small {
+  color: var(--helios-color-text-secondary);
+  line-height: 1.6;
+}
+.worlds {
+  display: flex;
+  min-height: 22rem;
+  align-items: end;
+  justify-content: space-evenly;
+  gap: 2rem;
+  padding: 2rem;
+  border: 1px solid var(--helios-color-line);
+  background: radial-gradient(
+    circle at center,
+    rgb(82 117 181/0.09),
+    transparent 55%
+  );
+}
+.worlds figure {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  margin: 0;
+}
+.worldOrb {
+  border-radius: 50%;
+  box-shadow: 0 0 55px rgb(255 255 255/0.08);
+}
+.worlds figcaption {
+  display: grid;
+  gap: 0.25rem;
+  text-align: center;
+}
+.worlds figcaption span {
+  color: var(--helios-color-text-secondary);
+  font-size: 0.78rem;
+}
+.inputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.personalGrid {
+  grid-column: 2;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+.personalGrid article {
+  padding: 1.25rem;
+  border: 1px solid var(--helios-color-line);
+  background: linear-gradient(145deg, rgb(17 21 29/0.75), rgb(7 8 12/0.65));
+}
+.personalGrid h3 {
+  margin: 0 0 1rem;
+  font-size: 1.5rem;
+}
+.personalGrid dl {
+  display: grid;
+  gap: 0.8rem;
+}
+.personalGrid dt {
+  color: var(--helios-color-text-secondary);
+  font-size: 0.75rem;
+}
+.personalGrid dd {
+  margin: 0.2rem 0 0;
+  font-size: 1.05rem;
+}
+.personalGrid p {
+  color: var(--helios-color-text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid var(--helios-color-line);
+}
+.comparisonTable {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 46rem;
+}
+.comparisonTable th,
+.comparisonTable td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid var(--helios-color-line);
+  vertical-align: top;
+  line-height: 1.5;
+}
+.comparisonTable thead th {
+  font-family: var(--helios-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--helios-color-text-secondary);
+}
+.comparisonTable tbody th {
+  width: 24%;
+  color: var(--helios-color-text-secondary);
+  font-weight: 500;
+}
+.comparisonTable td {
+  font-size: 0.88rem;
+}
+@media (max-width: 800px) {
+  .selectors {
+    grid-template-columns: 1fr;
+  }
+  .selectors > span {
+    display: none;
+  }
+  .scaleStage,
+  .personal,
+  .tableSection {
+    grid-template-columns: 1fr;
+  }
+  .personalGrid {
+    grid-column: auto;
+    grid-template-columns: 1fr;
+  }
+  .worlds {
+    min-height: 18rem;
+    padding: 1rem;
+    overflow: hidden;
+  }
+  .inputs {
+    grid-template-columns: 1fr;
+  }
+  .worldOrb {
+    max-width: 38vw;
+    max-height: 38vw;
+  }
+}

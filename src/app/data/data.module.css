@@ -1,0 +1,224 @@
+.page {
+  max-width: 92rem;
+  margin: 0 auto;
+  padding: clamp(4rem, 8vw, 8rem) 1.25rem;
+  overflow: hidden;
+}
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+  gap: clamp(2rem, 8vw, 8rem);
+  align-items: end;
+  min-height: 48svh;
+  padding-bottom: 4rem;
+}
+.kicker,
+.sectionNumber,
+.statusName,
+.metricLabel {
+  font-family: var(--helios-font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--helios-color-text-secondary);
+}
+.hero h1 {
+  margin: 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(4rem, 10vw, 8rem);
+  line-height: 0.86;
+  letter-spacing: -0.075em;
+}
+.hero p {
+  max-width: 42rem;
+  margin: 0;
+  color: var(--helios-color-text-secondary);
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+.section {
+  display: grid;
+  grid-template-columns: minmax(12rem, 0.55fr) minmax(0, 1.45fr);
+  gap: clamp(2rem, 7vw, 7rem);
+  padding: clamp(4rem, 8vw, 8rem) 0;
+  border-top: 1px solid var(--helios-color-line);
+}
+.sectionHeader h2 {
+  margin: 0.7rem 0 1rem;
+  font-family: var(--helios-font-display);
+  font-size: clamp(2.2rem, 4vw, 4.5rem);
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+}
+.sectionHeader p {
+  color: var(--helios-color-text-secondary);
+  line-height: 1.7;
+}
+.timeline,
+.approachList,
+.statusGrid,
+.ledger {
+  display: grid;
+  gap: 1px;
+  padding: 1px;
+  background: var(--helios-color-line);
+}
+.timeline article,
+.approachList article,
+.statusGrid article,
+.ledger article {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1.2rem;
+  background: #090b10;
+}
+.timeline {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.timeline time,
+.timeline small,
+.approachList time,
+.approachList small,
+.statusGrid p,
+.ledger p {
+  color: var(--helios-color-text-secondary);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+.timeline strong,
+.approachList strong {
+  font-size: 1.05rem;
+}
+.eventType {
+  width: max-content;
+  padding: 0.25rem 0.45rem;
+  border: 1px solid var(--helios-color-line);
+  font-family: var(--helios-font-mono);
+  font-size: 0.65rem;
+}
+.approachList {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.approachMetrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+  color: var(--helios-color-text-secondary);
+  font-size: 0.8rem;
+}
+.hazardNote {
+  margin: 1.5rem 0 0;
+  padding: 1rem 1.2rem;
+  border-left: 2px solid #d5b36a;
+  background: rgb(213 179 106/0.06);
+  color: var(--helios-color-text-secondary);
+  line-height: 1.65;
+}
+.observationBand {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.observationBand article {
+  min-height: 14rem;
+  padding: 1.4rem;
+  border: 1px solid var(--helios-color-line);
+  background:
+    radial-gradient(circle at top right, rgb(73 130 215/0.12), transparent 45%),
+    #090b10;
+}
+.observationBand h3 {
+  margin: 0.8rem 0;
+  font-family: var(--helios-font-display);
+  font-size: 1.5rem;
+}
+.observationBand p {
+  color: var(--helios-color-text-secondary);
+  line-height: 1.6;
+}
+.marsRecord {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-block: 1px solid var(--helios-color-line);
+}
+.marsRecord div {
+  padding: 1.2rem;
+  border-right: 1px solid var(--helios-color-line);
+}
+.marsRecord div:last-child {
+  border-right: 0;
+}
+.marsRecord dt {
+  font-family: var(--helios-font-mono);
+  font-size: 0.68rem;
+  color: var(--helios-color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+.marsRecord dd {
+  margin: 0.5rem 0 0;
+  font-size: 1.2rem;
+}
+.fireballs {
+  display: grid;
+  gap: 0.75rem;
+}
+.fireballs li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--helios-color-line);
+  color: var(--helios-color-text-secondary);
+}
+.statusGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.statusGrid article[data-status="unavailable"] {
+  box-shadow: inset 2px 0 #ba675b;
+}
+.statusGrid article[data-status="fallback"],
+.statusGrid article[data-status="stale"] {
+  box-shadow: inset 2px 0 #d5b36a;
+}
+.statusGrid strong {
+  text-transform: capitalize;
+}
+.ledger {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.ledger h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.ledger a {
+  width: max-content;
+  font-size: 0.78rem;
+}
+.empty {
+  padding: 1rem;
+  border: 1px dashed var(--helios-color-line);
+  color: var(--helios-color-text-secondary);
+}
+@media (max-width: 800px) {
+  .hero,
+  .section {
+    grid-template-columns: 1fr;
+  }
+  .timeline,
+  .approachList,
+  .observationBand,
+  .statusGrid,
+  .ledger,
+  .marsRecord {
+    grid-template-columns: 1fr;
+  }
+  .marsRecord div {
+    border-right: 0;
+    border-bottom: 1px solid var(--helios-color-line);
+  }
+  .hero {
+    min-height: auto;
+    padding-top: 2rem;
+  }
+}
