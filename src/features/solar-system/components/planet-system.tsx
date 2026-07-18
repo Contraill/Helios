@@ -3,6 +3,7 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
+import { BackSide } from "three";
 import type { Group, Mesh } from "three";
 
 import { textureVariantFor } from "@/content/sources/planet-textures";
@@ -33,6 +34,7 @@ import {
 import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
 
 import { AtmosphereShell } from "./atmosphere-shell";
+import { EarthCloudLayer } from "./earth-cloud-layer";
 import { OrbitPath } from "./orbit-path";
 import { PlanetLabel, type ScientificLabelPlacement } from "./planet-label";
 import { SaturnRings } from "./saturn-rings";
@@ -74,10 +76,10 @@ export function PlanetSystem({
   const scenePositionRef = useRef<MutableScenePosition>([0, 0, 0]);
   const surfaceRef = useRef<Mesh>(null);
   const selected = useExplorationStore(
-    (state) => state.selectedPlanetId === planet.id,
+    (state) => state.selectedBodyId === planet.id,
   );
   const hovered = useExplorationStore(
-    (state) => state.hoveredPlanetId === planet.id,
+    (state) => state.hoveredBodyId === planet.id,
   );
   const selectPlanet = useExplorationStore((state) => state.selectPlanet);
   const setHoveredPlanet = useExplorationStore(
@@ -236,13 +238,23 @@ export function PlanetSystem({
               args={[1, quality.planetSegments[0], quality.planetSegments[1]]}
             />
             <meshStandardMaterial
-              color={surfaceTexture ? "#ffffff" : planet.color}
-              emissive={active ? planet.color : "#000000"}
-              emissiveIntensity={selected ? 0.15 : hovered ? 0.08 : 0}
+              color={surfaceTexture ? visualProfile.surfaceTint : planet.color}
+              emissive="#000000"
+              emissiveIntensity={0}
               map={surfaceTexture ?? undefined}
               metalness={0}
               roughness={visualProfile.roughness}
             />
+            {planet.id === "earth" && quality.textureVariant !== "low" ? (
+              <EarthCloudLayer
+                segments={quality.atmosphereSegments}
+                textureVariant={
+                  quality.textureVariant === "high" && !selected
+                    ? "medium"
+                    : quality.textureVariant
+                }
+              />
+            ) : null}
           </mesh>
 
           {visualProfile.atmosphere ? (
@@ -293,15 +305,15 @@ export function PlanetSystem({
         {active && !scientificMode ? (
           <mesh
             raycast={() => undefined}
-            scale={scale.radius * (selected ? 1.14 : 1.1)}
+            scale={scale.radius * (selected ? 1.065 : 1.045)}
           >
-            <sphereGeometry args={[1, 22, 16]} />
+            <sphereGeometry args={[1, 32, 24]} />
             <meshBasicMaterial
-              color={planet.color}
+              color={selected ? "#c7d3e3" : planet.color}
               depthWrite={false}
-              opacity={selected ? 0.075 : 0.045}
+              opacity={selected ? 0.12 : 0.07}
+              side={BackSide}
               transparent
-              wireframe
             />
           </mesh>
         ) : null}

@@ -10,7 +10,7 @@ Phases 6–8, Block B.5 / Phase 8.5 and Block C are implemented. Helios now incl
 
 Explore opens at the current UTC time in unpaused Real time mode, supports six playback speeds, a dynamic −500/+600 calendar-year range, cached Horizons windows with Hermite interpolation, long-range body-center/barycenter resolution, and one mouse/touch/keyboard-capable camera authority. The Phase 8.5 commit has been deployed; a post-deploy hydration mismatch discovered on `/explore` is covered by the current production-mode acceptance repair.
 
-The local Block C acceptance package adds traceable multi-resolution planetary surfaces, distinct atmospheres, Saturn's rings, a controlled Sun/corona treatment, quality-aware loading, production performance budgets and a WCAG-oriented final audit. It is prepared for user test and push; the live deployment remains unchanged until that push. Phase 11 has not started.
+The local Block C acceptance package adds traceable multi-resolution planetary surfaces, distinct atmospheres, Saturn's rings, a controlled and selectable Sun/corona treatment, quality-aware loading, production performance budgets and a WCAG-oriented final audit. The Sun and all eight planets share pointer, touch, keyboard, camera-focus and focus-restoration behaviour. It is prepared for user test and push; the live deployment remains unchanged until that push. Phase 11 has not started.
 
 ## Stack
 
@@ -100,4 +100,5 @@ pnpm dev
 - [`docs/phase-8-5-report.md`](docs/phase-8-5-report.md) — ephemeris, simulation-clock and live acceptance gate
 - [`docs/phase-9-report.md`](docs/phase-9-report.md) — visual depth, asset and attribution gate
 - [`docs/phase-10-report.md`](docs/phase-10-report.md) — measured performance and accessibility gate
+- [`docs/celestial-catalog-expansion-plan.md`](docs/celestial-catalog-expansion-plan.md) — clickable moons, dwarf planets, candidates, exoplanets and Kuiper Belt delivery contract
 - [`docs/block-b-opening-report.md`](docs/block-b-opening-report.md) — historical Block B opening slice

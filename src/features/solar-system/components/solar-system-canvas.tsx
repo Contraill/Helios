@@ -43,7 +43,7 @@ export function SolarSystemCanvas({
   const clearSelection = useExplorationStore((state) => state.clearSelection);
   const cameraMode = useExplorationStore((state) => state.cameraMode);
   const enterFreeCamera = useExplorationStore((state) => state.enterFreeCamera);
-  const hoveredPlanetId = useExplorationStore((state) => state.hoveredPlanetId);
+  const hoveredBodyId = useExplorationStore((state) => state.hoveredBodyId);
   const quality = SCENE_QUALITY[qualityLevel];
   const copy = uiStrings.pages.explore;
   const [webglAvailable, setWebglAvailable] = useState<boolean | null>(
@@ -72,7 +72,7 @@ export function SolarSystemCanvas({
 
   return (
     <div
-      className={`solar-canvas-shell${hoveredPlanetId ? " solar-canvas-shell--interactive" : ""}`}
+      className={`solar-canvas-shell${hoveredBodyId ? " solar-canvas-shell--interactive" : ""}`}
       data-camera-mode={cameraMode}
       data-bloom={
         quality.bloomStrength > 0 && !reducedMotion ? "enabled" : "disabled"

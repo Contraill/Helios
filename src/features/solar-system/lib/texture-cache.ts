@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  ClampToEdgeWrapping,
   LinearFilter,
   LinearMipmapLinearFilter,
+  RepeatWrapping,
   SRGBColorSpace,
   Texture,
   TextureLoader,
@@ -38,6 +40,11 @@ function loadTexture(path: string): Promise<Texture> {
     texture.magFilter = LinearFilter;
     texture.minFilter = LinearMipmapLinearFilter;
     texture.generateMipmaps = true;
+    texture.anisotropy = 16;
+    texture.wrapS = path.includes("/textures/rings/")
+      ? ClampToEdgeWrapping
+      : RepeatWrapping;
+    texture.wrapT = ClampToEdgeWrapping;
     texture.name = `helios:${path}`;
     return texture;
   });
@@ -95,6 +102,7 @@ export function acquireTexture(path: string): TextureLease {
 }
 
 export function useSceneTexture(path: string): Texture | null {
+  const retainedLease = useRef<TextureLease | null>(null);
   const [loaded, setLoaded] = useState<{
     path: string;
     texture: Texture;
@@ -102,24 +110,40 @@ export function useSceneTexture(path: string): Texture | null {
 
   useEffect(() => {
     let active = true;
-    const lease = acquireTexture(path);
+    const candidateLease = acquireTexture(path);
 
-    void lease.promise.then(
+    void candidateLease.promise.then(
       (loadedTexture) => {
-        if (active) setLoaded({ path, texture: loadedTexture });
+        if (!active) return;
+
+        const previousLease = retainedLease.current;
+        retainedLease.current = candidateLease;
+        setLoaded({ path, texture: loadedTexture });
+        previousLease?.release();
       },
       () => {
-        if (active) setLoaded(null);
+        candidateLease.release();
       },
     );
 
     return () => {
       active = false;
-      lease.release();
+      if (retainedLease.current !== candidateLease) candidateLease.release();
     };
   }, [path]);
 
-  return loaded?.path === path ? loaded.texture : null;
+  useEffect(
+    () => () => {
+      retainedLease.current?.release();
+      retainedLease.current = null;
+    },
+    [],
+  );
+
+  // Keep the last good surface on screen while a new quality/focus variant is
+  // loading. A path mismatch is intentional here: dropping to null would flash
+  // the flat fallback material whenever the selected planet changes.
+  return loaded?.texture ?? null;
 }
 
 export function textureCacheSnapshot(): readonly {

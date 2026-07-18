@@ -265,7 +265,7 @@ export function SimulationControls() {
       <p className={styles.visualAttribution}>
         {copy.visualSources}{" "}
         <a
-          href="https://www.nasa.gov/nasa-brand-center/images-and-media/"
+          href="https://www.solarsystemscope.com/textures/"
           rel="noreferrer"
           target="_blank"
         >

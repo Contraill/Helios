@@ -1,3 +1,4 @@
+import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { Texture, TextureLoader } from "three";
 
@@ -5,6 +6,7 @@ import {
   acquireTexture,
   disposeTextureCache,
   textureCacheSnapshot,
+  useSceneTexture,
 } from "./texture-cache";
 
 describe("scene texture cache", () => {
@@ -87,5 +89,53 @@ describe("scene texture cache", () => {
     await expect(retry.promise).resolves.toBe(texture);
     expect(load).toHaveBeenCalledTimes(2);
     retry.release();
+  });
+
+  it("retains the last good surface until the next variant is ready", async () => {
+    const mediumTexture = new Texture<HTMLImageElement>(
+      document.createElement("img"),
+    );
+    const highTexture = new Texture<HTMLImageElement>(
+      document.createElement("img"),
+    );
+    let resolveMedium!: (value: Texture<HTMLImageElement>) => void;
+    let resolveHigh!: (value: Texture<HTMLImageElement>) => void;
+
+    vi.spyOn(TextureLoader.prototype, "loadAsync").mockImplementation(
+      (path) =>
+        new Promise<Texture<HTMLImageElement>>((resolve) => {
+          if (path === "/planet-medium.webp") resolveMedium = resolve;
+          else resolveHigh = resolve;
+        }),
+    );
+
+    const { result, rerender, unmount } = renderHook(
+      ({ path }) => useSceneTexture(path),
+      { initialProps: { path: "/planet-medium.webp" } },
+    );
+
+    expect(result.current).toBeNull();
+    await act(async () => resolveMedium(mediumTexture));
+    expect(result.current).toBe(mediumTexture);
+
+    rerender({ path: "/planet-high.webp" });
+    expect(result.current).toBe(mediumTexture);
+    expect(textureCacheSnapshot()).toEqual([
+      { path: "/planet-medium.webp", references: 1 },
+      { path: "/planet-high.webp", references: 1 },
+    ]);
+
+    await act(async () => resolveHigh(highTexture));
+    expect(result.current).toBe(highTexture);
+    expect(textureCacheSnapshot()).toEqual([
+      { path: "/planet-medium.webp", references: 0 },
+      { path: "/planet-high.webp", references: 1 },
+    ]);
+
+    unmount();
+    expect(textureCacheSnapshot()).toEqual([
+      { path: "/planet-medium.webp", references: 0 },
+      { path: "/planet-high.webp", references: 0 },
+    ]);
   });
 });

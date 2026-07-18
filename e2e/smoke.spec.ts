@@ -54,14 +54,31 @@ test("the skip link is the first focusable element and targets main content", as
   await expect(skipLink).toHaveAttribute("href", "#main-content");
 });
 
-test("explore exposes all eight planets outside the canvas", async ({
+test("explore exposes the Sun and all eight planets outside the canvas", async ({
   page,
 }) => {
   await page.goto("/explore");
   const navigator = page.getByRole("complementary", {
-    name: "Planets ordered from the Sun",
+    name: "Solar System bodies from the Sun outward",
   });
-  await expect(navigator.locator("ol").getByRole("button")).toHaveCount(8);
+  await expect(navigator.locator("ol").getByRole("button")).toHaveCount(9);
+});
+
+test("the Sun is a selectable focus target and Escape restores its control", async ({
+  page,
+}) => {
+  await page.goto("/explore");
+  const sun = page.getByRole("button", { name: "Sun" });
+
+  await sun.click();
+  await expect(sun).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.getByRole("region", { name: "Sun", exact: true }),
+  ).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(sun).toBeFocused();
+  await expect(sun).toHaveAttribute("aria-pressed", "false");
 });
 
 test("explore selection, rapid change and Escape stay synchronized", async ({
@@ -257,7 +274,10 @@ for (const viewport of [
       await expectVerticalStack(page, [
         { role: "region", name: "Mars" },
         { role: "complementary", name: "Simulation controls" },
-        { role: "complementary", name: "Planets ordered from the Sun" },
+        {
+          role: "complementary",
+          name: "Solar System bodies from the Sun outward",
+        },
       ]);
       await expect(page.locator("#experience-scale-description")).toBeVisible();
       await expectNoHorizontalOverflow(page);
@@ -278,7 +298,7 @@ test.describe("tablet acceptance", () => {
       name: "Simulation controls",
     });
     const navigator = page.getByRole("complementary", {
-      name: "Planets ordered from the Sun",
+      name: "Solar System bodies from the Sun outward",
     });
     const summary = page.getByRole("region", { name: "Saturn" });
 
@@ -443,9 +463,12 @@ test("initial Explore load avoids duplicate ephemeris and texture requests", asy
   });
 
   await page.goto("/explore", { waitUntil: "networkidle" });
-  await expect.poll(() => textureRequests.length).toBe(10);
+  await expect.poll(() => textureRequests.length).toBe(11);
 
   expect(ephemerisRequests).toHaveLength(1);
+  expect(textureRequests).toContain(
+    "/textures/planets/earth-clouds-medium.webp",
+  );
   expect(new Set(textureRequests).size).toBe(textureRequests.length);
 });
 
@@ -467,7 +490,7 @@ test("WebGL failure retains the Explore controls and planet navigation", async (
 
   await expect(
     page.getByRole("complementary", {
-      name: "Planets ordered from the Sun",
+      name: "Solar System bodies from the Sun outward",
     }),
   ).toBeVisible();
   await expect(

@@ -1,18 +1,25 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import type { ThreeEvent } from "@react-three/fiber";
 import { AdditiveBlending, BackSide } from "three";
-import type { Mesh } from "three";
+import type { Group, Mesh } from "three";
 
 import { textureVariantFor } from "@/content/sources/planet-textures";
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
 import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
+import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
+import { useExplorationStore } from "@/stores/exploration-store";
+
+import { PlanetLabel } from "./planet-label";
 
 interface SunProps {
+  labelsVisible: boolean;
   motionEnabled: boolean;
+  planetObjects: PlanetObjectRegistry;
   resetVersion: number;
   scaleMode: ScaleMode;
   quality: SceneQuality;
@@ -21,18 +28,45 @@ interface SunProps {
 }
 
 export function Sun({
+  labelsVisible,
   motionEnabled,
+  planetObjects,
   resetVersion,
   scaleMode,
   quality,
   sun,
   timeScale,
 }: SunProps) {
+  const bodyRef = useRef<Group>(null);
   const surfaceRef = useRef<Mesh>(null);
+  const selected = useExplorationStore(
+    (state) => state.selectedBodyId === "sun",
+  );
+  const hovered = useExplorationStore((state) => state.hoveredBodyId === "sun");
+  const selectSun = useExplorationStore((state) => state.selectSun);
+  const setHoveredBody = useExplorationStore((state) => state.setHoveredBody);
+  const clearHoveredBody = useExplorationStore(
+    (state) => state.clearHoveredBody,
+  );
+  const active = selected || hovered;
   const radius = sun.scales[scaleMode];
   const surfaceTexture = useSceneTexture(
-    textureVariantFor("sun", quality.textureVariant, true).path,
+    textureVariantFor("sun", quality.textureVariant, selected).path,
   );
+
+  useLayoutEffect(() => {
+    const node = bodyRef.current;
+    if (!node) return;
+
+    node.userData.bodyId = sun.id;
+    node.userData.renderRadius = radius;
+    const registry = planetObjects.current;
+    registry.set(sun.id, node);
+
+    return () => {
+      registry.delete(sun.id);
+    };
+  }, [planetObjects, radius, sun.id]);
 
   useEffect(() => {
     if (surfaceRef.current) surfaceRef.current.rotation.y = 0;
@@ -44,8 +78,23 @@ export function Sun({
     }
   });
 
+  const handlePointerOver = (event: ThreeEvent<PointerEvent>) => {
+    event.stopPropagation();
+    setHoveredBody("sun");
+  };
+
+  const handlePointerOut = (event: ThreeEvent<PointerEvent>) => {
+    event.stopPropagation();
+    clearHoveredBody("sun");
+  };
+
+  const handleClick = (event: ThreeEvent<MouseEvent>) => {
+    event.stopPropagation();
+    selectSun();
+  };
+
   return (
-    <group>
+    <group ref={bodyRef}>
       <mesh ref={surfaceRef} name={sun.name} scale={radius}>
         <sphereGeometry
           args={[1, quality.planetSegments[0], quality.planetSegments[1]]}
@@ -60,6 +109,39 @@ export function Sun({
           toneMapped={false}
         />
       </mesh>
+      <mesh
+        onClick={handleClick}
+        onPointerOut={handlePointerOut}
+        onPointerOver={handlePointerOver}
+        scale={radius * 1.12}
+      >
+        <sphereGeometry args={[1, 18, 14]} />
+        <meshBasicMaterial depthWrite={false} opacity={0} transparent />
+      </mesh>
+      {active ? (
+        <mesh raycast={() => undefined} scale={radius * 1.095}>
+          <sphereGeometry args={[1, 40, 30]} />
+          <meshBasicMaterial
+            color="#f6bd69"
+            depthWrite={false}
+            opacity={selected ? 0.13 : 0.08}
+            side={BackSide}
+            transparent
+          />
+        </mesh>
+      ) : null}
+      {labelsVisible && active ? (
+        <PlanetLabel
+          active
+          color="#f2b766"
+          mode={scaleMode}
+          offsetY={radius + 1.15}
+          placement="north"
+          positionCaption={selected ? "Selected star" : ""}
+          selected={selected}
+          text={sun.name}
+        />
+      ) : null}
       <mesh
         raycast={() => undefined}
         scale={radius * (quality.bloomStrength > 0 ? 1.085 : 1.045)}
@@ -83,10 +165,10 @@ export function Sun({
         />
       </mesh>
       <pointLight
-        color="#ffd7a1"
+        color="#fff4df"
         decay={1.7}
         distance={scaleMode === "scientific" ? 5_000 : 190}
-        intensity={2_300}
+        intensity={1_800}
       />
     </group>
   );

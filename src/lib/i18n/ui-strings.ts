@@ -61,7 +61,7 @@ export const uiStrings = {
       fallbackTitle: "The 3D view is unavailable",
       fallbackBody:
         "The planet list and reference pages remain available without WebGL.",
-      planetListLabel: "Planets ordered from the Sun",
+      planetListLabel: "Solar System bodies from the Sun outward",
       returnToOverview: "Overview",
       returnToOverviewLabel: "Return to the Solar System overview",
       keyboardHint:
@@ -76,6 +76,15 @@ export const uiStrings = {
         };
         return `${kinds[kind] ?? kind.replaceAll("-", " ")} · planet ${order}`;
       },
+      sunSummaryType: "Star · heliocentric origin",
+      sunSummaryTagline:
+        "The Solar System's central star and the physical source of the scene's illumination.",
+      sunRoleLabel: "Role",
+      sunRoleValue: "Central star",
+      sunPositionLabel: "Position",
+      sunPositionValue: "System origin",
+      sunLightLabel: "Scene light",
+      sunLightValue: "Physical source",
       formatGravity: (value: string): string => `${value} m/s²`,
       formatEarthDays: (value: string): string => `${value} Earth days`,
       formatMinutes: (value: string): string => `${value} min`,
@@ -157,8 +166,8 @@ export const uiStrings = {
             "Scientific scale uses one shared ratio for radii and distance. Colored locator discs preserve planet identity and mark position only; they do not represent physical size.",
         },
         visualSources:
-          "Planet maps use NASA/JPL/USGS source material. Enhanced-colour, composite and simulated surfaces are identified in the project manifest.",
-        visualSourcesLink: "NASA visual media guidance",
+          "Planet maps use NASA/JPL/USGS source material and attributed CC BY 4.0 rendering assets. Enhanced-colour, composite and simulated surfaces are identified in the project manifest.",
+        visualSourcesLink: "Visual texture source and licence",
       },
     },
     compare: {

@@ -2,65 +2,84 @@
 
 Date: 2026-07-18  
 Base commit: `865309f47da707d450a6914ff9686884f9d1eb95`  
-Gate: **PASS**
+Gate: **PASS after visual-acceptance repair**
 
 ## Delivered
 
-- Added a traceable surface manifest for the Sun and all eight planets, including source URL/ID, provider, attribution, usage note, representation type, colour space, material slot, local dimensions and deterministic decoded-byte estimates.
-- Added low, medium and high WebP variants. The local encoded set, including Saturn's rings, is approximately 2 MB.
-- Added shared reference-counted texture loading with race-safe late-load disposal and a colour fallback for failed requests.
-- Added distinct surface material profiles and separate atmosphere shells. Mercury intentionally has no atmosphere. Low quality uses a cheap shell; medium/high use a Fresnel shader.
-- Added Saturn's separate double-sided alpha rings at 1.24–2.27 planetary radii, within the axial-tilt group.
-- Added an emissive textured Sun, corona shell and Explore-only bounded bloom. Bloom is confined to the explicit high-quality tier and is absent under reduced motion.
-- Extended low/medium/high quality to control texture tier, geometry, atmosphere mode, ring segments, DPR, stars and bloom. High-quality overview keeps bodies at medium texture resolution and promotes the selected body to high.
-- Added an explicit WebGL capability probe that preserves the semantic Explore interface and presents the visible DOM fallback before any R3F canvas is mounted.
-- Kept Three.js behind the existing `/explore` client-only dynamic boundary; no home-page 3D import was added.
-- Added a concise visible NASA visual-source note and kept enhanced-colour, composite and simulated representations explicit in the project manifest.
+- Added a traceable surface manifest for the Sun and all eight planets with
+  source URL/ID, provider, attribution, licence, representation type, colour
+  space, dimensions and deterministic decoded-byte estimates.
+- Added low, medium and focused-high WebP variants. The complete encoded asset
+  set, including Earth clouds and Saturn's rings, is approximately 5 MiB.
+- Focused High uses 4096×2048 surfaces where the source supports them and a
+  2048×1024 minimum for the Sun, Uranus and Neptune. High Earth clouds are
+  2048×1024 and the radial Saturn ring profile is 4096×250.
+- Added a reference-counted texture cache that keeps the last successful lease
+  visible until a requested quality/body variant resolves. Changing planet or
+  quality therefore no longer flashes an untextured fallback.
+- Added 16× anisotropic filtering, mipmaps and correct equirectangular wrapping.
+- Added distinct neutral-light material profiles, separate atmosphere shells,
+  a transparent Earth cloud shell, radial Saturn rings, an emissive Sun and a
+  restrained corona/bloom treatment.
+- Removed body-coloured emissive lighting and changed the Sun point light to a
+  neutral warm-white source. This closes the intermittent red-light cast.
+- Replaced the selected-planet wireframe cage with a clean backside halo.
+- Labels render at 2×/3× logical resolution with screen-space sizing so camera
+  approach does not enlarge and blur them.
+- Guided focus selects an illuminated viewing hemisphere and keeps a stable
+  camera offset during accelerated time. The smaller focus floor makes Mercury
+  surface detail legible without clipping the body.
+- High-quality overview keeps unselected bodies at medium resolution and
+  promotes only the selected body. The Sun now follows the same rule rather than
+  loading its high asset at initial overview.
+- The Sun is a first-class clickable body: pointer/touch Canvas hit target, DOM
+  button, camera focus, crisp label, semantic summary and Escape focus return.
 
-## Source verification
+## Source and representation policy
 
-Official NASA pages were checked for the representation wording used in the manifest:
+The distributable high-detail assets use attributed CC BY 4.0 Solar System
+Scope source maps based on NASA elevation/imagery material where available.
+Helios resizes and converts them to WebP and records their representation limits
+in the manifest. Uranus and Neptune retain explicitly simulated NASA-reference
+profiles. Enhanced-colour, radar/composite and simulated surfaces are never
+presented as current observations.
 
-- Mercury: MESSENGER PIA17386 enhanced-colour map.
-- Venus: Magellan radar imagery with filled gaps.
-- Earth (A): USGS topographic-like map from the JPL/Caltech map database.
-- Mars: Viking imagery processed at USGS.
-- Jupiter: Voyager imagery.
-- Saturn: explicitly fictional official catalogue texture.
-- Uranus: procedural Helios simulation using Voyager 2 PIA01391 as the colour reference.
-- Neptune: explicitly fictional Don Davis/JPL cloud texture.
-- Sun: procedural Helios simulation using SDO PIA26681 as the visual reference.
+The visible Explore attribution links to the visual texture source/licence. The
+scientific data registry and visual asset registry remain separate.
 
-No simulated texture is labelled as an observation.
+## Visual acceptance evidence
 
-## Verification performed
+A 1440×1000 production Chromium/SwiftShader sweep selected the Sun and all eight
+planets at High quality. Every focused high texture returned HTTP 200. The sweep
+recorded zero console errors, page errors and failed requests.
 
-All commands used the project's required Node `22.22.0` and pnpm `10.34.4`.
+Manual inspection of those nine captures confirmed:
+
+- Mercury/Venus/Mars textures remain detailed without coloured-light wash;
+- Earth clouds remain a separate readable layer;
+- Jupiter bands and the giant-planet terminators retain surface detail;
+- Saturn's 4096-pixel radial ring bands remain visible at the guided angle;
+- Uranus and Neptune remain visually distinct;
+- labels remain sharp while zoomed and the selection halo does not cover maps.
+
+## Verification
 
 - `pnpm format:check` — PASS.
 - `pnpm lint` — PASS, no warnings.
 - `pnpm typecheck` — PASS.
-- `pnpm test` — PASS, 42 files / 165 tests.
-- `pnpm build` — PASS, all static and dynamic routes generated.
-- `pnpm test:e2e` — PASS, 89 Chromium tests against a production build.
-- Production browser visual check at 1440×1000 — one canvas, medium-tier Sun/eight-planet/Saturn-ring requests all HTTP 200, no `console.error`, no `pageerror`; Saturn ring geometry visibly clears the planet limb.
-
-E2E acceptance includes:
-
-- all eight selected high-resolution surface requests;
-- all nine low-resolution body requests;
-- low/medium/high quality and reduced-motion bloom behaviour;
-- failed texture fallback;
-- visible WebGL fallback with semantic controls retained;
-- exploration/scientific scale, overview/focus/free camera and direct mouse/touch control;
-- 390 px, 430 px, tablet and desktop layouts;
-- hydration/console/page-error guards retained from C0.
+- `pnpm test` — PASS, 42 files / 172 tests.
+- `pnpm build` — PASS, all routes generated.
+- Playwright production suite — PASS, 104/104 Chromium tests.
+- Temporary capture/probe test removed before packaging.
 
 ## Known representation limits
 
-- The global maps are explanatory equirectangular surfaces, not live observations or exact views from the current camera time.
-- Sun, Uranus, Saturn and Neptune representation limits are explicitly recorded as simulation where applicable.
-- Atmosphere thickness, glow and ring opacity are editorial visibility aids and are not physical volumetric models.
-- This gate recorded deterministic texture dimensions and decoded-byte estimates; the subsequent measured browser/GPU audit and accepted budgets are recorded in `docs/phase-10-report.md`.
+- Surface maps are explanatory global maps, not live observations or exact
+  camera-time views.
+- Atmosphere thickness, glow, cloud altitude and ring opacity are editorial
+  visibility aids rather than volumetric physical models.
+- High quality is intentionally the visual-first tier; Low and Medium retain
+  smaller assets and lower render cost.
 
-Phase 9 remains independently PASS. Phase 10 subsequently completed its separate audit without reopening this gate.
+Phase 9 is independently PASS. The measured runtime gate is recorded in
+`docs/phase-10-report.md`.

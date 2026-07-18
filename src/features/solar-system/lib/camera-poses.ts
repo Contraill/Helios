@@ -1,6 +1,6 @@
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 
-const MIN_FOCUS_DISTANCE = 4.8;
+const MIN_FOCUS_DISTANCE = 4.1;
 const RADIUS_DISTANCE_MULTIPLIER = 5.4;
 
 function assertPositiveFinite(value: number, label: string): void {
@@ -42,6 +42,36 @@ export function focusCameraOffset(
     portraitMultiplier;
 
   return [distance * 0.48, distance * 0.24, distance];
+}
+
+export function illuminatedFocusCameraOffset(
+  planetPosition: readonly [number, number, number],
+  radius: number,
+  aspect: number,
+): readonly [number, number, number] {
+  const canonicalOffset = focusCameraOffset(radius, aspect);
+  const distance = Math.hypot(...canonicalOffset);
+  const positionLength = Math.hypot(...planetPosition);
+
+  if (positionLength < Number.EPSILON) return canonicalOffset;
+
+  const sunwardX = -planetPosition[0] / positionLength;
+  const sunwardY = -planetPosition[1] / positionLength;
+  const sunwardZ = -planetPosition[2] / positionLength;
+  const sideLength = Math.hypot(sunwardZ, sunwardX);
+  const sideX = sideLength > Number.EPSILON ? sunwardZ / sideLength : 1;
+  const sideZ = sideLength > Number.EPSILON ? -sunwardX / sideLength : 0;
+
+  const viewX = sunwardX * 0.72 + sideX * 0.62;
+  const viewY = sunwardY * 0.72 + 0.32;
+  const viewZ = sunwardZ * 0.72 + sideZ * 0.62;
+  const viewLength = Math.hypot(viewX, viewY, viewZ);
+
+  return [
+    (viewX / viewLength) * distance,
+    (viewY / viewLength) * distance,
+    (viewZ / viewLength) * distance,
+  ];
 }
 
 export function transitionAlpha(

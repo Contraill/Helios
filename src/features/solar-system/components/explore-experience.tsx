@@ -13,11 +13,11 @@ import styles from "@/app/explore/explore.module.css";
 import type { ExplorePlanetSummary } from "@/features/solar-system/lib/explore-planets";
 import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
+import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
 import { useHydrateExperienceSettings } from "@/hooks/use-hydrate-experience-settings";
 import { useReducedMotionPreference } from "@/hooks/use-reduced-motion-preference";
 import { formatOneDecimal } from "@/lib/i18n/formatters";
 import { uiStrings } from "@/lib/i18n/ui-strings";
-import type { PlanetId } from "@/lib/data/schemas/planet";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { usePreferencesStore } from "@/stores/preferences-store";
 
@@ -41,9 +41,11 @@ export function ExploreExperience({
   const selectedPlanetId = useExplorationStore(
     (state) => state.selectedPlanetId,
   );
+  const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
   const cameraMode = useExplorationStore((state) => state.cameraMode);
   const scaleMode = useExplorationStore((state) => state.scaleMode);
   const selectPlanet = useExplorationStore((state) => state.selectPlanet);
+  const selectSun = useExplorationStore((state) => state.selectSun);
   const clearSelection = useExplorationStore((state) => state.clearSelection);
   const exitFreeCamera = useExplorationStore((state) => state.exitFreeCamera);
   const setHoveredPlanet = useExplorationStore(
@@ -52,11 +54,15 @@ export function ExploreExperience({
   const clearHoveredPlanet = useExplorationStore(
     (state) => state.clearHoveredPlanet,
   );
+  const setHoveredBody = useExplorationStore((state) => state.setHoveredBody);
+  const clearHoveredBody = useExplorationStore(
+    (state) => state.clearHoveredBody,
+  );
   const motionPreference = usePreferencesStore(
     (state) => state.motionPreference,
   );
   const reducedMotion = useReducedMotionPreference(motionPreference);
-  const buttonRefs = useRef(new Map<PlanetId, HTMLButtonElement>());
+  const buttonRefs = useRef(new Map<CelestialBodyId, HTMLButtonElement>());
 
   const selectedPlanet = useMemo(
     () =>
@@ -67,10 +73,10 @@ export function ExploreExperience({
   );
 
   const returnToOverview = useCallback(
-    (focusPlanetId?: PlanetId) => {
+    (focusBodyId?: CelestialBodyId) => {
       clearSelection();
-      if (focusPlanetId) {
-        buttonRefs.current.get(focusPlanetId)?.focus();
+      if (focusBodyId) {
+        buttonRefs.current.get(focusBodyId)?.focus();
       }
     },
     [clearSelection],
@@ -80,22 +86,25 @@ export function ExploreExperience({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
         event.key !== "Escape" ||
-        (selectedPlanetId === null && cameraMode !== "free")
+        (selectedBodyId === null && cameraMode !== "free")
       )
         return;
       event.preventDefault();
       if (cameraMode === "free") {
         exitFreeCamera();
       } else {
-        returnToOverview(selectedPlanetId ?? undefined);
+        returnToOverview(selectedBodyId ?? undefined);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [cameraMode, exitFreeCamera, returnToOverview, selectedPlanetId]);
+  }, [cameraMode, exitFreeCamera, returnToOverview, selectedBodyId]);
 
-  const cameraStatus = copy.cameraStatus(selectedPlanet?.name, cameraMode);
+  const cameraStatus = copy.cameraStatus(
+    selectedBodyId === "sun" ? sceneSun.name : selectedPlanet?.name,
+    cameraMode,
+  );
 
   return (
     <>
@@ -114,7 +123,46 @@ export function ExploreExperience({
       <div className={styles.interfaceStack}>
         <p className={styles.scaleNotice}>{copy.scaleNotices[scaleMode]}</p>
         <EphemerisControls />
-        {selectedPlanet ? (
+        {selectedBodyId === "sun" ? (
+          <section
+            aria-labelledby="selected-sun-title"
+            aria-live="polite"
+            className={styles.summaryPanel}
+            style={{ "--planet-accent": "#f2b766" } as CSSProperties}
+          >
+            <div className={styles.summaryHeader}>
+              <div>
+                <p className={styles.summaryType}>{copy.sunSummaryType}</p>
+                <h2 id="selected-sun-title">{sceneSun.name}</h2>
+              </div>
+              <button
+                aria-label={copy.returnToOverviewLabel}
+                className={styles.closeButton}
+                onClick={() => returnToOverview("sun")}
+                type="button"
+              >
+                <span aria-hidden="true">×</span>
+              </button>
+            </div>
+
+            <p className={styles.summaryTagline}>{copy.sunSummaryTagline}</p>
+
+            <dl className={styles.summaryMetrics}>
+              <div>
+                <dt>{copy.sunRoleLabel}</dt>
+                <dd>{copy.sunRoleValue}</dd>
+              </div>
+              <div>
+                <dt>{copy.sunPositionLabel}</dt>
+                <dd>{copy.sunPositionValue}</dd>
+              </div>
+              <div>
+                <dt>{copy.sunLightLabel}</dt>
+                <dd>{copy.sunLightValue}</dd>
+              </div>
+            </dl>
+          </section>
+        ) : selectedPlanet ? (
           <section
             aria-labelledby="selected-planet-title"
             aria-live="polite"
@@ -190,16 +238,41 @@ export function ExploreExperience({
             <p className={styles.navigatorLabel}>{copy.planetListLabel}</p>
             <button
               className={styles.overviewButton}
-              disabled={selectedPlanetId === null && cameraMode !== "free"}
-              onClick={() => returnToOverview(selectedPlanetId ?? undefined)}
+              disabled={selectedBodyId === null && cameraMode !== "free"}
+              onClick={() => returnToOverview(selectedBodyId ?? undefined)}
               type="button"
             >
               {copy.returnToOverview}
             </button>
           </div>
           <ol>
+            <li>
+              <button
+                aria-label={sceneSun.name}
+                aria-pressed={selectedBodyId === "sun"}
+                className={
+                  selectedBodyId === "sun"
+                    ? styles.planetButtonSelected
+                    : undefined
+                }
+                onBlur={() => clearHoveredBody("sun")}
+                onClick={selectSun}
+                onFocus={() => setHoveredBody("sun")}
+                onMouseEnter={() => setHoveredBody("sun")}
+                onMouseLeave={() => clearHoveredBody("sun")}
+                ref={(node) => {
+                  if (node) buttonRefs.current.set("sun", node);
+                  else buttonRefs.current.delete("sun");
+                }}
+                style={{ "--planet-accent": "#f2b766" } as CSSProperties}
+                type="button"
+              >
+                <span aria-hidden="true">☉</span>
+                {sceneSun.name}
+              </button>
+            </li>
             {planetSummaries.map((planet) => {
-              const selected = selectedPlanetId === planet.id;
+              const selected = selectedBodyId === planet.id;
               return (
                 <li key={planet.id}>
                   <button

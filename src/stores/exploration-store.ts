@@ -4,25 +4,31 @@ import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
+import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
 import type { PlanetId } from "@/lib/data/schemas/planet";
 
 export type CameraMode = "overview" | "transition" | "focus" | "free";
 
 interface ExplorationState {
+  selectedBodyId: CelestialBodyId | null;
   selectedPlanetId: PlanetId | null;
+  hoveredBodyId: CelestialBodyId | null;
   hoveredPlanetId: PlanetId | null;
   cameraMode: CameraMode;
   scaleMode: ScaleMode;
   orbitsVisible: boolean;
   labelsVisible: boolean;
+  selectSun: () => void;
   selectPlanet: (planetId: PlanetId) => void;
   clearSelection: () => void;
   enterFreeCamera: () => void;
   exitFreeCamera: () => void;
   setHoveredPlanet: (planetId: PlanetId) => void;
   clearHoveredPlanet: (planetId: PlanetId) => void;
+  setHoveredBody: (bodyId: CelestialBodyId) => void;
+  clearHoveredBody: (bodyId: CelestialBodyId) => void;
   settleCamera: (
-    expectedPlanetId: PlanetId | null,
+    expectedBodyId: CelestialBodyId | null,
     mode: Extract<CameraMode, "overview" | "focus">,
   ) => void;
   setScaleMode: (scaleMode: ScaleMode) => void;
@@ -31,7 +37,9 @@ interface ExplorationState {
 }
 
 export const initialExplorationState = {
+  selectedBodyId: null,
   selectedPlanetId: null,
+  hoveredBodyId: null,
   hoveredPlanetId: null,
   cameraMode: "overview" as const,
   scaleMode: "exploration" as ScaleMode,
@@ -43,20 +51,32 @@ export const useExplorationStore = create<ExplorationState>()(
   persist(
     (set) => ({
       ...initialExplorationState,
-      selectPlanet: (planetId) =>
+      selectSun: () =>
         set((state) =>
-          state.selectedPlanetId === planetId && state.cameraMode !== "free"
+          state.selectedBodyId === "sun" && state.cameraMode !== "free"
             ? state
             : {
+                selectedBodyId: "sun",
+                selectedPlanetId: null,
+                cameraMode: "transition",
+              },
+        ),
+      selectPlanet: (planetId) =>
+        set((state) =>
+          state.selectedBodyId === planetId && state.cameraMode !== "free"
+            ? state
+            : {
+                selectedBodyId: planetId,
                 selectedPlanetId: planetId,
                 cameraMode: "transition",
               },
         ),
       clearSelection: () =>
         set((state) =>
-          state.selectedPlanetId === null && state.cameraMode !== "free"
+          state.selectedBodyId === null && state.cameraMode !== "free"
             ? state
             : {
+                selectedBodyId: null,
                 selectedPlanetId: null,
                 cameraMode: "transition",
               },
@@ -71,21 +91,36 @@ export const useExplorationStore = create<ExplorationState>()(
         ),
       setHoveredPlanet: (planetId) =>
         set((state) =>
-          state.hoveredPlanetId === planetId
+          state.hoveredBodyId === planetId
             ? state
-            : { hoveredPlanetId: planetId },
+            : { hoveredBodyId: planetId, hoveredPlanetId: planetId },
         ),
       clearHoveredPlanet: (planetId) =>
         set((state) =>
-          state.hoveredPlanetId === planetId
-            ? { hoveredPlanetId: null }
+          state.hoveredBodyId === planetId
+            ? { hoveredBodyId: null, hoveredPlanetId: null }
             : state,
         ),
-      settleCamera: (expectedPlanetId, mode) =>
+      setHoveredBody: (bodyId) =>
+        set((state) =>
+          state.hoveredBodyId === bodyId
+            ? state
+            : {
+                hoveredBodyId: bodyId,
+                hoveredPlanetId: bodyId === "sun" ? null : bodyId,
+              },
+        ),
+      clearHoveredBody: (bodyId) =>
+        set((state) =>
+          state.hoveredBodyId === bodyId
+            ? { hoveredBodyId: null, hoveredPlanetId: null }
+            : state,
+        ),
+      settleCamera: (expectedBodyId, mode) =>
         set((state) => {
           if (
             state.cameraMode !== "transition" ||
-            state.selectedPlanetId !== expectedPlanetId
+            state.selectedBodyId !== expectedBodyId
           ) {
             return state;
           }

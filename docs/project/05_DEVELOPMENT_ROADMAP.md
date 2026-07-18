@@ -220,6 +220,15 @@ Her ileri görsel özellik; performans bütçesi, düşük kalite karşılığı
 
 Faz 11 ayrı kapanış bloğudur. Ölçümler, karar notları ve attribution önceki bloklarda biriktirilir; ancak final deployment, ekran görüntüleri, case study ve release kontrolü ürün stabil olduktan sonra tamamlanır.
 
+### Blok E — Post-MVP gök cisimleri kataloğu
+
+Güneş, gezegen uyduları, cüce gezegenler ve adayları, ötegezegenler ve Kuiper
+Kuşağı genişlemesi ayrı bir post-MVP bloğudur. Bütün katalog nesneleri Canvas
+ve DOM üzerinden tıklanabilir/seçilebilir olmalıdır. Büyük kataloglar bütün
+yüksek çözünürlüklü mesh'leri aynı anda kurmak yerine arama, sanallaştırma, LOD
+ve talep üzerine yükleme kullanır. Ayrıntılı sıra ve kabul sözleşmesi
+`docs/celestial-catalog-expansion-plan.md` içindedir.
+
 ### Birleşik blokların değişmez kalite kapıları
 
 Her alt faz veya anlamlı dikey dilim sonunda:
@@ -585,6 +594,31 @@ WCAG odaklı E2E ve kalan sınırlar `docs/phase-10-report.md` içinde kayıtlı
 - case study kararları ve sorunları anlatır
 - mobil demo gösterilebilir
 - kaynak ve lisans bilgileri tamamdır
+
+---
+
+## Post-MVP — Gök cisimleri kataloğu genişlemesi
+
+**Yürütme bloğu:** Blok E
+
+### Kapsam
+
+- Güneş ve bütün gezegen uyduları
+- tanınmış cüce gezegenler ve açıkça işaretlenen adaylar
+- doğrulanmış/aday durumları ayrılmış ötegezegen atlası
+- istatistiksel Kuiper Kuşağı ve ayrı seçilebilen katalog KBO'ları
+- her gök cismi için ortak tıklama, klavye, kamera, etiket, özet ve kaynak modeli
+
+### Kabul kriterleri
+
+- her katalog nesnesi hem Canvas hem DOM üzerinden seçilebilir
+- aday nesne doğrulanmış gibi sunulmaz
+- kaynaksız yüzey prosedürel/simülasyon olarak işaretlenir
+- büyük kataloglar mobil ve düşük kalite bütçelerini aşmaz
+- mevcut sekiz gezegen, efemeris ve fallback davranışları bozulmaz
+
+Ayrıntılı uygulama dilimleri:
+`docs/celestial-catalog-expansion-plan.md`.
 
 ---
 

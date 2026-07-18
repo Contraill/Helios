@@ -37,18 +37,22 @@ function createLabelTexture(
   positionCaption: string,
   placement: ScientificLabelPlacement,
 ): CanvasTexture {
+  const logicalWidth = mode === "scientific" ? 640 : 512;
+  const logicalHeight = mode === "scientific" ? 224 : 128;
+  const pixelRatio = mode === "scientific" ? 2 : 3;
   const canvas = document.createElement("canvas");
-  canvas.width = mode === "scientific" ? 640 : 512;
-  canvas.height = mode === "scientific" ? 224 : 128;
+  canvas.width = logicalWidth * pixelRatio;
+  canvas.height = logicalHeight * pixelRatio;
 
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Canvas 2D context is unavailable.");
 
-  context.clearRect(0, 0, canvas.width, canvas.height);
+  context.scale(pixelRatio, pixelRatio);
+  context.clearRect(0, 0, logicalWidth, logicalHeight);
 
   if (mode === "scientific") {
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
+    const centerX = logicalWidth / 2;
+    const centerY = logicalHeight / 2;
     const offsets: Record<ScientificLabelPlacement, readonly [number, number]> =
       {
         north: [0, -84],
@@ -104,6 +108,7 @@ function createLabelTexture(
 
   const texture = new CanvasTexture(canvas);
   texture.colorSpace = SRGBColorSpace;
+  texture.anisotropy = 8;
   texture.minFilter = LinearFilter;
   texture.magFilter = LinearFilter;
   texture.needsUpdate = true;
@@ -140,7 +145,7 @@ export function PlanetLabel({
         map: texture,
         fog: false,
         opacity: active || mode === "scientific" ? 1 : 0.82,
-        sizeAttenuation: mode !== "scientific",
+        sizeAttenuation: false,
         transparent: true,
       }),
     [active, mode, texture],
@@ -162,7 +167,7 @@ export function PlanetLabel({
       position={[0, scientific ? 0 : offsetY, 0]}
       raycast={() => undefined}
       renderOrder={20}
-      scale={scientific ? [0.34, 0.142, 1] : [6.2, 1.55, 1]}
+      scale={scientific ? [0.34, 0.142, 1] : [0.34, 0.085, 1]}
     />
   );
 }

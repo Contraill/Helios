@@ -6,7 +6,7 @@ import type { Object3D } from "three";
 import { SCENE_QUALITY } from "@/features/solar-system/lib/quality";
 import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
-import type { PlanetId } from "@/lib/data/schemas/planet";
+import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { useSimulationStore } from "@/stores/simulation-store";
@@ -28,7 +28,7 @@ export function SolarSystemScene({
   scenePlanets,
   sceneSun,
 }: SolarSystemSceneProps) {
-  const planetObjects = useRef<Map<PlanetId, Object3D>>(new Map());
+  const planetObjects = useRef<Map<CelestialBodyId, Object3D>>(new Map());
   const scaleMode = useExplorationStore((state) => state.scaleMode);
   const orbitsVisible = useExplorationStore((state) => state.orbitsVisible);
   const labelsVisible = useExplorationStore((state) => state.labelsVisible);
@@ -52,7 +52,7 @@ export function SolarSystemScene({
         }
       />
       <CameraRig planetObjects={planetObjects} reducedMotion={reducedMotion} />
-      <ambientLight color="#7c8cab" intensity={0.32} />
+      <ambientLight color="#a8b0bf" intensity={0.22} />
       <StarField
         motionEnabled={simulationMotionEnabled}
         resetVersion={resetVersion}
@@ -62,7 +62,9 @@ export function SolarSystemScene({
         timeScale={visualMotionScale}
       />
       <Sun
+        labelsVisible={labelsVisible}
         motionEnabled={simulationMotionEnabled}
+        planetObjects={planetObjects}
         quality={quality}
         resetVersion={resetVersion}
         scaleMode={scaleMode}

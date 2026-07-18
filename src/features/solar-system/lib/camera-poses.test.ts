@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   cameraPoseHasSettled,
   focusCameraOffset,
+  illuminatedFocusCameraOffset,
   overviewCameraPosition,
   transitionAlpha,
 } from "./camera-poses";
@@ -26,6 +27,26 @@ describe("camera poses", () => {
     const offset = focusCameraOffset(radius, 16 / 9);
     const distance = Math.hypot(...offset);
     expect(distance).toBeGreaterThan(radius * 5);
+  });
+
+  it("starts a focus view on the lit hemisphere without aligning through the Sun", () => {
+    const planetPosition = [18, 0.4, -5] as const;
+    const offset = illuminatedFocusCameraOffset(planetPosition, 2, 16 / 9);
+    const planetDistance = Math.hypot(...planetPosition);
+    const offsetDistance = Math.hypot(...offset);
+    const sunward = planetPosition.map(
+      (coordinate) => -coordinate / planetDistance,
+    );
+    const litHemisphereAlignment =
+      (offset[0] * sunward[0] +
+        offset[1] * sunward[1] +
+        offset[2] * sunward[2]) /
+      offsetDistance;
+
+    expect(litHemisphereAlignment).toBeGreaterThan(0.6);
+    expect(
+      Math.abs(offset[0] * planetPosition[2] - offset[2] * planetPosition[0]),
+    ).toBeGreaterThan(1);
   });
 
   it("uses frame-rate independent interpolation", () => {

@@ -10,7 +10,7 @@ import { useExplorationStore } from "@/stores/exploration-store";
 
 import {
   cameraPoseHasSettled,
-  focusCameraOffset,
+  illuminatedFocusCameraOffset,
   overviewCameraPosition,
   transitionAlpha,
 } from "../lib/camera-poses";
@@ -25,9 +25,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
   const gl = useThree((state) => state.gl);
   const width = useThree((state) => state.size.width);
   const height = useThree((state) => state.size.height);
-  const selectedPlanetId = useExplorationStore(
-    (state) => state.selectedPlanetId,
-  );
+  const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
   const cameraMode = useExplorationStore((state) => state.cameraMode);
   const scaleMode = useExplorationStore((state) => state.scaleMode);
   const settleCamera = useExplorationStore((state) => state.settleCamera);
@@ -46,6 +44,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
   const desiredPosition = useRef(new Vector3(...overviewPosition));
   const worldPosition = useRef(new Vector3());
   const focusOffset = useRef(new Vector3());
+  const focusAnchorKey = useRef("");
   const controls = useRef<OrbitControls | null>(null);
 
   useEffect(() => {
@@ -118,21 +117,43 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
 
   useFrame((_, delta) => {
     const aspect = width / Math.max(height, 1);
-    const selectedObject = selectedPlanetId
-      ? planetObjects.current.get(selectedPlanetId)
+    const selectedObject = selectedBodyId
+      ? planetObjects.current.get(selectedBodyId)
       : undefined;
 
-    if (selectedPlanetId && selectedObject) {
+    if (selectedBodyId && selectedObject) {
       selectedObject.getWorldPosition(worldPosition.current);
       desiredTarget.current.copy(worldPosition.current);
 
       const radius = Number(selectedObject.userData.renderRadius ?? 1);
-      const offset = focusCameraOffset(radius, Math.max(aspect, 0.1));
-      focusOffset.current.set(...offset);
+      if (controls.current) {
+        controls.current.minDistance = Math.max(
+          radius * 1.35,
+          scaleMode === "scientific" ? 0.08 : 0.8,
+        );
+      }
+      const anchorKey = `${selectedBodyId}:${scaleMode}:${width}:${height}`;
+      if (focusAnchorKey.current !== anchorKey) {
+        const offset = illuminatedFocusCameraOffset(
+          [
+            worldPosition.current.x,
+            worldPosition.current.y,
+            worldPosition.current.z,
+          ],
+          radius,
+          Math.max(aspect, 0.1),
+        );
+        focusOffset.current.set(...offset);
+        focusAnchorKey.current = anchorKey;
+      }
       desiredPosition.current
         .copy(worldPosition.current)
         .add(focusOffset.current);
     } else {
+      if (controls.current) {
+        controls.current.minDistance = scaleMode === "scientific" ? 2 : 6;
+      }
+      focusAnchorKey.current = "";
       desiredTarget.current.set(0, 0, 0);
       desiredPosition.current.set(...overviewPosition);
     }
@@ -162,8 +183,8 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       )
     ) {
       settleCamera(
-        selectedPlanetId,
-        selectedPlanetId === null ? "overview" : "focus",
+        selectedBodyId,
+        selectedBodyId === null ? "overview" : "focus",
       );
     }
   });
