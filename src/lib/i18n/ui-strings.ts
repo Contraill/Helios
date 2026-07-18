@@ -156,6 +156,9 @@ export const uiStrings = {
           scientific:
             "Scientific scale uses one shared ratio for radii and distance. Colored locator discs preserve planet identity and mark position only; they do not represent physical size.",
         },
+        visualSources:
+          "Planet maps use NASA/JPL/USGS source material. Enhanced-colour, composite and simulated surfaces are identified in the project manifest.",
+        visualSourcesLink: "NASA visual media guidance",
       },
     },
     compare: {

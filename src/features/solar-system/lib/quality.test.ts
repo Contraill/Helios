@@ -14,5 +14,14 @@ describe("scene quality", () => {
       SCENE_QUALITY.high.planetSegments[0],
     );
     expect(SCENE_QUALITY.low.dpr[1]).toBeLessThan(SCENE_QUALITY.high.dpr[1]);
+    expect(SCENE_QUALITY.low.textureVariant).toBe("low");
+    expect(SCENE_QUALITY.medium.textureVariant).toBe("medium");
+    expect(SCENE_QUALITY.high.textureVariant).toBe("high");
+    expect(SCENE_QUALITY.low.bloomStrength).toBe(0);
+    expect(SCENE_QUALITY.medium.bloomStrength).toBe(0);
+    expect(SCENE_QUALITY.high.bloomStrength).toBeGreaterThan(0);
+    expect(SCENE_QUALITY.low.ringSegments).toBeLessThan(
+      SCENE_QUALITY.high.ringSegments,
+    );
   });
 });

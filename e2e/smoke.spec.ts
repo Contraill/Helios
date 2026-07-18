@@ -327,6 +327,155 @@ test("scene accessibility name follows scale and reduced motion", async ({
   ).toBeVisible();
 });
 
+test("visual quality tiers load the expected texture detail and gate bloom", async ({
+  page,
+}) => {
+  await page.goto("/explore");
+  const shell = page.locator(".solar-canvas-shell");
+  const controls = page.getByRole("complementary", {
+    name: "Simulation controls",
+  });
+
+  await expect(shell).toHaveAttribute("data-texture-variant", "medium");
+  await expect(shell).toHaveAttribute("data-bloom", "disabled");
+
+  const lowEarth = page.waitForResponse(/earth-low\.webp$/);
+  await controls.getByRole("button", { name: "Low" }).click();
+  expect((await lowEarth).status()).toBe(200);
+  await expect(shell).toHaveAttribute("data-texture-variant", "low");
+  await expect(shell).toHaveAttribute("data-bloom", "disabled");
+
+  await controls.getByRole("button", { name: "High" }).click();
+  const highMars = page.waitForResponse(/mars-high\.webp$/);
+  await page.getByRole("button", { name: "Mars" }).click();
+  expect((await highMars).status()).toBe(200);
+  await expect(shell).toHaveAttribute("data-texture-variant", "high");
+  await expect(shell).toHaveAttribute("data-bloom", "enabled");
+
+  await controls.getByRole("button", { name: "Reduced" }).click();
+  await expect(shell).toHaveAttribute("data-bloom", "disabled");
+});
+
+test("all body maps load at low quality and promote on high-quality focus", async ({
+  page,
+}) => {
+  const bodyIds = [
+    "mercury",
+    "venus",
+    "earth",
+    "mars",
+    "jupiter",
+    "saturn",
+    "uranus",
+    "neptune",
+  ] as const;
+  const loadedPaths = new Set<string>();
+  page.on("response", (response) => {
+    const pathname = new URL(response.url()).pathname;
+    if (response.status() === 200) loadedPaths.add(pathname);
+  });
+
+  await page.goto("/explore");
+  const controls = page.getByRole("complementary", {
+    name: "Simulation controls",
+  });
+  await controls.getByRole("button", { name: "Low" }).click();
+  await expect
+    .poll(() =>
+      ["sun", ...bodyIds].every((bodyId) =>
+        loadedPaths.has(`/textures/planets/${bodyId}-low.webp`),
+      ),
+    )
+    .toBe(true);
+
+  await controls.getByRole("button", { name: "High" }).click();
+  for (const bodyId of bodyIds) {
+    const highTexture = page.waitForResponse(
+      new RegExp(`/textures/planets/${bodyId}-high\\.webp$`),
+    );
+    await page
+      .getByRole("button", {
+        name: bodyId[0].toUpperCase() + bodyId.slice(1),
+        exact: true,
+      })
+      .click();
+    expect((await highTexture).status()).toBe(200);
+  }
+  await expect(page.getByRole("region", { name: "Neptune" })).toBeVisible();
+});
+
+test("a failed surface texture preserves the canvas and semantic fallback colour", async ({
+  page,
+}) => {
+  const pageErrors: string[] = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await page.route("**/textures/planets/mars-*.webp", (route) => route.abort());
+
+  await page.goto("/explore");
+  await page.getByRole("button", { name: "Mars" }).click();
+  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Mars" })).toBeVisible();
+  expect(pageErrors).toEqual([]);
+});
+
+test("initial Explore load avoids duplicate ephemeris and texture requests", async ({
+  page,
+}) => {
+  const ephemerisRequests: string[] = [];
+  const textureRequests: string[] = [];
+  page.on("request", (request) => {
+    const path = new URL(request.url()).pathname;
+    if (path === "/api/ephemeris") ephemerisRequests.push(request.url());
+    if (path.startsWith("/textures/")) textureRequests.push(path);
+  });
+  await page.route("**/api/ephemeris?*", async (route) => {
+    const requestedAt = new URL(route.request().url()).searchParams.get("at")!;
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...HORIZONS_SNAPSHOT,
+        status: "current",
+        requestedAt,
+        observedAt: requestedAt,
+        retrievedAt: requestedAt,
+      }),
+    });
+  });
+
+  await page.goto("/explore", { waitUntil: "networkidle" });
+  await expect.poll(() => textureRequests.length).toBe(10);
+
+  expect(ephemerisRequests).toHaveLength(1);
+  expect(new Set(textureRequests).size).toBe(textureRequests.length);
+});
+
+test("WebGL failure retains the Explore controls and planet navigation", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const getContext = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      contextId: string,
+      ...args: unknown[]
+    ) {
+      if (contextId.startsWith("webgl")) return null;
+      return getContext.call(this, contextId, ...args);
+    } as typeof HTMLCanvasElement.prototype.getContext;
+  });
+  await page.goto("/explore");
+
+  await expect(
+    page.getByRole("complementary", {
+      name: "Planets ordered from the Sun",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("complementary", { name: "Simulation controls" }),
+  ).toBeVisible();
+  await expect(page.getByText(/3D view is unavailable/i)).toBeVisible();
+});
+
 test("ephemeris navigation supports a shareable past and future UTC time", async ({
   page,
 }) => {
@@ -412,7 +561,7 @@ test("dynamic range, Julian-year preview and maximum boundary share one clock", 
   await controls.getByRole("button", { name: "1 year / sec" }).click();
   await expect(ephemeris.getByText("Approximate preview")).toBeVisible();
 
-  await dateInput.fill(maximum);
+  await dateInput.fill(maximum.slice(0, 16));
   await ephemeris.getByRole("button", { name: "Apply" }).click();
   await expect(
     ephemeris.getByText("Maximum supported date reached"),
@@ -541,6 +690,93 @@ test("ephemeris clock starts in real time and its panel stays collapsible", asyn
     "data-status",
     "loading",
   );
+});
+
+test("explore hydrates cleanly and keeps one real-time simulation clock", async ({
+  page,
+}) => {
+  const consoleErrors: string[] = [];
+  const pageErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+
+  await page.route("**/api/ephemeris?*", async (route) => {
+    const requestedAt = new URL(route.request().url()).searchParams.get("at")!;
+    await new Promise((resolve) => setTimeout(resolve, 1_500));
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        ...HORIZONS_SNAPSHOT,
+        status: "current",
+        requestedAt,
+        observedAt: requestedAt,
+        retrievedAt: requestedAt,
+      }),
+    });
+  });
+
+  await page.goto("/explore");
+  const ephemeris = page.getByRole("complementary", {
+    name: "Ephemeris time controls",
+  });
+  const clock = ephemeris.locator("time").first();
+  await expect(clock).toHaveAttribute("datetime", /T/);
+
+  const hydratedAt = Date.parse((await clock.getAttribute("datetime"))!);
+  expect(Math.abs(Date.now() - hydratedAt)).toBeLessThan(15_000);
+  await page.waitForTimeout(750);
+  const realTimeAfter = Date.parse((await clock.getAttribute("datetime"))!);
+  expect(realTimeAfter).toBeGreaterThan(hydratedAt);
+
+  const controls = page.getByRole("complementary", {
+    name: "Simulation controls",
+  });
+  await controls.getByRole("button", { name: "1 year / sec" }).click();
+  const acceleratedBefore = Date.parse((await clock.getAttribute("datetime"))!);
+  await page.waitForTimeout(1_100);
+  const acceleratedAfter = Date.parse((await clock.getAttribute("datetime"))!);
+  const acceleratedDays =
+    (acceleratedAfter - acceleratedBefore) / (24 * 60 * 60 * 1_000);
+  expect(acceleratedDays).toBeGreaterThan(300);
+  expect(acceleratedDays).toBeLessThan(550);
+
+  await controls.getByRole("button", { name: "Pause" }).click();
+  await page.waitForTimeout(400);
+  const pausedAt = await clock.getAttribute("datetime");
+  await page.waitForTimeout(700);
+  await expect(clock).toHaveAttribute("datetime", pausedAt!);
+
+  await ephemeris
+    .getByRole("button", { name: "Open ephemeris time controls" })
+    .click();
+  await ephemeris.getByRole("button", { name: "Now" }).click();
+  await page.waitForTimeout(350);
+  const nowAt = Date.parse((await clock.getAttribute("datetime"))!);
+  expect(Math.abs(Date.now() - nowAt)).toBeLessThan(5_000);
+  await expect(
+    controls.getByRole("button", { name: "Real time" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(controls.getByRole("button", { name: "Pause" })).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+
+  await ephemeris
+    .getByRole("button", { name: "Collapse ephemeris time controls" })
+    .click();
+  await controls.getByRole("button", { name: "1 year / sec" }).click();
+  await controls.getByRole("button", { name: "Reset", exact: true }).click();
+  await expect(
+    controls.getByRole("button", { name: "Real time" }),
+  ).toHaveAttribute("aria-pressed", "true");
+  await page.waitForTimeout(350);
+  const resetAt = Date.parse((await clock.getAttribute("datetime"))!);
+  expect(Math.abs(Date.now() - resetAt)).toBeLessThan(5_000);
+
+  expect(pageErrors).toEqual([]);
+  expect(consoleErrors).toEqual([]);
 });
 
 test("the simulation deck collapses into a compact dock and persists", async ({

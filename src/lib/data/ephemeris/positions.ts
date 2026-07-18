@@ -20,6 +20,13 @@ interface OsculatingOrbit {
   readonly semiMajorAxis: number;
 }
 
+export type MutableScenePosition = [number, number, number];
+
+export type EphemerisScenePositionEvaluator = (
+  simulationAtMs: number,
+  target: MutableScenePosition,
+) => MutableScenePosition;
+
 function cross(left: CartesianVector, right: CartesianVector): CartesianVector {
   return {
     x: left.y * right.z - left.z * right.y,
@@ -182,6 +189,43 @@ function positionAfterDays(
   };
 }
 
+function writePositionAfterDays(
+  target: MutableScenePosition,
+  vector: EphemerisVector,
+  days: number,
+  orbit: OsculatingOrbit | null,
+): MutableScenePosition {
+  if (days === 0) {
+    target[0] = vector.positionAu.x;
+    target[1] = vector.positionAu.y;
+    target[2] = vector.positionAu.z;
+    return target;
+  }
+  if (orbit) {
+    const meanAnomaly = wrapRadians(
+      orbit.initialMeanAnomaly + orbit.meanMotion * days,
+    );
+    const eccentricAnomaly = solveEccentricAnomaly(
+      meanAnomaly,
+      orbit.eccentricity,
+    );
+    const perifocalX =
+      orbit.semiMajorAxis * (Math.cos(eccentricAnomaly) - orbit.eccentricity);
+    const perifocalY =
+      orbit.semiMajorAxis *
+      Math.sqrt(1 - orbit.eccentricity ** 2) *
+      Math.sin(eccentricAnomaly);
+    target[0] = orbit.basisP.x * perifocalX + orbit.basisQ.x * perifocalY;
+    target[1] = orbit.basisP.y * perifocalX + orbit.basisQ.y * perifocalY;
+    target[2] = orbit.basisP.z * perifocalX + orbit.basisQ.z * perifocalY;
+    return target;
+  }
+  target[0] = vector.positionAu.x + vector.velocityAuPerDay.x * days;
+  target[1] = vector.positionAu.y + vector.velocityAuPerDay.y * days;
+  target[2] = vector.positionAu.z + vector.velocityAuPerDay.z * days;
+  return target;
+}
+
 function positionFromWindow(
   window: EphemerisWindow,
   simulationAtMs: number,
@@ -275,6 +319,112 @@ export function ephemerisScenePosition(
     ),
     scaleMode,
   );
+}
+
+/**
+ * Compiles the invariant orbital inputs once and writes subsequent positions
+ * into a caller-owned tuple. The scene uses this in its render loop to avoid
+ * rebuilding orbital elements and allocating transient vectors every frame.
+ */
+export function createEphemerisScenePositionEvaluator(
+  vector: EphemerisVector,
+  observedAt: string,
+  scaleMode: ScaleMode,
+  allowExtendedOsculatingPreview = false,
+  window?: EphemerisWindow,
+): EphemerisScenePositionEvaluator {
+  const observedAtMs = Date.parse(observedAt);
+  const orbit = osculatingOrbitFor(vector);
+  const samples = window?.samples.map((sample) => ({
+    at: Date.parse(sample.observedAt),
+    sample,
+  }));
+  const positionAu: MutableScenePosition = [0, 0, 0];
+  const strategy =
+    scaleMode === "scientific" ? scientificScale : explorationScale;
+
+  return (simulationAtMs, target) => {
+    let resolvedFromWindow = false;
+    if (
+      samples &&
+      samples.length > 0 &&
+      simulationAtMs >= samples[0].at &&
+      simulationAtMs <= samples[samples.length - 1].at
+    ) {
+      let upperIndex = 0;
+      while (
+        upperIndex < samples.length &&
+        samples[upperIndex].at < simulationAtMs
+      ) {
+        upperIndex += 1;
+      }
+
+      if (upperIndex === 0) {
+        const first = samples[0].sample.positionAu;
+        positionAu[0] = first.x;
+        positionAu[1] = first.y;
+        positionAu[2] = first.z;
+      } else {
+        const lower = samples[upperIndex - 1];
+        const upper = samples[upperIndex];
+        if (simulationAtMs === upper.at) {
+          positionAu[0] = upper.sample.positionAu.x;
+          positionAu[1] = upper.sample.positionAu.y;
+          positionAu[2] = upper.sample.positionAu.z;
+        } else {
+          const intervalDays = (upper.at - lower.at) / MILLISECONDS_PER_DAY;
+          const t = (simulationAtMs - lower.at) / (upper.at - lower.at);
+          const t2 = t * t;
+          const t3 = t2 * t;
+          const h00 = 2 * t3 - 3 * t2 + 1;
+          const h10 = t3 - 2 * t2 + t;
+          const h01 = -2 * t3 + 3 * t2;
+          const h11 = t3 - t2;
+          positionAu[0] =
+            h00 * lower.sample.positionAu.x +
+            h10 * intervalDays * lower.sample.velocityAuPerDay.x +
+            h01 * upper.sample.positionAu.x +
+            h11 * intervalDays * upper.sample.velocityAuPerDay.x;
+          positionAu[1] =
+            h00 * lower.sample.positionAu.y +
+            h10 * intervalDays * lower.sample.velocityAuPerDay.y +
+            h01 * upper.sample.positionAu.y +
+            h11 * intervalDays * upper.sample.velocityAuPerDay.y;
+          positionAu[2] =
+            h00 * lower.sample.positionAu.z +
+            h10 * intervalDays * lower.sample.velocityAuPerDay.z +
+            h01 * upper.sample.positionAu.z +
+            h11 * intervalDays * upper.sample.velocityAuPerDay.z;
+        }
+      }
+      resolvedFromWindow = true;
+    }
+
+    if (!resolvedFromWindow) {
+      const rawDays = (simulationAtMs - observedAtMs) / MILLISECONDS_PER_DAY;
+      const days =
+        allowExtendedOsculatingPreview && orbit
+          ? rawDays
+          : Math.max(
+              -MAX_PROPAGATION_DAYS,
+              Math.min(MAX_PROPAGATION_DAYS, rawDays),
+            );
+      writePositionAfterDays(positionAu, vector, days, orbit);
+    }
+
+    const distanceAu = Math.hypot(positionAu[0], positionAu[1], positionAu[2]);
+    if (distanceAu === 0) {
+      target[0] = 0;
+      target[1] = 0;
+      target[2] = 0;
+      return target;
+    }
+    const factor = strategy.distanceFromAu(distanceAu) / distanceAu;
+    target[0] = positionAu[0] * factor;
+    target[1] = positionAu[2] * factor;
+    target[2] = -positionAu[1] * factor;
+    return target;
+  };
 }
 
 export function ephemerisOrbitScenePoints(

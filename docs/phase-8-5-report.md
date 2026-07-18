@@ -1,11 +1,12 @@
 # Faz 8.5 Uzun Tarih Aralığı ve API Kabul Raporu
 
-## Son Başlangıç Commit’i
+## Başlangıç ve Canlı Dağıtım
 
-- Başlangıç: `fc40e0bf5bda97c4dc83439da8ac2cb17d4544ff`
+- Bu kabul onarımının başlangıcı: `865309f47da707d450a6914ff9686884f9d1eb95`
 - Çalışma bu commitin temiz klonunda yapıldı.
-- Commit veya push yapılmadı.
-- Faz 9 texture, shader, atmosphere veya final visual asset kapsamına girilmedi.
+- `fc40e0b` sonrası Faz 8.5 paketi commit/push edildi ve Vercel üzerinden canlıya dağıtıldı.
+- Canlı dağıtım sonrası `/explore` kabulünde React minified `#418` hydration uyuşmazlığı bulundu.
+- Bu turda commit veya push yapılmadı; aşağıdaki onarım yerel production build ve production-mode Playwright ile doğrulandı.
 
 ## Mevcut Faz 8.5 Denetimi
 
@@ -21,7 +22,13 @@ Canlı kabul notları ve eklenen gereksinim metni birlikte denetlendi. Paket şu
 - stale/fallback verinin daha güncel başarılı sonucu ezmemesi;
 - dinamik 1100 yıllık ürün aralığı ve dış veri doğruluk düzeltmeleri.
 
-Canlı Vercel dağıtımı bu teslim paketi push edilmeden değişmeyecektir. Kabul, teslim edilecek production build üzerinde yapıldı.
+## C0 Canlı Hydration Onarımı
+
+Kök neden, `initialSimulationState = stateAtNow()` çağrısının modül değerlendirmesi sırasında server ve client için ayrı `Date.now()` değerleri üretmesi ve `EphemerisControls` ilk markup'ının bu değerleri doğrudan tarih metnine dönüştürmesiydi. Store başlangıcı deterministik bir sentinel'a taşındı. İlk server/client ağacı `Preparing current UTC…` durumunu aynı biçimde üretir; client hydrate olduktan sonra saat gerçek `Date.now()` anchor'ıyla, duraklatılmamış ve `Real time` olarak başlar. Efemeris isteği beklerken saat akmaya devam eder.
+
+`suppressHydrationWarning`, build-time tarih dondurma, eski statik tarih, timeout tabanlı remount veya geniş console allowlist kullanılmadı. Production E2E; hydration/console hatası olmamasını, yakalanmamış `pageerror` bulunmamasını, gerçek zamana yakın ilk timestamp'i, monoton Real time akışını, Jülyen yıl hızını, Pause'u ve bağımsız Now/Reset dönüşlerini doğrular.
+
+Canlı Vercel dağıtımı bu onarım kullanıcı tarafından push edilene kadar başlangıç commitinde kalır; kabul bu turda üretilen production build üzerinde tamamlandı.
 
 ## Yeni Tarih Aralığı Sözleşmesi
 
@@ -226,12 +233,13 @@ Provider timeout’ları current veri gibi gizlenmez. `observedAt`, `retrievedAt
 - Production build: PASS
 - Production route kabulü: `/`, `/explore`, `/compare`, `/data`, `/about`, `/case-study`, sekiz gezegen ve health PASS
 - Production `/api/ephemeris` minimum/current/maximum: 200/current, fallback yok
-- Playwright Chromium: 84/84 PASS
+- Playwright production Chromium: 85/85 PASS
 - Responsive: 390 px mobile, 768 px tablet ve desktop kontrol yüzeylerinde horizontal overflow yok
 - Kamera: mouse drag ve touch doğrudan free-camera kontrolünü devralıyor; Escape guided moda dönüyor
-- Zaman: gerçek zaman, gizlenebilir panel, exact boundaries, no request loop ve rapid scrub testleri geçti
+- Hydration/console: React hydration warning/error, beklenmeyen `console.error` ve `pageerror` yok
+- Zaman: gerçek zaman, Jülyen yıl hızı, Pause, bağımsız Now/Reset, gizlenebilir panel, exact boundaries, no request loop ve rapid scrub testleri geçti
 
-Kabul ortamı Node `v24.14.0` üzerinde çalıştı ve repository’nin `22.x` engine uyarısını verdi. Proje/CI Node 22 sözleşmesi değiştirilmedi.
+Format, lint, typecheck, Vitest, production build ve Playwright kabulü repository sözleşmesine uygun Node `v22.22.0` ile çalıştırıldı.
 
 ## Değiştirilen Dosyalar
 
@@ -279,15 +287,10 @@ Rapor:
 
 ## Faz 8.5 PASS/FAIL
 
-**PASS.** Dinamik tarih sözleşmesi, boundary güvenliği, altı hız, gerçek-zaman açılışı, gizlenebilir paneller, source-labelled hızlı preview, seri JPL window mimarisi, uzun tarih barycenter çözümü, dış veri doğruluk düzeltmeleri, production API ve 84 testlik tarayıcı kabulü geçti.
+**PASS.** Dinamik tarih sözleşmesi, boundary güvenliği, altı hız, gerçek-zaman açılışı, deterministik hydration, gizlenebilir paneller, source-labelled hızlı preview, seri JPL window mimarisi, uzun tarih barycenter çözümü, dış veri doğruluk düzeltmeleri, production API ve 85 testlik tarayıcı kabulü geçti.
 
 `api.nasa.gov` kabul ortamında timeout olduğunda doğrulanmış fallback/historical davranışı devreye girdi ve current gibi sunulmadı. Bu provider-availability durumu ürün blocker’ı değil; beklenen hata sınırı olarak kabul edildi.
 
 ## Faz 9 Öncesi Blocker’lar
 
-Kod veya Faz 8.5 kabul blocker’ı kalmadı. Operasyonel olarak yapılacaklar:
-
-1. Kullanıcı teslim ZIP’ini kendi Node 22 ortamında test etmeli.
-2. Kullanıcı değişiklikleri gözden geçirip commit/push yapmalı.
-3. Vercel yeni commit’i deploy ettikten sonra canlı URL üzerinde kısa post-deploy smoke tekrarlanmalı.
-4. Faz 9 bu üç adım tamamlanmadan başlatılmamalı.
+Kod veya C0 kabul blocker’ı kalmadı. Faz 9 aynı çalışma akışında başlayabilir. Onarımın canlı URL'ye taşınması için kullanıcı teslim paketini gözden geçirip test ettikten sonra commit/push yapmalıdır; bu tur repository'ye yazma yetkisi içermez.

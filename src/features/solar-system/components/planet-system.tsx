@@ -5,6 +5,8 @@ import { useFrame } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
 import type { Group, Mesh } from "three";
 
+import { textureVariantFor } from "@/content/sources/planet-textures";
+import { PLANET_VISUAL_PROFILES } from "@/features/solar-system/lib/planet-visual-profiles";
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import { rotationAngleAt } from "@/features/solar-system/lib/orbital-motion";
 import {
@@ -12,8 +14,9 @@ import {
   type ScenePlanet,
 } from "@/features/solar-system/lib/scene-planets";
 import {
+  createEphemerisScenePositionEvaluator,
   ephemerisOrbitScenePoints,
-  ephemerisScenePosition,
+  type MutableScenePosition,
 } from "@/lib/data/ephemeris/positions";
 import {
   SECONDS_PER_JULIAN_YEAR,
@@ -27,9 +30,12 @@ import {
   currentSimulationTimeMs,
   useSimulationStore,
 } from "@/stores/simulation-store";
+import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
 
+import { AtmosphereShell } from "./atmosphere-shell";
 import { OrbitPath } from "./orbit-path";
 import { PlanetLabel, type ScientificLabelPlacement } from "./planet-label";
+import { SaturnRings } from "./saturn-rings";
 import { ScientificPlanetMarker } from "./scientific-planet-marker";
 
 const SCIENTIFIC_LABEL_PLACEMENTS: Readonly<
@@ -65,6 +71,7 @@ export function PlanetSystem({
   scaleMode,
 }: PlanetSystemProps) {
   const bodyRef = useRef<Group>(null);
+  const scenePositionRef = useRef<MutableScenePosition>([0, 0, 0]);
   const surfaceRef = useRef<Mesh>(null);
   const selected = useExplorationStore(
     (state) => state.selectedPlanetId === planet.id,
@@ -80,6 +87,10 @@ export function PlanetSystem({
     (state) => state.clearHoveredPlanet,
   );
   const active = selected || hovered;
+  const visualProfile = PLANET_VISUAL_PROFILES[planet.id];
+  const surfaceTexture = useSceneTexture(
+    textureVariantFor(planet.id, quality.textureVariant, selected).path,
+  );
   const scale = sceneScaleFor(planet, scaleMode);
   const observedAt = useEphemerisStore((state) => state.bundle.observedAt);
   const vector = useEphemerisStore((state) =>
@@ -91,6 +102,19 @@ export function PlanetSystem({
   const simulationAtMs = useSimulationStore((state) => state.simulationAtMs);
   const timeScale = useSimulationStore((state) => state.timeScale);
   const acceleratedPreview = timeScale === SECONDS_PER_JULIAN_YEAR;
+  const evaluateScenePosition = useMemo(
+    () =>
+      vector
+        ? createEphemerisScenePositionEvaluator(
+            vector,
+            observedAt,
+            scaleMode,
+            acceleratedPreview,
+            vectorWindow,
+          )
+        : undefined,
+    [acceleratedPreview, observedAt, scaleMode, vector, vectorWindow],
+  );
   const orbitPoints = useMemo(
     () =>
       vector
@@ -119,17 +143,12 @@ export function PlanetSystem({
   }, [planet.id, planetObjects, scale.radius]);
 
   useLayoutEffect(() => {
-    if (bodyRef.current && vector) {
-      bodyRef.current.position.set(
-        ...ephemerisScenePosition(
-          vector,
-          observedAt,
-          simulationAtMs,
-          scaleMode,
-          acceleratedPreview,
-          vectorWindow,
-        ),
+    if (bodyRef.current && evaluateScenePosition) {
+      const position = evaluateScenePosition(
+        simulationAtMs,
+        scenePositionRef.current,
       );
+      bodyRef.current.position.set(position[0], position[1], position[2]);
     }
     if (surfaceRef.current) {
       surfaceRef.current.rotation.y = rotationAngleAt(
@@ -139,43 +158,28 @@ export function PlanetSystem({
       );
     }
   }, [
-    observedAt,
+    evaluateScenePosition,
     planet.retrogradeRotation,
     planet.siderealRotationHours,
     resetVersion,
-    scaleMode,
     simulationAtMs,
-    acceleratedPreview,
-    vector,
-    vectorWindow,
   ]);
 
   useFrame(() => {
     if (!bodyRef.current || !surfaceRef.current) return;
 
-    const currentBundle = useEphemerisStore.getState().bundle;
-    const currentVector = currentBundle.vectors.find(
-      ({ planetId }) => planetId === planet.id,
-    );
-    const currentWindow = currentBundle.windows?.find(
-      ({ planetId }) => planetId === planet.id,
-    );
-    if (currentVector) {
-      const simulationState = useSimulationStore.getState();
-      bodyRef.current.position.set(
-        ...ephemerisScenePosition(
-          currentVector,
-          currentBundle.observedAt,
-          currentSimulationTimeMs(simulationState),
-          useExplorationStore.getState().scaleMode,
-          simulationState.timeScale === SECONDS_PER_JULIAN_YEAR,
-          currentWindow,
-        ),
+    const simulationState = useSimulationStore.getState();
+    const currentTimeMs = currentSimulationTimeMs(simulationState);
+    if (evaluateScenePosition) {
+      const position = evaluateScenePosition(
+        currentTimeMs,
+        scenePositionRef.current,
       );
+      bodyRef.current.position.set(position[0], position[1], position[2]);
     }
 
     surfaceRef.current.rotation.y = rotationAngleAt(
-      currentSimulationTimeMs(useSimulationStore.getState()),
+      currentTimeMs,
       planet.siderealRotationHours,
       planet.retrogradeRotation,
     );
@@ -221,7 +225,7 @@ export function PlanetSystem({
         )
       ) : null}
       <group ref={bodyRef} position={scale.initialPosition}>
-        <group rotation-z={planet.axialTiltRadians}>
+        <group rotation-x={planet.axialTiltRadians}>
           <mesh
             ref={surfaceRef}
             name={planet.name}
@@ -232,13 +236,35 @@ export function PlanetSystem({
               args={[1, quality.planetSegments[0], quality.planetSegments[1]]}
             />
             <meshStandardMaterial
-              color={planet.color}
+              color={surfaceTexture ? "#ffffff" : planet.color}
               emissive={active ? planet.color : "#000000"}
-              emissiveIntensity={selected ? 0.3 : hovered ? 0.18 : 0}
+              emissiveIntensity={selected ? 0.15 : hovered ? 0.08 : 0}
+              map={surfaceTexture ?? undefined}
               metalness={0}
-              roughness={0.86}
+              roughness={visualProfile.roughness}
             />
           </mesh>
+
+          {visualProfile.atmosphere ? (
+            <AtmosphereShell
+              mode={quality.atmosphereMode}
+              profile={visualProfile.atmosphere}
+              radius={scale.radius}
+              segments={quality.atmosphereSegments}
+            />
+          ) : null}
+
+          {planet.id === "saturn" ? (
+            <SaturnRings
+              radius={scale.radius}
+              segments={quality.ringSegments}
+              textureVariant={
+                quality.textureVariant === "high" && !selected
+                  ? "medium"
+                  : quality.textureVariant
+              }
+            />
+          ) : null}
 
           <mesh
             onClick={handleClick}
@@ -267,13 +293,13 @@ export function PlanetSystem({
         {active && !scientificMode ? (
           <mesh
             raycast={() => undefined}
-            scale={scale.radius * (selected ? 1.24 : 1.16)}
+            scale={scale.radius * (selected ? 1.14 : 1.1)}
           >
             <sphereGeometry args={[1, 22, 16]} />
             <meshBasicMaterial
               color={planet.color}
               depthWrite={false}
-              opacity={selected ? 0.2 : 0.12}
+              opacity={selected ? 0.075 : 0.045}
               transparent
               wireframe
             />

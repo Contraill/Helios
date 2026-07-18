@@ -18,6 +18,7 @@ import { useEphemerisStore } from "@/stores/ephemeris-store";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import {
   currentSimulationTimeMs,
+  INITIAL_SIMULATION_TIMESTAMP_MS,
   useSimulationStore,
 } from "@/stores/simulation-store";
 
@@ -92,8 +93,10 @@ export function EphemerisControls() {
   const setSimulationTime = useSimulationStore(
     (state) => state.setSimulationTime,
   );
+  const resetSimulation = useSimulationStore((state) => state.resetSimulation);
+  const [clockReady, setClockReady] = useState(false);
   const [displayedAt, setDisplayedAt] = useState(
-    useSimulationStore.getState().simulationAtMs,
+    INITIAL_SIMULATION_TIMESTAMP_MS,
   );
   const [pendingValue, setPendingValue] = useState(inputValueFor(displayedAt));
   const [scrubYearOffset, setScrubYearOffset] = useState(0);
@@ -104,6 +107,7 @@ export function EphemerisControls() {
   const lastAutomaticRequestKey = useRef<string | null>(null);
   const lastAutomaticRequestRealMs = useRef(0);
   const mounted = useRef(false);
+  const clockReadyRef = useRef(false);
 
   const updateUrl = useCallback((timestamp: number) => {
     const url = new URL(window.location.href);
@@ -185,6 +189,11 @@ export function EphemerisControls() {
           ? requestedTimestamp
           : anchorUtcMs;
       setSimulationTime(initialTimestamp);
+      setDisplayedAt(initialTimestamp);
+      setPendingValue(inputValueFor(initialTimestamp));
+      setScrubYearOffset(yearOffsetFromAnchor(initialTimestamp, sessionRange));
+      clockReadyRef.current = true;
+      setClockReady(true);
       void loadAt(initialTimestamp, Boolean(requested));
     };
     void initialize();
@@ -199,6 +208,7 @@ export function EphemerisControls() {
 
   useEffect(() => {
     const interval = window.setInterval(() => {
+      if (!clockReadyRef.current) return;
       const simulationState = useSimulationStore.getState();
       const current = simulationState.syncSimulationClock();
       setDisplayedAt(current);
@@ -343,10 +353,25 @@ export function EphemerisControls() {
   };
 
   const goNow = () => {
-    const now = Date.now();
-    initializeSimulationRange(now);
+    resetSimulation();
+    const now = useSimulationStore.getState().simulationAtMs;
     void loadAt(now);
   };
+
+  if (!clockReady) {
+    return (
+      <aside
+        aria-busy="true"
+        aria-label="Ephemeris time controls"
+        className={styles.timeDock}
+      >
+        <p className={styles.timePreparing} role="status">
+          <small>Horizons ephemeris · TDB</small>
+          <span>Preparing current UTC…</span>
+        </p>
+      </aside>
+    );
+  }
 
   if (!timePanelExpanded) {
     return (

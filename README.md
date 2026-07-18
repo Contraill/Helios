@@ -6,9 +6,11 @@ The project combines a cinematic 3D experience with sourced planetary data, pers
 
 ## Current status
 
-Phase 6 is complete. All eight planet detail routes now provide distinct, server-rendered editorial experiences with sourced reference values, human-scale calculations, mission context, methodology and visible provenance. The pages are statically generated and remain meaningful without Canvas or WebGL.
+Phases 6–8, Block B.5 / Phase 8.5 and Block C are implemented. Helios now includes eight distinct server-rendered planet references, normalized NASA/JPL data surfaces with explicit fallback metadata, the two-world comparison experience, and a sourced JPL Horizons Explore timeline.
 
-Roadmap v1.2 also defines a future Block B.5 quality gate for sourced JPL Horizons ephemerides, time navigation and free camera control. That work has not started. Phase 7 NASA data surfaces and Phase 8 comparison remain the open Block B acceptance gates.
+Explore opens at the current UTC time in unpaused Real time mode, supports six playback speeds, a dynamic −500/+600 calendar-year range, cached Horizons windows with Hermite interpolation, long-range body-center/barycenter resolution, and one mouse/touch/keyboard-capable camera authority. The Phase 8.5 commit has been deployed; a post-deploy hydration mismatch discovered on `/explore` is covered by the current production-mode acceptance repair.
+
+The local Block C acceptance package adds traceable multi-resolution planetary surfaces, distinct atmospheres, Saturn's rings, a controlled Sun/corona treatment, quality-aware loading, production performance budgets and a WCAG-oriented final audit. It is prepared for user test and push; the live deployment remains unchanged until that push. Phase 11 has not started.
 
 ## Stack
 
@@ -38,11 +40,12 @@ src/
 ├── features/
 │   ├── data-presentation/     # source, metric and methodology primitives
 │   ├── planet-details/        # editorial detail-page compositions
-│   └── solar-system/          # scene, interaction and camera orchestration
+│   ├── solar-system/          # scene, ephemeris, interaction and camera orchestration
+│   └── space-data/            # normalized NASA/JPL data surfaces
 ├── hooks/                     # client capability and preference hooks
 ├── lib/
 │   ├── calculations/          # pure domain calculations
-│   ├── data/schemas/          # Zod contracts
+│   ├── data/                  # schemas, ephemeris and external providers
 │   ├── env/                   # server-only environment validation
 │   └── i18n/                  # shared UI copy
 ├── stores/                    # bounded client interaction state
@@ -81,12 +84,12 @@ pnpm dev
 ## Rendering and interaction policy
 
 - Planetary physical parameters and approximate orbital elements come from NASA/JPL.
-- Approximate elements drive explanatory motion; the scene is not presented as precise ephemeris output.
+- Explore uses sourced Horizons vectors for selected dates; accelerated playback and active scrubbing are explicitly labelled approximate previews.
 - Exploration mode uses separate presentation transforms for legibility; scientific mode uses one shared linear ratio for radii and distance.
 - Camera state is centralized; planet components publish selection events and never move the camera directly.
 - Frame loops mutate Three.js objects without writing React state every frame.
-- Quality levels currently scale DPR, star density, sphere detail and orbit sampling; texture-heavy rendering, atmosphere shaders, rings and bloom remain outside the current baseline.
-- Dynamic NASA data will be normalized and validated on the server before it reaches the UI.
+- Quality levels control DPR, star density, geometry, orbit sampling, texture resolution, atmosphere cost, Saturn ring detail and high-tier-only bounded bloom.
+- Dynamic NASA/JPL data is normalized and validated on the server before it reaches the UI; source time, retrieval time and fallback status remain distinct.
 
 ## Documentation
 
@@ -94,5 +97,7 @@ pnpm dev
 - [`docs/project/05_DEVELOPMENT_ROADMAP.md`](docs/project/05_DEVELOPMENT_ROADMAP.md) — phase plan and acceptance criteria
 - [`docs/project/06_TESTING_QUALITY_RELEASE.md`](docs/project/06_TESTING_QUALITY_RELEASE.md) — quality and release standard
 - [`docs/decisions.md`](docs/decisions.md) — decision log
-- [`docs/phase-6-report.md`](docs/phase-6-report.md) — completed planet-detail acceptance gate
+- [`docs/phase-8-5-report.md`](docs/phase-8-5-report.md) — ephemeris, simulation-clock and live acceptance gate
+- [`docs/phase-9-report.md`](docs/phase-9-report.md) — visual depth, asset and attribution gate
+- [`docs/phase-10-report.md`](docs/phase-10-report.md) — measured performance and accessibility gate
 - [`docs/block-b-opening-report.md`](docs/block-b-opening-report.md) — historical Block B opening slice

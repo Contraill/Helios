@@ -97,6 +97,35 @@
   backdrop-filter: blur(12px);
 }
 
+.timePreparing {
+  display: flex;
+  min-height: 3.55rem;
+  margin: 0;
+  padding: 0.6rem 0.72rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.12rem;
+  border: 1px solid var(--helios-color-line);
+  border-radius: var(--helios-radius-lg);
+  background: rgb(7 8 12 / 0.86);
+  box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.18);
+  backdrop-filter: blur(12px);
+}
+
+.timePreparing small {
+  color: var(--helios-color-text-secondary);
+  font-size: 0.5rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.timePreparing span {
+  color: var(--helios-color-text-primary);
+  font-family: var(--helios-font-mono);
+  font-size: 0.66rem;
+  font-weight: 650;
+}
+
 .timeDockButton > span:first-child {
   display: flex;
   min-width: 0;
@@ -912,6 +941,18 @@
   line-height: 1.45;
 }
 
+.visualAttribution {
+  margin: 0.45rem 0 0;
+  color: rgb(242 239 230 / 0.54);
+  font-size: 0.55rem;
+  line-height: 1.45;
+}
+
+.visualAttribution a {
+  color: rgb(185 209 240 / 0.88);
+  text-underline-offset: 0.15em;
+}
+
 @media (max-width: 1180px) and (min-width: 761px) {
   .timePanel,
   .timeDock {
@@ -1046,5 +1087,84 @@
 
   .controlGrid .motionFieldset {
     grid-column: auto;
+  }
+}
+
+@media (max-height: 800px) and (min-width: 901px) {
+  .explore {
+    overflow: visible;
+  }
+
+  .scene {
+    height: 42rem;
+    min-height: 42rem;
+  }
+
+  .interfaceStack {
+    position: relative;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: minmax(0, 30rem) minmax(21rem, 1fr);
+    gap: 1rem;
+    padding: 1rem clamp(1.25rem, 4vw, 3rem) 3rem;
+    background: #03050a;
+  }
+
+  .timePanel,
+  .timeDock,
+  .controlDeck,
+  .controlDock,
+  .summaryPanel,
+  .navigator,
+  .scaleNotice {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    transform: none;
+  }
+
+  .scaleNotice {
+    grid-column: 1 / -1;
+    padding-bottom: 0.25rem;
+    text-align: left;
+  }
+
+  .timePanel,
+  .controlDeck {
+    grid-column: 1;
+    max-width: 30rem;
+    justify-self: start;
+  }
+
+  .timeDock {
+    grid-column: 1;
+    max-width: 21rem;
+    justify-self: start;
+  }
+
+  .controlDock {
+    grid-column: 1;
+    max-width: 14rem;
+    justify-self: start;
+  }
+
+  .summaryPanel,
+  .navigator {
+    grid-column: 2;
+    max-width: 21rem;
+    justify-self: end;
+  }
+
+  .summaryPanel {
+    grid-row: 2;
+  }
+
+  .navigator {
+    grid-row: 3;
   }
 }

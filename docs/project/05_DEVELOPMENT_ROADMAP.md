@@ -2,7 +2,7 @@
 
 **Belge sürümü:** 1.2  
 **Güncelleme tarihi:** 18 Temmuz 2026  
-**Yürürlük:** Blok B geliştirmesi sırasında; Faz 8.5 Blok B tamamlandıktan sonra  
+**Yürürlük:** Blok C yerel kabul paketi tamamlandı; Faz 11 başlatılmadı
 **Koruma notu:** Faz 0–4 kapsamı, görevleri ve kabul kriterleri bu güncellemeyle değiştirilmemiştir.
 
 ## 1. Genel yaklaşım
@@ -388,7 +388,7 @@ Doğru ürün dili:
 
 ### Veri ve efemeris görevleri
 
-**Uygulama doğrulaması — 18 Temmuz 2026:** Resmî JPL Horizons endpoint'inin güncel response signature değeri `1.2` olarak gözlendi; Cartesian `VECTORS` çıktısı ve `CENTER`, `REF_PLANE`, `REF_SYSTEM`, `OUT_UNITS`, `VEC_TABLE`, `CSV_FORMAT` ayarları doğrudan doğrulandı. Faz 8.5 teknik sözleşmesi; `EPHEM_TYPE=VECTORS`, konum ve hız sağlayan `VEC_TABLE=2`, Güneş gövde merkezi `CENTER=500@10`, J2000 ekliptik düzlemi `REF_PLANE=ECLIPTIC`, `REF_SYSTEM=ICRF`, `OUT_UNITS=AU-D` ve TDB zaman ölçeğidir. Merkezi target registry, altı saatlik kararlı örnek epoch'u ve 1900–2100 kullanıcı tarih sınırı uygulandı.
+**Uygulama doğrulaması — 18 Temmuz 2026:** Resmî JPL Horizons endpoint'inin güncel response signature değeri `1.2` olarak gözlendi; Cartesian `VECTORS` çıktısı ve `CENTER`, `REF_PLANE`, `REF_SYSTEM`, `OUT_UNITS`, `VEC_TABLE`, `CSV_FORMAT` ayarları doğrudan doğrulandı. Faz 8.5 teknik sözleşmesi; `EPHEM_TYPE=VECTORS`, konum ve hız sağlayan `VEC_TABLE=2`, Güneş gövde merkezi `CENTER=500@10`, J2000 ekliptik düzlemi `REF_PLANE=ECLIPTIC`, `REF_SYSTEM=ICRF`, `OUT_UNITS=AU-D` ve TDB zaman ölçeğidir. Merkezi target registry ve altı saatlik kararlı örnek epoch'u korunur. Kullanıcı aralığı oturumun gerçek UTC anchor'ından dinamik olarak −500/+600 takvim yılıdır. Real time ile birlikte `6 hours / sec`, `1 day / sec`, `1 week / sec`, `1 month / sec` ve Jülyen `1 year / sec` olmak üzere altı hız bulunur. Horizons verisi hedef başına yaklaşık 3600 günlük position/velocity window'ları olarak seri JPL fair-use kuyruğundan alınır; istemci window içinde cubic Hermite interpolation uygular. Uzun tarihlerde body-center desteği yetmediğinde aynı gezegenin barycenter target'ı açık metadata ile kullanılır.
 
 - Resmî JPL Horizons API’yi ana efemeris kaynağı olarak doğrula
 - 3B sahne için observer table yerine Cartesian vector table yaklaşımını değerlendir ve teknik seçimi kaydet
@@ -498,6 +498,10 @@ Exact camera pose persistence zorunlu değildir. Tercih edilen kamera modu sakla
 
 **Yürütme bloğu:** Blok C — Faz 10 ile sürekli ölçüm ve audit eşliğinde
 
+**Durum (18 Temmuz 2026):** PASS — kaynaklı texture manifesti, kalite
+katmanları, atmosferler, Güneş/corona, Satürn halkası ve fallback kabulü
+`docs/phase-9-report.md` içinde kayıtlıdır.
+
 ### Görevler
 
 - atmosfer shader
@@ -522,6 +526,9 @@ Exact camera pose persistence zorunlu değildir. Tercih edilen kamera modu sakla
 ## Faz 10 — Performans ve erişilebilirlik
 
 **Yürütme bloğu:** Blok C — Faz 9 boyunca sürekli; blok sonunda bağımsız final audit
+
+**Durum (18 Temmuz 2026):** PASS — ölçülen bütçeler, runtime/ağ denetimi,
+WCAG odaklı E2E ve kalan sınırlar `docs/phase-10-report.md` içinde kayıtlıdır.
 
 ### Görevler
 

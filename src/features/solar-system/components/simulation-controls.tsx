@@ -262,6 +262,17 @@ export function SimulationControls() {
       >
         {copy.scaleDescriptions[scaleMode]}
       </p>
+      <p className={styles.visualAttribution}>
+        {copy.visualSources}{" "}
+        <a
+          href="https://www.nasa.gov/nasa-brand-center/images-and-media/"
+          rel="noreferrer"
+          target="_blank"
+        >
+          {copy.visualSourcesLink}
+        </a>
+        .
+      </p>
     </aside>
   );
 }

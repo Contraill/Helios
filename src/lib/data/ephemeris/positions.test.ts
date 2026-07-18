@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { HORIZONS_SNAPSHOT } from "./horizons-snapshot";
 import {
+  createEphemerisScenePositionEvaluator,
   ephemerisOrbitScenePoints,
   ephemerisScenePosition,
   propagatedPositionAu,
@@ -110,6 +111,32 @@ describe("ephemeris scene positions", () => {
         ),
       );
       expect(points.flat().every(Number.isFinite)).toBe(true);
+    }
+  });
+
+  it("reuses a caller-owned tuple while matching the reference scene calculation", () => {
+    const target: [number, number, number] = [0, 0, 0];
+    const evaluator = createEphemerisScenePositionEvaluator(
+      earth,
+      HORIZONS_SNAPSHOT.observedAt,
+      "exploration",
+      true,
+    );
+
+    for (const days of [0, 30, 500]) {
+      const simulationAtMs =
+        Date.parse(HORIZONS_SNAPSHOT.observedAt) + days * 86_400_000;
+      const result = evaluator(simulationAtMs, target);
+      expect(result).toBe(target);
+      expect(result).toEqual(
+        ephemerisScenePosition(
+          earth,
+          HORIZONS_SNAPSHOT.observedAt,
+          simulationAtMs,
+          "exploration",
+          true,
+        ),
+      );
     }
   });
 });

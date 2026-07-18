@@ -16,6 +16,10 @@ import {
 } from "@/features/solar-system/types/experience-settings";
 
 const MILLISECONDS_PER_DAY = 86_400_000;
+// Client-only effects replace this sentinel with the current UTC timestamp.
+// Keeping module evaluation deterministic prevents server/client clock drift
+// from leaking into the first rendered tree.
+export const INITIAL_SIMULATION_TIMESTAMP_MS = 0;
 
 export interface SimulationState {
   isPaused: boolean;
@@ -34,7 +38,7 @@ export interface SimulationState {
   resetSimulation: () => void;
 }
 
-function stateAtNow(now = Date.now()) {
+function stateAt(now: number) {
   return {
     isPaused: false,
     timeScale: 1 as TimeScale,
@@ -46,7 +50,7 @@ function stateAtNow(now = Date.now()) {
   };
 }
 
-export const initialSimulationState = stateAtNow();
+export const initialSimulationState = stateAt(INITIAL_SIMULATION_TIMESTAMP_MS);
 
 function rawSimulationTimeMs(
   state: Pick<
@@ -204,5 +208,5 @@ export const useSimulationStore = create<SimulationState>()(
 );
 
 export function resetSimulationStore(now = Date.now()): void {
-  useSimulationStore.setState(stateAtNow(now));
+  useSimulationStore.setState(stateAt(now));
 }

@@ -12,6 +12,7 @@ import { usePreferencesStore } from "@/stores/preferences-store";
 import { useSimulationStore } from "@/stores/simulation-store";
 
 import { CameraRig } from "./camera-rig";
+import { ExploreBloom } from "./explore-bloom";
 import { PlanetSystem } from "./planet-system";
 import { StarField } from "./star-field";
 import { Sun } from "./sun";
@@ -62,9 +63,9 @@ export function SolarSystemScene({
       />
       <Sun
         motionEnabled={simulationMotionEnabled}
+        quality={quality}
         resetVersion={resetVersion}
         scaleMode={scaleMode}
-        segments={quality.planetSegments}
         sun={sceneSun}
         timeScale={visualMotionScale}
       />
@@ -80,6 +81,10 @@ export function SolarSystemScene({
           scaleMode={scaleMode}
         />
       ))}
+      <ExploreBloom
+        enabled={quality.bloomStrength > 0 && !reducedMotion}
+        strength={quality.bloomStrength}
+      />
     </>
   );
 }

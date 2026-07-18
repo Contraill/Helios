@@ -1,5 +1,35 @@
 # Helios — Karar Kaydı
 
+## Blok C görsel asset ve kalite sözleşmesi
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Güneş ve sekiz gezegenin yüzeyleri makine-okunabilir kaynak/temsil manifestiyle düşük, orta ve yüksek WebP katmanlarına ayrılır. High overview orta yüzeyleri korur, yalnız seçili gövdeyi high'a yükseltir. Texture hatası gövdeye özgü renk material'ına düşer. Atmosfer ayrı shell, Satürn halkası ayrı double-sided alpha geometri olarak kalır; bloom yalnız high ve standart harekette çalışır.
+- **Gerekçe:** Görsel derinliği provenance, bellek, fallback ve reduced-motion sınırlarıyla birlikte yönetmek; bütün sahneyi quality/focus değişiminde yeniden yüklememek.
+- **Etkilenen dosyalar:** `src/content/sources/planet-textures.ts`, `src/features/solar-system/lib/planet-visual-profiles.ts`, `src/features/solar-system/lib/quality.ts`, `src/features/solar-system/lib/texture-cache.ts`
+
+## Faz 10 ölçüm ve render bütçesi
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Bütçeler Faz 9 production baseline'ı ölçüldükten sonra sabitlenir. Root shared ve Explore 3B gzip sınırları 180/260 KiB; cold Explore script transferi 525 KiB; texture transferi low/medium/focused-high için 50/200/310 KiB; DPR 1/1.25/1.5; SwiftShader regression tabanı 25/18/10 FPS'tir. Tam tablo `docs/phase-10-performance-accessibility-plan.md` içindedir.
+- **Gerekçe:** Kalite kararlarını uydurma hedeflerden değil aynı production harness ile tekrarlanabilir gerçek sonuçlardan türetmek.
+
+## Kare döngüsünde efemeris hesaplama sınırı
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Horizons vector/window veya scale değiştiğinde oskülatör sabitleri ve örnek zamanları bir kez derlenir. Her gezegen kare sırasında kendi mutable üçlü tamponunu yeniden kullanır; bundle araması, orbital element yeniden kurulumu ve geçici Cartesian/scene tuple üretimi yapmaz. React/Zustand state kare içinde yazılmaz.
+- **Gerekçe:** Efemeris matematiğini değiştirmeden allocation ve CPU maliyetini azaltmak.
+- **Etkilenen dosyalar:** `src/lib/data/ephemeris/positions.ts`, `src/features/solar-system/components/planet-system.tsx`
+
+## Post-processing ve route yaşam döngüsü
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Çok geçişli bloom yerine high tier'a özel sınırlı tek shader pass kullanılır; medium bloom kapalıdır. Texture lease'leri son referanstan beş saniye sonra dispose edilir. Hidden/reduced-motion sahne demand render'a geçer. Next App Router history cache'i route ağacını tutabilir; kabul ölçütü route çıkışında live canvas/texture cleanup ve back/forward sırasında tek canvas reuse'dur.
+- **Gerekçe:** Varsayılan medium kaliteyi pahalı post-processing'den korumak ve router geçmiş belleğini gerçek WebGL resource leak'iyle karıştırmamak.
+
 ## Sayısal veride alan düzeyinde kaynak provenansı
 
 - **Durum:** Kabul edildi
@@ -241,11 +271,13 @@
 
 ## Efemeris örnekleri arası hareket
 
-- **Durum:** Kabul edildi
+- **Durum:** Superseded — aşağıdaki Horizons window ve interpolation kararıyla değiştirildi
 - **Tarih:** 18 Temmuz 2026
 - **Karar:** Server istek zamanı altı saatlik kararlı sample epoch'una yuvarlanır. Client, source position+velocity state'inden iki-cisim oskülatör yörünge elemanlarını türetir ve hareketi en fazla ±370 gün yayar; sınır yaklaşınca yeni Horizons örneği ister. Exploration ölçeği yalnız mesafe sunumunu non-lineer dönüştürür; scientific ölçek tek doğrusal AU oranını kullanır.
 - **Gerekçe:** Frame loop içinde API çağrısı veya frame-rate'e bağlı sahte başlangıç açısı üretmeden akıcı hareket sağlar. Sınırlı yayılım, JPL çözümü ile görsel interpolation arasındaki ayrımı görünür tutar.
 - **Doğrulama:** 18 Temmuz 2026 state'inden 30 gün yayılan Dünya ve Merkür konumları, doğrudan 17 Ağustos 2026 Horizons referanslarıyla karşılaştırıldı; hata her iki hedefte de `0.005 AU` eşiğinin altında kaldı.
+
+Bu karar ilk Faz 8.5 diliminin geçmiş kaydı olarak korunur. ±370 günlük tek-epoch propagation artık etkin veri sözleşmesi değildir.
 
 ## Merkezi zaman ve serbest kamera otoritesi
 
@@ -254,3 +286,24 @@
 - **Karar:** Simulation store tek tarih-saat anchor'ını, pause ve hız sözleşmesini taşır; frame döngüsü bu saatten okur fakat her frame store'a yazmaz. URL `at` parametresi, UTC date/time, Now, ±1/±30 gün ve timeline aynı modele bağlanır. `overview`, `focus`, `transition` ve `free` tek `CameraRig` içindeki tek OrbitControls örneğiyle yönetilir. Free mod mouse/touch orbit-pan-zoom ve form alanlarını yakalamayan ok-tuşu pan desteği verir.
 - **Gerekçe:** React render döngüsünü zaman akışından ayırır; iki rakip kamera controller'ı, stale focus hedefi ve reload sonrası boş uzay konumu üretmez.
 - **Kamera güvenliği:** Exploration için `6`, scientific için `2` minimum camera distance; ölçeğe göre `360/2400` maksimum distance uygulanır. Escape guided moda döner; scale değişimi free otoritesini güvenli geçişe bırakır.
+
+## Faz 8.5 dinamik zaman aralığı ve Jülyen hız sözleşmesi
+
+- **Durum:** Kabul edildi; önceki sabit tarih aralıklarının yerine geçer
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Desteklenen tarih aralığı Explore hydrate olurken alınan gerçek UTC oturum anchor'ından −500/+600 takvim yılı olarak hesaplanır. Store, UI, URL ve API aynı sınır otoritesini kullanır. Açılış duraklatılmamış `Real time`dır; diğer hızlar `6 hours / sec`, `1 day / sec`, `1 week / sec`, `1 month / sec` ve saniye başına `31,557,600` simülasyon saniyesi kullanan Jülyen `1 year / sec`tir.
+- **Gerekçe:** Dinamik aralık eski 1900–2100 sınırını kaldırırken bütün katmanlarda tek clamp sözleşmesini korur. Jülyen yıl katsayısı takvim ayı/yılı belirsizliğini hız hesabına taşımaz.
+
+## Faz 8.5 Horizons window, cache ve barycenter çözümü
+
+- **Durum:** Kabul edildi; ±370 günlük tek-epoch propagation kararını supersede eder
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Her gezegen için merkez tarihin iki yanında 1800 gün bulunan, 30 günlük position/velocity örnekli yaklaşık 3600 günlük Horizons window'u alınır. Window içi konum cubic Hermite interpolation ile çözülür; kenara 90 gün kala kontrollü yenileme değerlendirilir. Aynı target/window isteği birleştirilir ve server cache'i 24 saat revalidate edilir. Uzun tarihte body-center desteklenmiyorsa registry'deki ilgili barycenter target'ı kullanılır ve `mixed-barycenters` metadata'sı istemciye taşınır.
+- **Gerekçe:** Bir window kesintisiz oynatmayı tek örnek propagation'ından daha güvenilir kılar, bütün 1100 yıllık aralığı istemciye yüklemez ve fallback koordinat merkezini gizlemez.
+
+## JPL SSD fair-use kuyruğu
+
+- **Durum:** Kabul edildi
+- **Tarih:** 18 Temmuz 2026
+- **Karar:** Horizons, CAD ve Fireball aynı process-içi seri JPL SSD kuyruğunu kullanır; aynı anda en fazla bir JPL SSD isteği aktiftir. Duplicate Horizons bundle/window çağrıları aynı in-flight Promise'ı paylaşır.
+- **Gerekçe:** Provider fair-use sınırlarını gözetir, sekiz hedefli bundle sırasında burst üretmez ve eşzamanlı consumer'ların gereksiz tekrarını engeller.
