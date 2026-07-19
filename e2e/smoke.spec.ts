@@ -365,10 +365,10 @@ test("visual quality tiers load the expected texture detail and gate bloom", asy
   await expect(shell).toHaveAttribute("data-texture-variant", "low");
   await expect(shell).toHaveAttribute("data-bloom", "disabled");
 
-  await controls.getByRole("button", { name: "High" }).click();
   const highMars = page.waitForResponse(/mars-high\.webp$/);
-  await page.getByRole("button", { name: "Mars" }).click();
+  await controls.getByRole("button", { name: "High" }).click();
   expect((await highMars).status()).toBe(200);
+  await page.getByRole("button", { name: "Mars" }).click();
   await expect(shell).toHaveAttribute("data-texture-variant", "high");
   await expect(shell).toHaveAttribute("data-bloom", "enabled");
 
@@ -376,7 +376,7 @@ test("visual quality tiers load the expected texture detail and gate bloom", asy
   await expect(shell).toHaveAttribute("data-bloom", "disabled");
 });
 
-test("all body maps load at low quality and promote on high-quality focus", async ({
+test("all body maps follow the selected quality without focus downgrades", async ({
   page,
 }) => {
   const bodyIds = [
@@ -409,18 +409,14 @@ test("all body maps load at low quality and promote on high-quality focus", asyn
     .toBe(true);
 
   await controls.getByRole("button", { name: "High" }).click();
-  for (const bodyId of bodyIds) {
-    const highTexture = page.waitForResponse(
-      new RegExp(`/textures/planets/${bodyId}-high\\.webp$`),
-    );
-    await page
-      .getByRole("button", {
-        name: bodyId[0].toUpperCase() + bodyId.slice(1),
-        exact: true,
-      })
-      .click();
-    expect((await highTexture).status()).toBe(200);
-  }
+  await expect
+    .poll(() =>
+      ["sun", ...bodyIds].every((bodyId) =>
+        loadedPaths.has(`/textures/planets/${bodyId}-high.webp`),
+      ),
+    )
+    .toBe(true);
+  await page.getByRole("button", { name: "Neptune", exact: true }).click();
   await expect(page.getByRole("region", { name: "Neptune" })).toBeVisible();
 });
 
@@ -463,11 +459,14 @@ test("initial Explore load avoids duplicate ephemeris and texture requests", asy
   });
 
   await page.goto("/explore", { waitUntil: "networkidle" });
-  await expect.poll(() => textureRequests.length).toBe(11);
+  await expect.poll(() => textureRequests.length).toBe(12);
 
   expect(ephemerisRequests).toHaveLength(1);
   expect(textureRequests).toContain(
     "/textures/planets/earth-clouds-medium.webp",
+  );
+  expect(textureRequests).toContain(
+    "/textures/planets/earth-city-lights-medium.webp",
   );
   expect(new Set(textureRequests).size).toBe(textureRequests.length);
 });

@@ -32,13 +32,15 @@ export function overviewCameraPosition(
 export function focusCameraOffset(
   radius: number,
   aspect: number,
+  scaleMode: ScaleMode = "exploration",
 ): readonly [number, number, number] {
   assertPositiveFinite(radius, "Planet radius");
   assertPositiveFinite(aspect, "Viewport aspect");
 
   const portraitMultiplier = aspect < 0.85 ? 1.28 : aspect < 1.2 ? 1.12 : 1;
+  const minimumDistance = scaleMode === "scientific" ? 0 : MIN_FOCUS_DISTANCE;
   const distance =
-    Math.max(MIN_FOCUS_DISTANCE, radius * RADIUS_DISTANCE_MULTIPLIER) *
+    Math.max(minimumDistance, radius * RADIUS_DISTANCE_MULTIPLIER) *
     portraitMultiplier;
 
   return [distance * 0.48, distance * 0.24, distance];
@@ -48,8 +50,9 @@ export function illuminatedFocusCameraOffset(
   planetPosition: readonly [number, number, number],
   radius: number,
   aspect: number,
+  scaleMode: ScaleMode = "exploration",
 ): readonly [number, number, number] {
-  const canonicalOffset = focusCameraOffset(radius, aspect);
+  const canonicalOffset = focusCameraOffset(radius, aspect, scaleMode);
   const distance = Math.hypot(...canonicalOffset);
   const positionLength = Math.hypot(...planetPosition);
 

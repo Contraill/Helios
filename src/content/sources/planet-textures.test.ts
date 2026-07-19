@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import {
+  earthCityLightsTextureSource,
   earthCloudTextureSource,
   planetTextureSources,
   saturnRingTextureVariants,
@@ -32,21 +33,24 @@ describe("planet texture source manifest", () => {
       }
     }
 
-    for (const variant of Object.values(earthCloudTextureSource.variants)) {
-      expect(
-        existsSync(join(process.cwd(), "public", variant.path.slice(1))),
-      ).toBe(true);
-      expect(paths.has(variant.path)).toBe(false);
-      paths.add(variant.path);
+    for (const layer of [
+      earthCloudTextureSource,
+      earthCityLightsTextureSource,
+    ]) {
+      for (const variant of Object.values(layer.variants)) {
+        expect(
+          existsSync(join(process.cwd(), "public", variant.path.slice(1))),
+        ).toBe(true);
+        expect(paths.has(variant.path)).toBe(false);
+        paths.add(variant.path);
+      }
     }
   });
 
-  it("keeps high overview bodies at medium and promotes only a selection", () => {
-    expect(textureVariantFor("mars", "high").path).toContain("-medium.");
-    expect(textureVariantFor("mars", "high", true).path).toContain("-high.");
-    expect(textureVariantFor("earth", "medium", true).path).toContain(
-      "-medium.",
-    );
+  it("maps every quality choice directly without silently downgrading it", () => {
+    expect(textureVariantFor("mars", "high").path).toContain("-high.");
+    expect(textureVariantFor("earth", "medium").path).toContain("-medium.");
+    expect(textureVariantFor("sun", "low").path).toContain("-low.");
   });
 
   it("does not present reference-derived simulations as observations", () => {
@@ -55,6 +59,7 @@ describe("planet texture source manifest", () => {
     expect(planetTextureSources.uranus.representation).toBe("simulation");
     expect(planetTextureSources.neptune.representation).toBe("simulation");
     expect(earthCloudTextureSource.representation).toBe("simulation");
+    expect(earthCityLightsTextureSource.representation).toBe("simulation");
   });
 
   it("gives focused high quality a real 2K minimum and a detailed ring profile", () => {
@@ -66,5 +71,7 @@ describe("planet texture source manifest", () => {
     expect(saturnRingTextureVariants.high.width).toBeGreaterThan(
       saturnRingTextureVariants.high.height,
     );
+    expect(planetTextureSources.sun.variants.high.width).toBe(4096);
+    expect(earthCityLightsTextureSource.variants.high.width).toBe(4096);
   });
 });

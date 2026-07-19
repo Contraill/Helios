@@ -14,8 +14,8 @@ import { useSimulationStore } from "@/stores/simulation-store";
 import { CameraRig } from "./camera-rig";
 import { ExploreBloom } from "./explore-bloom";
 import { PlanetSystem } from "./planet-system";
-import { StarField } from "./star-field";
 import { Sun } from "./sun";
+import { UniverseBackdrop } from "./universe-backdrop";
 
 interface SolarSystemSceneProps {
   reducedMotion: boolean;
@@ -53,7 +53,7 @@ export function SolarSystemScene({
       />
       <CameraRig planetObjects={planetObjects} reducedMotion={reducedMotion} />
       <ambientLight color="#a8b0bf" intensity={0.22} />
-      <StarField
+      <UniverseBackdrop
         motionEnabled={simulationMotionEnabled}
         resetVersion={resetVersion}
         scaleMode={scaleMode}

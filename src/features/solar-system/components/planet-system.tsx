@@ -34,9 +34,11 @@ import {
 import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
 
 import { AtmosphereShell } from "./atmosphere-shell";
+import { EarthCityLights } from "./earth-city-lights";
 import { EarthCloudLayer } from "./earth-cloud-layer";
 import { OrbitPath } from "./orbit-path";
 import { PlanetLabel, type ScientificLabelPlacement } from "./planet-label";
+import { PlanetaryRingSystem } from "./planetary-ring-system";
 import { SaturnRings } from "./saturn-rings";
 import { ScientificPlanetMarker } from "./scientific-planet-marker";
 
@@ -91,7 +93,7 @@ export function PlanetSystem({
   const active = selected || hovered;
   const visualProfile = PLANET_VISUAL_PROFILES[planet.id];
   const surfaceTexture = useSceneTexture(
-    textureVariantFor(planet.id, quality.textureVariant, selected).path,
+    textureVariantFor(planet.id, quality.textureVariant).path,
   );
   const scale = sceneScaleFor(planet, scaleMode);
   const observedAt = useEphemerisStore((state) => state.bundle.observedAt);
@@ -245,14 +247,16 @@ export function PlanetSystem({
               metalness={0}
               roughness={visualProfile.roughness}
             />
+            {planet.id === "earth" ? (
+              <EarthCityLights
+                segments={quality.atmosphereSegments}
+                textureVariant={quality.textureVariant}
+              />
+            ) : null}
             {planet.id === "earth" && quality.textureVariant !== "low" ? (
               <EarthCloudLayer
                 segments={quality.atmosphereSegments}
-                textureVariant={
-                  quality.textureVariant === "high" && !selected
-                    ? "medium"
-                    : quality.textureVariant
-                }
+                textureVariant={quality.textureVariant}
               />
             ) : null}
           </mesh>
@@ -270,11 +274,19 @@ export function PlanetSystem({
             <SaturnRings
               radius={scale.radius}
               segments={quality.ringSegments}
-              textureVariant={
-                quality.textureVariant === "high" && !selected
-                  ? "medium"
-                  : quality.textureVariant
-              }
+              textureVariant={quality.textureVariant}
+            />
+          ) : null}
+
+          {planet.id === "jupiter" ||
+          planet.id === "uranus" ||
+          planet.id === "neptune" ? (
+            <PlanetaryRingSystem
+              active={active}
+              planetId={planet.id}
+              radius={scale.radius}
+              segments={quality.ringSegments}
+              textureVariant={quality.textureVariant}
             />
           ) : null}
 
@@ -294,7 +306,7 @@ export function PlanetSystem({
           </mesh>
         </group>
 
-        {scientificMode ? (
+        {scientificMode && !selected ? (
           <ScientificPlanetMarker
             active={active}
             color={planet.color}

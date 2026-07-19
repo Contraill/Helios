@@ -37,7 +37,7 @@ export function ExploreExperience({
   sceneSun,
 }: ExploreExperienceProps) {
   const copy = uiStrings.pages.explore;
-  useHydrateExperienceSettings();
+  const settingsHydrated = useHydrateExperienceSettings();
   const selectedPlanetId = useExplorationStore(
     (state) => state.selectedPlanetId,
   );
@@ -113,7 +113,16 @@ export function ExploreExperience({
         aria-label={copy.sceneLabel(scaleMode, reducedMotion)}
         className={styles.scene}
       >
-        <ExploreCanvasClient scenePlanets={scenePlanets} sceneSun={sceneSun} />
+        {settingsHydrated ? (
+          <ExploreCanvasClient
+            scenePlanets={scenePlanets}
+            sceneSun={sceneSun}
+          />
+        ) : (
+          <div className="scene-loading" role="status">
+            <span>{copy.loading}</span>
+          </div>
+        )}
       </section>
 
       <p className="sr-only" role="status">

@@ -29,6 +29,22 @@ describe("camera poses", () => {
     expect(distance).toBeGreaterThan(radius * 5);
   });
 
+  it("frames a scientific body from its real scaled radius without an exploration minimum", () => {
+    const radius = 0.000_511;
+    const exploration = Math.hypot(
+      ...focusCameraOffset(radius, 16 / 9, "exploration"),
+    );
+    const scientific = Math.hypot(
+      ...focusCameraOffset(radius, 16 / 9, "scientific"),
+    );
+
+    expect(scientific).toBeCloseTo(
+      radius * 5.4 * Math.hypot(0.48, 0.24, 1),
+      12,
+    );
+    expect(exploration).toBeGreaterThan(scientific * 1_000);
+  });
+
   it("starts a focus view on the lit hemisphere without aligning through the Sun", () => {
     const planetPosition = [18, 0.4, -5] as const;
     const offset = illuminatedFocusCameraOffset(planetPosition, 2, 16 / 9);

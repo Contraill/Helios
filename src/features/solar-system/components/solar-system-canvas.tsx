@@ -95,13 +95,19 @@ export function SolarSystemCanvas({
         <SceneErrorBoundary fallback={<SceneFallback />}>
           <Canvas
             aria-hidden="true"
-            camera={{ far: 6_200, fov: 46, near: 0.1, position: [0, 48, 90] }}
+            camera={{
+              far: 60_000,
+              fov: 46,
+              near: 0.000_000_1,
+              position: [0, 48, 90],
+            }}
             dpr={quality.dpr}
             fallback={<SceneFallback />}
             frameloop={continuousRendering ? "always" : "demand"}
             gl={{
               alpha: false,
               antialias: qualityLevel !== "low",
+              logarithmicDepthBuffer: true,
               powerPreference:
                 qualityLevel === "low" ? "low-power" : "high-performance",
             }}

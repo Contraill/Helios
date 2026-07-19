@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { planets } from "@/content/planets";
+import { ASTRONOMICAL_UNIT_KM } from "@/lib/calculations/units";
 
 import { createScenePlanets } from "./scene-planets";
 
@@ -37,5 +38,22 @@ describe("scene planet catalog", () => {
     expect(
       earth!.scales.scientific.semiMajorAxis / earth!.scales.scientific.radius,
     ).toBeGreaterThan(20_000);
+  });
+
+  it("uses one exact relative scale for scientific radii and orbital distances", () => {
+    for (const [index, scenePlanet] of scenePlanets.entries()) {
+      const source = planets[index];
+      const scale = scenePlanet.scales.scientific;
+      const sceneUnitsPerKilometreFromOrbit =
+        scale.semiMajorAxis /
+        (source.orbit.semiMajorAxisAu.value * ASTRONOMICAL_UNIT_KM);
+      const sceneUnitsPerKilometreFromRadius =
+        scale.radius / source.physical.meanRadiusKm.value;
+
+      expect(sceneUnitsPerKilometreFromRadius).toBeCloseTo(
+        sceneUnitsPerKilometreFromOrbit,
+        15,
+      );
+    }
   });
 });

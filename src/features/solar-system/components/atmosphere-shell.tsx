@@ -7,6 +7,8 @@ import type { AtmosphereMode } from "@/features/solar-system/lib/quality";
 import type { AtmosphereProfile } from "@/features/solar-system/lib/planet-visual-profiles";
 
 const VERTEX_SHADER = /* glsl */ `
+  #include <logdepthbuf_pars_vertex>
+
   varying vec3 vNormal;
   varying vec3 vViewDirection;
 
@@ -15,10 +17,13 @@ const VERTEX_SHADER = /* glsl */ `
     vNormal = normalize(mat3(modelMatrix) * normal);
     vViewDirection = normalize(cameraPosition - worldPosition.xyz);
     gl_Position = projectionMatrix * viewMatrix * worldPosition;
+    #include <logdepthbuf_vertex>
   }
 `;
 
 const FRAGMENT_SHADER = /* glsl */ `
+  #include <logdepthbuf_pars_fragment>
+
   uniform vec3 uColor;
   uniform float uOpacity;
   uniform float uPower;
@@ -26,6 +31,8 @@ const FRAGMENT_SHADER = /* glsl */ `
   varying vec3 vViewDirection;
 
   void main() {
+    #include <logdepthbuf_fragment>
+
     float rim = pow(1.0 - max(dot(normalize(vNormal), normalize(vViewDirection)), 0.0), uPower);
     gl_FragColor = vec4(uColor, rim * uOpacity);
   }

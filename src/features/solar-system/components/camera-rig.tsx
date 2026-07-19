@@ -55,7 +55,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
     orbitControls.enablePan = true;
     orbitControls.screenSpacePanning = true;
     orbitControls.minDistance = scaleMode === "scientific" ? 2 : 6;
-    orbitControls.maxDistance = scaleMode === "scientific" ? 2_400 : 360;
+    orbitControls.maxDistance = scaleMode === "scientific" ? 14_000 : 4_800;
     orbitControls.keyPanSpeed = 18;
     controls.current = orbitControls;
 
@@ -129,7 +129,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       if (controls.current) {
         controls.current.minDistance = Math.max(
           radius * 1.35,
-          scaleMode === "scientific" ? 0.08 : 0.8,
+          scaleMode === "scientific" ? 0.000_001 : 0.8,
         );
       }
       const anchorKey = `${selectedBodyId}:${scaleMode}:${width}:${height}`;
@@ -142,6 +142,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
           ],
           radius,
           Math.max(aspect, 0.1),
+          scaleMode,
         );
         focusOffset.current.set(...offset);
         focusAnchorKey.current = anchorKey;

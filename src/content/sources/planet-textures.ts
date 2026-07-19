@@ -74,7 +74,7 @@ export const planetTextureSources: Readonly<
     representation: "simulation",
     colorSpace: "srgb",
     materialSlot: "map",
-    variants: variants("sun", 2048, 1024),
+    variants: variants("sun", 4096, 2048),
   }),
   mercury: Object.freeze({
     bodyId: "mercury",
@@ -206,13 +206,44 @@ export const earthCloudTextureSource: PlanetTextureSource = Object.freeze({
   }),
 });
 
+export const earthCityLightsTextureSource: PlanetTextureSource = Object.freeze({
+  bodyId: "earth",
+  sourceId: "three-globe-earth-night-map",
+  sourceUrl: "https://www.npmjs.com/package/three-globe?activeTab=code",
+  provider: "three-globe example assets",
+  license: "MIT License; resized and converted to WebP by Helios.",
+  attribution:
+    "three-globe Earth night example map; Helios isolates the warm light signal and applies a solar terminator in the shader",
+  representation: "simulation",
+  colorSpace: "srgb",
+  materialSlot: "map",
+  variants: Object.freeze({
+    low: Object.freeze({
+      decodedBytes: 256 * 128 * 4,
+      height: 128,
+      path: "/textures/planets/earth-city-lights-low.webp",
+      width: 256,
+    }),
+    medium: Object.freeze({
+      decodedBytes: 1024 * 512 * 4,
+      height: 512,
+      path: "/textures/planets/earth-city-lights-medium.webp",
+      width: 1024,
+    }),
+    high: Object.freeze({
+      decodedBytes: 4096 * 2048 * 4,
+      height: 2048,
+      path: "/textures/planets/earth-city-lights-high.webp",
+      width: 4096,
+    }),
+  }),
+});
+
 export function textureVariantFor(
   bodyId: TextureBodyId,
   quality: TextureVariantName,
-  selected = false,
 ): PlanetTextureVariant {
-  const effectiveVariant = quality === "high" && !selected ? "medium" : quality;
-  return planetTextureSources[bodyId].variants[effectiveVariant];
+  return planetTextureSources[bodyId].variants[quality];
 }
 
 export const saturnRingTextureVariants: Readonly<

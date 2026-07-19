@@ -51,7 +51,7 @@ export function Sun({
   const active = selected || hovered;
   const radius = sun.scales[scaleMode];
   const surfaceTexture = useSceneTexture(
-    textureVariantFor("sun", quality.textureVariant, selected).path,
+    textureVariantFor("sun", quality.textureVariant).path,
   );
 
   useLayoutEffect(() => {
@@ -99,13 +99,9 @@ export function Sun({
         <sphereGeometry
           args={[1, quality.planetSegments[0], quality.planetSegments[1]]}
         />
-        <meshStandardMaterial
-          color={surfaceTexture ? "#ffffff" : "#f5b85f"}
-          emissive="#f2a844"
-          emissiveIntensity={1.7}
-          emissiveMap={surfaceTexture ?? undefined}
+        <meshBasicMaterial
+          color={surfaceTexture ? "#fff8ec" : "#f5b85f"}
           map={surfaceTexture ?? undefined}
-          roughness={0.72}
           toneMapped={false}
         />
       </mesh>
@@ -156,7 +152,7 @@ export function Sun({
         />
         <meshBasicMaterial
           blending={AdditiveBlending}
-          color="#f6a84f"
+          color="#ffd18a"
           depthWrite={false}
           opacity={quality.bloomStrength > 0 ? 0.16 : 0.07}
           side={BackSide}
@@ -165,10 +161,10 @@ export function Sun({
         />
       </mesh>
       <pointLight
-        color="#fff4df"
+        color="#fff8ed"
         decay={1.7}
         distance={scaleMode === "scientific" ? 5_000 : 190}
-        intensity={1_800}
+        intensity={1_450}
       />
     </group>
   );
