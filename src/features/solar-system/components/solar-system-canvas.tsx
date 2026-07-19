@@ -96,7 +96,7 @@ export function SolarSystemCanvas({
           <Canvas
             aria-hidden="true"
             camera={{
-              far: 60_000,
+              far: 1_500_000,
               fov: 46,
               near: 0.000_000_1,
               position: [0, 48, 90],

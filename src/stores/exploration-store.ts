@@ -6,6 +6,7 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
 import type { PlanetId } from "@/lib/data/schemas/planet";
+import { isPlanetId } from "@/content/planets";
 
 export type CameraMode = "overview" | "transition" | "focus" | "free";
 
@@ -20,6 +21,7 @@ interface ExplorationState {
   labelsVisible: boolean;
   selectSun: () => void;
   selectPlanet: (planetId: PlanetId) => void;
+  selectBody: (bodyId: CelestialBodyId) => void;
   clearSelection: () => void;
   enterFreeCamera: () => void;
   exitFreeCamera: () => void;
@@ -71,6 +73,16 @@ export const useExplorationStore = create<ExplorationState>()(
                 cameraMode: "transition",
               },
         ),
+      selectBody: (bodyId) =>
+        set((state) =>
+          state.selectedBodyId === bodyId && state.cameraMode !== "free"
+            ? state
+            : {
+                selectedBodyId: bodyId,
+                selectedPlanetId: isPlanetId(bodyId) ? bodyId : null,
+                cameraMode: "transition",
+              },
+        ),
       clearSelection: () =>
         set((state) =>
           state.selectedBodyId === null && state.cameraMode !== "free"
@@ -107,7 +119,7 @@ export const useExplorationStore = create<ExplorationState>()(
             ? state
             : {
                 hoveredBodyId: bodyId,
-                hoveredPlanetId: bodyId === "sun" ? null : bodyId,
+                hoveredPlanetId: isPlanetId(bodyId) ? bodyId : null,
               },
         ),
       clearHoveredBody: (bodyId) =>

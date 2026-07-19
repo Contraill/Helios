@@ -6,7 +6,6 @@ import { AdditiveBlending, DoubleSide } from "three";
 import type { Group, MeshBasicMaterial, PointsMaterial } from "three";
 
 import {
-  createDeepFieldParticleData,
   createMilkyWayParticleData,
   universeLayerOpacities,
 } from "@/features/solar-system/lib/universe-backdrop";
@@ -33,18 +32,13 @@ export function UniverseBackdrop({
 }: UniverseBackdropProps) {
   const galaxyPointsRef = useRef<PointsMaterial>(null);
   const galaxyGlowRef = useRef<MeshBasicMaterial>(null);
+  const galaxyCoreRef = useRef<MeshBasicMaterial>(null);
   const galaxyRef = useRef<Group>(null);
-  const deepFieldRef = useRef<PointsMaterial>(null);
   const galaxyData = useMemo(
-    () => createMilkyWayParticleData(Math.max(900, starCount * 2)),
-    [starCount],
-  );
-  const deepFieldData = useMemo(
-    () => createDeepFieldParticleData(Math.max(420, starCount)),
+    () => createMilkyWayParticleData(Math.max(2_200, starCount * 5)),
     [starCount],
   );
   const galaxyRadius = scaleMode === "scientific" ? 3_200 : 520;
-  const deepFieldRadius = scaleMode === "scientific" ? 32_000 : 10_000;
 
   useFrame(({ camera }, delta) => {
     const layers = universeLayerOpacities(camera.position.length(), scaleMode);
@@ -52,10 +46,10 @@ export function UniverseBackdrop({
       galaxyPointsRef.current.opacity = layers.milkyWay * 0.86;
     }
     if (galaxyGlowRef.current) {
-      galaxyGlowRef.current.opacity = layers.milkyWay * 0.075;
+      galaxyGlowRef.current.opacity = layers.milkyWay * 0.11;
     }
-    if (deepFieldRef.current) {
-      deepFieldRef.current.opacity = layers.deepField * 0.78;
+    if (galaxyCoreRef.current) {
+      galaxyCoreRef.current.opacity = layers.milkyWay * 0.2;
     }
     if (motionEnabled && galaxyRef.current) {
       galaxyRef.current.rotation.y += delta * 0.000035 * timeScale;
@@ -102,12 +96,25 @@ export function UniverseBackdrop({
             vertexColors
           />
         </points>
-        <mesh rotation-x={Math.PI / 2} scale={[0.68, 0.68, 0.022]}>
+        <mesh rotation-x={Math.PI / 2} scale={[0.84, 0.84, 0.026]}>
           <sphereGeometry args={[1, 48, 24]} />
           <meshBasicMaterial
             ref={galaxyGlowRef}
             blending={AdditiveBlending}
-            color="#b7c9ff"
+            color="#89a9e8"
+            depthWrite={false}
+            fog={false}
+            opacity={0}
+            side={DoubleSide}
+            transparent
+          />
+        </mesh>
+        <mesh rotation-x={Math.PI / 2} scale={[0.25, 0.25, 0.075]}>
+          <sphereGeometry args={[1, 48, 24]} />
+          <meshBasicMaterial
+            ref={galaxyCoreRef}
+            blending={AdditiveBlending}
+            color="#ffd6a0"
             depthWrite={false}
             fog={false}
             opacity={0}
@@ -116,34 +123,6 @@ export function UniverseBackdrop({
           />
         </mesh>
       </group>
-
-      <points
-        frustumCulled={false}
-        scale={deepFieldRadius}
-        userData={{ visualLayer: "extragalactic-deep-field" }}
-      >
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[deepFieldData.positions, 3]}
-          />
-          <bufferAttribute
-            attach="attributes-color"
-            args={[deepFieldData.colors, 3]}
-          />
-        </bufferGeometry>
-        <pointsMaterial
-          ref={deepFieldRef}
-          blending={AdditiveBlending}
-          depthWrite={false}
-          fog={false}
-          opacity={0}
-          size={1.15}
-          sizeAttenuation={false}
-          transparent
-          vertexColors
-        />
-      </points>
     </>
   );
 }

@@ -64,6 +64,31 @@ test("explore exposes the Sun and all eight planets outside the canvas", async (
   await expect(navigator.locator("ol").getByRole("button")).toHaveCount(9);
 });
 
+test("extended system layers and featured bodies are keyboard-selectable", async ({
+  page,
+}) => {
+  await page.goto("/explore");
+  await page.getByRole("button", { name: "Extended system" }).click();
+
+  await expect(
+    page.getByRole("button", { name: "Asteroid Belt" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Asteroid Belt" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Asteroid Belt" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(/spacecraft would normally cross enormous empty gaps/i),
+  ).toBeVisible();
+
+  await page.getByText("Main-belt worlds").click();
+  await page.getByRole("button", { name: "Ceres" }).click();
+  await expect(page.getByRole("heading", { name: "Ceres" })).toBeVisible();
+  await page.getByRole("link", { name: "Open Ceres editorial page" }).click();
+  await expect(page).toHaveURL(/\/object\/ceres$/);
+  await expect(page.getByRole("heading", { name: "Ceres" })).toBeVisible();
+});
+
 test("the Sun is a selectable focus target and Escape restores its control", async ({
   page,
 }) => {
@@ -689,7 +714,13 @@ test("ephemeris clock starts in real time and its panel stays collapsible", asyn
     (await ephemeris.locator("time").getAttribute("datetime"))!,
   );
   const beforeReal = Date.now();
-  await page.waitForTimeout(1_200);
+  await expect
+    .poll(
+      async () =>
+        Date.parse((await ephemeris.locator("time").getAttribute("datetime"))!),
+      { timeout: 5_000 },
+    )
+    .toBeGreaterThanOrEqual(before + 500);
   const afterReal = Date.now();
   const after = Date.parse(
     (await ephemeris.locator("time").getAttribute("datetime"))!,

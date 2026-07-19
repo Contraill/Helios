@@ -23,6 +23,10 @@ import { usePreferencesStore } from "@/stores/preferences-store";
 
 import { ExploreCanvasClient } from "./explore-canvas-client";
 import { EphemerisControls } from "./ephemeris-controls";
+import {
+  ExtendedSelectionSummary,
+  ExtendedSystemControls,
+} from "./extended-system-controls";
 import { SimulationControls } from "./simulation-controls";
 
 interface ExploreExperienceProps {
@@ -240,6 +244,8 @@ export function ExploreExperience({
           </section>
         ) : null}
 
+        <ExtendedSelectionSummary />
+
         <SimulationControls />
 
         <aside aria-label={copy.planetListLabel} className={styles.navigator}>
@@ -313,6 +319,7 @@ export function ExploreExperience({
               );
             })}
           </ol>
+          <ExtendedSystemControls />
           <p className={styles.keyboardHint}>
             {cameraMode === "free" ? copy.freeCameraHint : copy.keyboardHint}
           </p>

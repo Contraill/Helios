@@ -39,6 +39,7 @@ export function Sun({
 }: SunProps) {
   const bodyRef = useRef<Group>(null);
   const surfaceRef = useRef<Mesh>(null);
+  const prominenceRef = useRef<Group>(null);
   const selected = useExplorationStore(
     (state) => state.selectedBodyId === "sun",
   );
@@ -75,6 +76,9 @@ export function Sun({
   useFrame((_, delta) => {
     if (motionEnabled && surfaceRef.current) {
       surfaceRef.current.rotation.y += delta * 0.025 * timeScale;
+    }
+    if (motionEnabled && prominenceRef.current) {
+      prominenceRef.current.rotation.y += delta * 0.0035 * timeScale;
     }
   });
 
@@ -114,6 +118,44 @@ export function Sun({
         <sphereGeometry args={[1, 18, 14]} />
         <meshBasicMaterial depthWrite={false} opacity={0} transparent />
       </mesh>
+      {quality.textureVariant !== "low" ? (
+        <group
+          ref={prominenceRef}
+          rotation={[0.42, 0.1, -0.3]}
+          scale={radius}
+          userData={{ visualLayer: "controlled-solar-prominences" }}
+        >
+          {[
+            { arc: 1.05, radius: 1.08, tube: 0.012, rotation: 0.2 },
+            { arc: 0.72, radius: 1.13, tube: 0.009, rotation: 2.35 },
+            { arc: 0.56, radius: 1.06, tube: 0.008, rotation: 4.2 },
+          ].map((prominence) => (
+            <mesh
+              key={prominence.rotation}
+              raycast={() => undefined}
+              rotation={[Math.PI / 2, prominence.rotation, 0]}
+            >
+              <torusGeometry
+                args={[
+                  prominence.radius,
+                  prominence.tube,
+                  8,
+                  quality.textureVariant === "high" ? 72 : 36,
+                  prominence.arc,
+                ]}
+              />
+              <meshBasicMaterial
+                blending={AdditiveBlending}
+                color="#ffb15c"
+                depthWrite={false}
+                opacity={quality.textureVariant === "high" ? 0.58 : 0.34}
+                toneMapped={false}
+                transparent
+              />
+            </mesh>
+          ))}
+        </group>
+      ) : null}
       {active ? (
         <mesh raycast={() => undefined} scale={radius * 1.095}>
           <sphereGeometry args={[1, 40, 30]} />

@@ -500,7 +500,9 @@
 
 .navigator {
   bottom: clamp(4.75rem, 7vw, 6rem);
+  max-height: calc(100% - 9rem);
   padding: 1rem;
+  overflow-y: auto;
 }
 
 .navigatorLabel {
@@ -590,6 +592,97 @@
   color: var(--helios-color-text-secondary);
   font-size: 0.66rem;
   line-height: 1.5;
+}
+
+.extendedControls {
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--helios-color-line);
+}
+
+.navigator .extendedToggle {
+  display: flex;
+  width: 100%;
+  min-height: 2.35rem;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.45rem;
+  border: 1px solid rgb(143 184 210 / 0.25);
+  border-radius: var(--helios-radius-sm);
+  background: rgb(143 184 210 / 0.045);
+  color: var(--helios-color-text-primary);
+  cursor: pointer;
+}
+
+.extendedPanel {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
+}
+
+.extendedPanel fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.extendedPanel legend,
+.extendedPanel summary {
+  color: var(--helios-color-text-secondary);
+  font-size: 0.57rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.extendedPanel summary {
+  padding: 0.35rem 0;
+  cursor: pointer;
+}
+
+.extendedRegionGrid,
+.extendedLayerGrid,
+.extendedBodyGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.3rem;
+}
+
+.navigator .extendedPanel button {
+  min-height: 2rem;
+  padding: 0.3rem 0.38rem;
+  border: 1px solid var(--helios-color-line);
+  border-radius: var(--helios-radius-sm);
+  background: rgb(255 255 255 / 0.025);
+  color: var(--helios-color-text-secondary);
+  font-size: 0.61rem;
+  cursor: pointer;
+}
+
+.navigator .extendedPanel button[aria-pressed="true"],
+.navigator .extendedPanel button:hover,
+.navigator .extendedPanel button:focus-visible {
+  border-color: rgb(143 184 210 / 0.5);
+  background: rgb(143 184 210 / 0.1);
+  color: var(--helios-color-text-primary);
+}
+
+.extendedNote,
+.extendedDescription {
+  margin: 0;
+  color: var(--helios-color-text-secondary);
+  font-size: 0.62rem;
+  line-height: 1.55;
+}
+
+.extendedSummary {
+  max-height: calc(100% - 6rem);
+  overflow-y: auto;
+}
+
+.extendedDescription {
+  margin-bottom: 1rem;
+  font-size: 0.72rem;
 }
 
 .scaleNotice {

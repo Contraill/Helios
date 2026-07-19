@@ -1,7 +1,6 @@
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 
 export interface UniverseLayerOpacities {
-  readonly deepField: number;
   readonly localStars: number;
   readonly milkyWay: number;
 }
@@ -40,25 +39,18 @@ export function universeLayerOpacities(
   const thresholds =
     scaleMode === "scientific"
       ? {
-          deepFieldIn: [7_000, 10_000] as const,
           localOut: [1_100, 2_400] as const,
           milkyWayIn: [1_300, 2_900] as const,
-          milkyWayOut: [6_500, 9_000] as const,
         }
       : {
-          deepFieldIn: [1_500, 2_600] as const,
           localOut: [180, 380] as const,
           milkyWayIn: [220, 520] as const,
-          milkyWayOut: [1_300, 2_200] as const,
         };
 
   const localStars = 1 - smoothRange(thresholds.localOut, distance);
-  const milkyWay =
-    smoothRange(thresholds.milkyWayIn, distance) *
-    (1 - smoothRange(thresholds.milkyWayOut, distance));
-  const deepField = smoothRange(thresholds.deepFieldIn, distance);
+  const milkyWay = smoothRange(thresholds.milkyWayIn, distance);
 
-  return { deepField, localStars, milkyWay };
+  return { localStars, milkyWay };
 }
 
 export function createMilkyWayParticleData(
@@ -77,27 +69,35 @@ export function createMilkyWayParticleData(
 
   for (let index = 0; index < count; index += 1) {
     const offset = index * 3;
-    const bulgeParticle = random() < 0.2;
+    const bulgeParticle = random() < 0.27;
     const radial = bulgeParticle
-      ? Math.pow(random(), 2.15) * 0.3
-      : 0.12 + Math.pow(random(), 0.72) * 0.88;
-    const arm = Math.floor(random() * 4);
+      ? Math.pow(random(), 2.35) * 0.34
+      : 0.1 + Math.pow(random(), 0.7) * 0.9;
+    const arm = Math.floor(random() * 5);
     const angle =
-      arm * (Math.PI / 2) +
-      radial * Math.PI * 3.15 +
-      (random() - 0.5) * (0.2 + radial * 0.58);
+      arm * ((Math.PI * 2) / 5) +
+      radial * Math.PI * 3.75 +
+      (random() - 0.5) * (0.14 + radial * 0.5);
     const diskThickness = bulgeParticle
       ? (0.14 - radial * 0.24) * (random() - 0.5)
-      : (0.042 - radial * 0.024) * (random() - 0.5);
+      : (0.038 - radial * 0.018) * (random() - 0.5);
 
-    positions[offset] = radial * Math.cos(angle);
+    // Dark-lane separation is represented by subtly displacing a subset of
+    // outer-disk stars away from each arm's centre line.
+    const laneOffset =
+      !bulgeParticle && random() < 0.23
+        ? (random() < 0.5 ? -1 : 1) * (0.018 + radial * 0.024)
+        : 0;
+
+    positions[offset] = (radial + laneOffset) * Math.cos(angle);
     positions[offset + 1] = diskThickness;
-    positions[offset + 2] = radial * Math.sin(angle);
+    positions[offset + 2] = (radial + laneOffset) * Math.sin(angle);
 
     const centerWarmth = 1 - radial;
-    colors[offset] = 0.66 + centerWarmth * 0.34;
-    colors[offset + 1] = 0.73 + centerWarmth * 0.18;
-    colors[offset + 2] = 0.9 - centerWarmth * 0.28;
+    const youngBlueStar = !bulgeParticle && random() < 0.2;
+    colors[offset] = youngBlueStar ? 0.54 : 0.68 + centerWarmth * 0.32;
+    colors[offset + 1] = youngBlueStar ? 0.72 : 0.74 + centerWarmth * 0.18;
+    colors[offset + 2] = youngBlueStar ? 1 : 0.92 - centerWarmth * 0.3;
   }
 
   return { colors, positions };

@@ -7,6 +7,7 @@ import type { AtmosphereMode } from "@/features/solar-system/lib/quality";
 import type { AtmosphereProfile } from "@/features/solar-system/lib/planet-visual-profiles";
 
 const VERTEX_SHADER = /* glsl */ `
+  #include <common>
   #include <logdepthbuf_pars_vertex>
 
   varying vec3 vNormal;

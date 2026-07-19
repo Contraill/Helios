@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { usePreferencesStore } from "@/stores/preferences-store";
 import { useSimulationStore } from "@/stores/simulation-store";
+import { useExtendedSystemStore } from "@/stores/extended-system-store";
 
 export function useHydrateExperienceSettings(): boolean {
   const [hydrated, setHydrated] = useState(false);
@@ -15,6 +16,7 @@ export function useHydrateExperienceSettings(): boolean {
       useExplorationStore.persist.rehydrate(),
       usePreferencesStore.persist.rehydrate(),
       useSimulationStore.persist.rehydrate(),
+      useExtendedSystemStore.persist.rehydrate(),
     ]).then(() => {
       if (active) setHydrated(true);
     });

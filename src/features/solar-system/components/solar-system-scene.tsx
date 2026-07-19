@@ -13,6 +13,7 @@ import { useSimulationStore } from "@/stores/simulation-store";
 
 import { CameraRig } from "./camera-rig";
 import { ExploreBloom } from "./explore-bloom";
+import { ExtendedSolarSystem } from "./extended-solar-system";
 import { PlanetSystem } from "./planet-system";
 import { Sun } from "./sun";
 import { UniverseBackdrop } from "./universe-backdrop";
@@ -47,7 +48,7 @@ export function SolarSystemScene({
         attach="fog"
         args={
           scaleMode === "scientific"
-            ? ["#03050a", 950, 1_650]
+            ? ["#03050a", 50_000, 60_000]
             : ["#03050a", 105, 205]
         }
       />
@@ -83,6 +84,13 @@ export function SolarSystemScene({
           scaleMode={scaleMode}
         />
       ))}
+      <ExtendedSolarSystem
+        labelsVisible={labelsVisible}
+        orbitsVisible={orbitsVisible}
+        planetObjects={planetObjects}
+        quality={quality}
+        scaleMode={scaleMode}
+      />
       <ExploreBloom
         enabled={quality.bloomStrength > 0 && !reducedMotion}
         strength={quality.bloomStrength}

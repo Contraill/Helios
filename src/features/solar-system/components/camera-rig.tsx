@@ -55,7 +55,9 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
     orbitControls.enablePan = true;
     orbitControls.screenSpacePanning = true;
     orbitControls.minDistance = scaleMode === "scientific" ? 2 : 6;
-    orbitControls.maxDistance = scaleMode === "scientific" ? 14_000 : 4_800;
+    // The experience ends at an exterior Milky Way view. There is no
+    // extragalactic/deep-field zoom stage beyond this boundary.
+    orbitControls.maxDistance = scaleMode === "scientific" ? 5_800 : 1_050;
     orbitControls.keyPanSpeed = 18;
     controls.current = orbitControls;
 
