@@ -42,7 +42,6 @@ export function SolarSystemCanvas({
   const reducedMotion = useReducedMotionPreference(motionPreference);
   const clearSelection = useExplorationStore((state) => state.clearSelection);
   const cameraMode = useExplorationStore((state) => state.cameraMode);
-  const enterFreeCamera = useExplorationStore((state) => state.enterFreeCamera);
   const hoveredBodyId = useExplorationStore((state) => state.hoveredBodyId);
   const quality = SCENE_QUALITY[qualityLevel];
   const copy = uiStrings.pages.explore;
@@ -80,12 +79,6 @@ export function SolarSystemCanvas({
       data-quality={qualityLevel}
       data-render-loop={continuousRendering ? "continuous" : "demand"}
       data-texture-variant={quality.textureVariant}
-      onPointerDownCapture={(event) => {
-        if (event.pointerType !== "mouse" || event.button === 0) {
-          enterFreeCamera();
-        }
-      }}
-      onWheelCapture={enterFreeCamera}
     >
       {webglAvailable === null ? (
         <div className="scene-loading" role="status">

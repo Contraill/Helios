@@ -98,7 +98,7 @@ export function PlanetHumanScale({
 
         <div aria-live="polite" className={styles.result}>
           <p className={styles.microLabel}>{copy.resultLabel(planetName)}</p>
-          <p className={styles.resultValue}>
+          <p className={styles.resultValue} data-testid="planet-weight-result">
             {result === null ? "—" : formatOneDecimal(result)}
             <small>kg</small>
           </p>

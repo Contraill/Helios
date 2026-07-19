@@ -19,6 +19,7 @@ export class ExternalRequestError extends Error {
 }
 
 interface FetchExternalInput {
+  readonly cacheMode?: "revalidate" | "no-store";
   readonly path: `/${string}`;
   readonly params?: Readonly<
     Record<string, string | number | boolean | undefined>
@@ -58,11 +59,15 @@ async function fetchExternalResponse(
   try {
     const request = () =>
       fetch(url, {
+        ...(input.cacheMode === "no-store"
+          ? { cache: "no-store" as const }
+          : {
+              next: {
+                revalidate: input.policy.revalidateSeconds,
+                tags: [input.policy.cacheTag],
+              },
+            }),
         headers: { Accept: accept },
-        next: {
-          revalidate: input.policy.revalidateSeconds,
-          tags: [input.policy.cacheTag],
-        },
         signal: AbortSignal.timeout(input.policy.timeoutMs),
       });
     response =

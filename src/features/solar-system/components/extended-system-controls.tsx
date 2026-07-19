@@ -16,6 +16,7 @@ import {
   useExtendedSystemStore,
   type BeltDensity,
   type BeltRepresentation,
+  type ExtendedLayerKey,
 } from "@/stores/extended-system-store";
 
 const categories: readonly {
@@ -51,6 +52,13 @@ const regions: readonly { id: SystemRegionId; label: string }[] = [
   { id: "oort-cloud", label: "Oort Cloud" },
   { id: "heliosphere", label: "Heliosphere" },
 ];
+
+const regionLayer: Readonly<Record<SystemRegionId, ExtendedLayerKey>> = {
+  "asteroid-belt": "asteroidBeltVisible",
+  "kuiper-belt": "kuiperBeltVisible",
+  "oort-cloud": "oortCloudVisible",
+  heliosphere: "heliosphereVisible",
+};
 
 const regionCopy: Record<
   SystemRegionId,
@@ -170,6 +178,7 @@ export function ExtendedSystemControls() {
     (state) => state.setRepresentation,
   );
   const toggleLayer = useExtendedSystemStore((state) => state.toggleLayer);
+  const showLayer = useExtendedSystemStore((state) => state.showLayer);
   const layers = {
     asteroidBeltVisible: useExtendedSystemStore(
       (state) => state.asteroidBeltVisible,
@@ -203,7 +212,10 @@ export function ExtendedSystemControls() {
               <button
                 aria-pressed={selectedBodyId === region.id}
                 key={region.id}
-                onClick={() => selectBody(region.id)}
+                onClick={() => {
+                  showLayer(regionLayer[region.id]);
+                  selectBody(region.id);
+                }}
                 type="button"
               >
                 {region.label}
@@ -281,7 +293,18 @@ export function ExtendedSystemControls() {
                   <button
                     aria-pressed={selectedBodyId === body.id}
                     key={body.id}
-                    onClick={() => selectBody(body.id)}
+                    onClick={() => {
+                      if (body.kind === "comet") {
+                        showLayer("cometsVisible");
+                      } else if (
+                        ["ceres", "vesta", "pallas", "hygiea"].includes(body.id)
+                      ) {
+                        showLayer("asteroidBeltVisible");
+                      } else {
+                        showLayer("kuiperBeltVisible");
+                      }
+                      selectBody(body.id);
+                    }}
                     type="button"
                   >
                     {body.name}

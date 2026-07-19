@@ -86,6 +86,7 @@ export function SolarSystemScene({
       ))}
       <ExtendedSolarSystem
         labelsVisible={labelsVisible}
+        motionEnabled={simulationMotionEnabled}
         orbitsVisible={orbitsVisible}
         planetObjects={planetObjects}
         quality={quality}

@@ -46,12 +46,16 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
   const focusOffset = useRef(new Vector3());
   const focusAnchorKey = useRef("");
   const controls = useRef<OrbitControls | null>(null);
+  const previousCameraMode = useRef(cameraMode);
 
   useEffect(() => {
     const orbitControls = new OrbitControls(camera, gl.domElement);
     orbitControls.enabled = false;
-    orbitControls.enableDamping = true;
-    orbitControls.dampingFactor = 0.08;
+    // Camera input must stop when the pointer stops. OrbitControls damping is
+    // pleasant for a passive model viewer, but here it made a high-distance
+    // wheel/pinch gesture continue after release and looked like autonomous
+    // camera travel.
+    orbitControls.enableDamping = false;
     orbitControls.enablePan = true;
     orbitControls.screenSpacePanning = true;
     orbitControls.minDistance = scaleMode === "scientific" ? 2 : 6;
@@ -61,19 +65,46 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
     orbitControls.keyPanSpeed = 18;
     controls.current = orbitControls;
 
+    const pointerOrigins = new Map<number, { x: number; y: number }>();
+
     const activateDirectControl = () => {
       if (useExplorationStore.getState().cameraMode === "free") return;
       orbitControls.target.copy(currentTarget.current);
       orbitControls.enabled = true;
       useExplorationStore.getState().enterFreeCamera();
+      previousCameraMode.current = "free";
     };
     const handlePointerDown = (event: PointerEvent) => {
       if (event.pointerType === "mouse" && event.button !== 0) return;
-      activateDirectControl();
+      pointerOrigins.set(event.pointerId, {
+        x: event.clientX,
+        y: event.clientY,
+      });
+      // Let OrbitControls observe this pointer-down. Camera authority is only
+      // handed over after a real drag threshold, so tapping a body still means
+      // selection rather than a free-camera flicker.
+      orbitControls.target.copy(currentTarget.current);
+      orbitControls.enabled = true;
+    };
+    const handlePointerMove = (event: PointerEvent) => {
+      const origin = pointerOrigins.get(event.pointerId);
+      if (!origin) return;
+      if (Math.hypot(event.clientX - origin.x, event.clientY - origin.y) >= 5) {
+        activateDirectControl();
+      }
+    };
+    const handlePointerEnd = (event: PointerEvent) => {
+      pointerOrigins.delete(event.pointerId);
+      if (useExplorationStore.getState().cameraMode !== "free") {
+        orbitControls.enabled = false;
+      }
     };
     const handleWheel = () => activateDirectControl();
 
     gl.domElement.addEventListener("pointerdown", handlePointerDown, true);
+    gl.domElement.addEventListener("pointermove", handlePointerMove, true);
+    gl.domElement.addEventListener("pointerup", handlePointerEnd, true);
+    gl.domElement.addEventListener("pointercancel", handlePointerEnd, true);
     gl.domElement.addEventListener("wheel", handleWheel, true);
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -110,6 +141,13 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
 
     return () => {
       gl.domElement.removeEventListener("pointerdown", handlePointerDown, true);
+      gl.domElement.removeEventListener("pointermove", handlePointerMove, true);
+      gl.domElement.removeEventListener("pointerup", handlePointerEnd, true);
+      gl.domElement.removeEventListener(
+        "pointercancel",
+        handlePointerEnd,
+        true,
+      );
       gl.domElement.removeEventListener("wheel", handleWheel, true);
       window.removeEventListener("keydown", handleKeyDown);
       orbitControls.dispose();
@@ -127,7 +165,11 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       selectedObject.getWorldPosition(worldPosition.current);
       desiredTarget.current.copy(worldPosition.current);
 
-      const radius = Number(selectedObject.userData.renderRadius ?? 1);
+      const radius = Number(
+        selectedObject.userData.cameraFocusRadius ??
+          selectedObject.userData.renderRadius ??
+          1,
+      );
       if (controls.current) {
         controls.current.minDistance = Math.max(
           radius * 1.35,
@@ -161,17 +203,19 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       desiredPosition.current.set(...overviewPosition);
     }
 
-    if (
-      useExplorationStore.getState().cameraMode === "free" &&
-      controls.current
-    ) {
+    const liveCameraMode = useExplorationStore.getState().cameraMode;
+    if (liveCameraMode === "free" && controls.current) {
       controls.current.enabled = true;
-      controls.current.target.copy(currentTarget.current);
+      if (previousCameraMode.current !== "free") {
+        controls.current.target.copy(currentTarget.current);
+      }
       controls.current.update();
       currentTarget.current.copy(controls.current.target);
+      previousCameraMode.current = "free";
       return;
     }
     if (controls.current) controls.current.enabled = false;
+    previousCameraMode.current = liveCameraMode;
 
     const alpha = transitionAlpha(delta, reducedMotion);
     camera.position.lerp(desiredPosition.current, alpha);
@@ -179,7 +223,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
     camera.lookAt(currentTarget.current);
 
     if (
-      cameraMode === "transition" &&
+      liveCameraMode === "transition" &&
       cameraPoseHasSettled(
         camera.position.distanceToSquared(desiredPosition.current),
         currentTarget.current.distanceToSquared(desiredTarget.current),

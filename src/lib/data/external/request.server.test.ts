@@ -102,4 +102,22 @@ describe("external request boundary", () => {
       fetchExternalJson({ path: "/api/natural", policy: epicPolicy }),
     ).rejects.toMatchObject({ kind: "network" });
   });
+
+  it("can bypass the Next fetch cache for oversized provider documents", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response("<xml />"));
+    vi.stubGlobal("fetch", fetchMock);
+    const { fetchExternalText } = await import("./request.server");
+
+    await fetchExternalText({
+      cacheMode: "no-store",
+      path: "/capabilities.xml",
+      policy: epicPolicy,
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.any(URL),
+      expect.objectContaining({ cache: "no-store" }),
+    );
+    expect(fetchMock.mock.calls[0]?.[1]).not.toHaveProperty("next");
+  });
 });

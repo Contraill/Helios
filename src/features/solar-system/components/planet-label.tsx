@@ -21,6 +21,7 @@ export type ScientificLabelPlacement =
 interface PlanetLabelProps {
   active: boolean;
   color: string;
+  compact?: boolean;
   mode: "exploration" | "scientific";
   placement: ScientificLabelPlacement;
   offsetY: number;
@@ -118,6 +119,7 @@ function createLabelTexture(
 export function PlanetLabel({
   active,
   color,
+  compact = false,
   mode,
   offsetY,
   placement,
@@ -140,7 +142,9 @@ export function PlanetLabel({
   const material = useMemo(
     () =>
       new SpriteMaterial({
-        depthTest: false,
+        // Passive scientific labels respect scene depth; the one actively
+        // inspected body may float above geometry for unambiguous feedback.
+        depthTest: !active,
         depthWrite: false,
         map: texture,
         fog: false,
@@ -160,6 +164,15 @@ export function PlanetLabel({
   );
 
   const scientific = mode === "scientific";
+  const scale: [number, number, number] = compact
+    ? scientific
+      ? [0.14, 0.058, 1]
+      : [0.14, 0.035, 1]
+    : scientific
+      ? active
+        ? [0.22, 0.092, 1]
+        : [0.105, 0.044, 1]
+      : [0.2, 0.05, 1];
 
   return (
     <sprite
@@ -167,7 +180,7 @@ export function PlanetLabel({
       position={[0, scientific ? 0 : offsetY, 0]}
       raycast={() => undefined}
       renderOrder={20}
-      scale={scientific ? [0.34, 0.142, 1] : [0.34, 0.085, 1]}
+      scale={scale}
     />
   );
 }

@@ -1139,6 +1139,11 @@ export async function loadGibsLayers(): Promise<
     fetchCurrent: async () =>
       parseGibsCapabilities(
         await fetchExternalText({
+          // The capabilities document is currently larger than Next's 2 MB
+          // fetch-cache item limit. The enclosing page/result cache stores the
+          // small parsed layer model; asking the fetch cache to store the raw
+          // XML only creates a warning and never succeeds.
+          cacheMode: "no-store",
           path: "/wmts/epsg4326/best/1.0.0/WMTSCapabilities.xml",
           policy: policies.gibs,
         }),

@@ -172,10 +172,36 @@ test.describe("mobile explore", () => {
 
     const canvasBox = await page.locator("canvas").boundingBox();
     expect(canvasBox).not.toBeNull();
-    await page.touchscreen.tap(
-      canvasBox!.x + canvasBox!.width * 0.5,
-      canvasBox!.y + canvasBox!.height * 0.32,
-    );
+    const canvas = page.locator("canvas");
+    const startX = canvasBox!.x + canvasBox!.width * 0.72;
+    const startY = canvasBox!.y + canvasBox!.height * 0.72;
+    await canvas.dispatchEvent("pointerdown", {
+      bubbles: true,
+      button: 0,
+      buttons: 1,
+      clientX: startX,
+      clientY: startY,
+      pointerId: 7,
+      pointerType: "touch",
+    });
+    await canvas.dispatchEvent("pointermove", {
+      bubbles: true,
+      button: 0,
+      buttons: 1,
+      clientX: startX + 24,
+      clientY: startY + 14,
+      pointerId: 7,
+      pointerType: "touch",
+    });
+    await canvas.dispatchEvent("pointerup", {
+      bubbles: true,
+      button: 0,
+      buttons: 0,
+      clientX: startX + 24,
+      clientY: startY + 14,
+      pointerId: 7,
+      pointerType: "touch",
+    });
 
     await expect(shell).toHaveAttribute("data-camera-mode", "free");
   });
@@ -788,11 +814,20 @@ test("explore hydrates cleanly and keeps one real-time simulation clock", async 
   });
   await controls.getByRole("button", { name: "1 year / sec" }).click();
   const acceleratedBefore = Date.parse((await clock.getAttribute("datetime"))!);
-  await page.waitForTimeout(1_100);
+  await expect
+    .poll(
+      async () => {
+        const acceleratedAfter = Date.parse(
+          (await clock.getAttribute("datetime"))!,
+        );
+        return (acceleratedAfter - acceleratedBefore) / (24 * 60 * 60 * 1_000);
+      },
+      { timeout: 5_000 },
+    )
+    .toBeGreaterThan(300);
   const acceleratedAfter = Date.parse((await clock.getAttribute("datetime"))!);
   const acceleratedDays =
     (acceleratedAfter - acceleratedBefore) / (24 * 60 * 60 * 1_000);
-  expect(acceleratedDays).toBeGreaterThan(300);
   expect(acceleratedDays).toBeLessThan(550);
 
   await controls.getByRole("button", { name: "Pause" }).click();
@@ -980,7 +1015,7 @@ test.describe("Phase 6 planet details", () => {
 
     await page.goto("/planet/jupiter");
     await page.getByRole("textbox", { name: "Earth scale reading" }).fill("70");
-    await expect(page.getByText("177")).toBeVisible();
+    await expect(page.getByTestId("planet-weight-result")).toHaveText("177kg");
     await expect(page.getByText(/one-bar reference ratio/i)).toBeVisible();
     await expect(page.getByText(/NaN/)).toHaveCount(0);
   });

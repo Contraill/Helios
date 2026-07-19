@@ -30,6 +30,7 @@ import { PlanetLabel } from "./planet-label";
 
 interface ExtendedSolarSystemProps {
   labelsVisible: boolean;
+  motionEnabled: boolean;
   orbitsVisible: boolean;
   planetObjects: PlanetObjectRegistry;
   quality: SceneQuality;
@@ -74,11 +75,15 @@ function orbitalParticlePositions(
     const sceneRadius = strategy.distanceFromAu(radiusAu);
     const inclination =
       ((random() < 0.5 ? -1 : 1) * inclinationDeg * Math.PI) / 180;
-    positions[index * 3] = sceneRadius * Math.cos(anomaly);
+    const ascendingNode = random() * Math.PI * 2;
+    const orbitalX = sceneRadius * Math.cos(anomaly);
+    const orbitalZ = sceneRadius * Math.sin(anomaly) * Math.cos(inclination);
+    positions[index * 3] =
+      orbitalX * Math.cos(ascendingNode) + orbitalZ * Math.sin(ascendingNode);
     positions[index * 3 + 1] =
       sceneRadius * Math.sin(anomaly) * Math.sin(inclination);
     positions[index * 3 + 2] =
-      sceneRadius * Math.sin(anomaly) * Math.cos(inclination);
+      -orbitalX * Math.sin(ascendingNode) + orbitalZ * Math.cos(ascendingNode);
   }
   return positions;
 }
@@ -105,10 +110,12 @@ function shellParticlePositions(
 }
 
 function RegionRegistry({
+  cameraFocusRadius,
   id,
   planetObjects,
   renderRadius,
 }: {
+  cameraFocusRadius: number;
   id: SystemRegionId;
   planetObjects: PlanetObjectRegistry;
   renderRadius: number;
@@ -119,11 +126,12 @@ function RegionRegistry({
     if (!node) return;
     const registry = planetObjects.current;
     node.userData.renderRadius = renderRadius;
+    node.userData.cameraFocusRadius = cameraFocusRadius;
     registry.set(id, node);
     return () => {
       registry.delete(id);
     };
-  }, [id, planetObjects, renderRadius]);
+  }, [cameraFocusRadius, id, planetObjects, renderRadius]);
   return <group ref={ref} />;
 }
 
@@ -170,11 +178,20 @@ function BeltLayer({
   const id: SystemRegionId =
     layer === "asteroid" ? "asteroid-belt" : "kuiper-belt";
   const focusRadius = strategy.distanceFromAu(layer === "asteroid" ? 3.3 : 57);
+  const cameraFocusRadius =
+    scaleMode === "scientific"
+      ? layer === "asteroid"
+        ? 8
+        : 120
+      : layer === "asteroid"
+        ? 11
+        : 18;
   const selected = selectedBodyId === id;
 
   return (
     <group userData={{ visualLayer: id }}>
       <RegionRegistry
+        cameraFocusRadius={cameraFocusRadius}
         id={id}
         planetObjects={planetObjects}
         renderRadius={focusRadius}
@@ -213,6 +230,7 @@ function BeltLayer({
 function ExtendedBodyObject({
   body,
   labelsVisible,
+  motionEnabled,
   orbitsVisible,
   planetObjects,
   quality,
@@ -220,6 +238,7 @@ function ExtendedBodyObject({
 }: {
   body: ExtendedBody;
   labelsVisible: boolean;
+  motionEnabled: boolean;
   orbitsVisible: boolean;
   planetObjects: PlanetObjectRegistry;
   quality: SceneQuality;
@@ -228,6 +247,10 @@ function ExtendedBodyObject({
   const groupRef = useRef<Group>(null);
   const surfaceRef = useRef<Mesh>(null);
   const tailRef = useRef<Group>(null);
+  const awayFromSun = useRef(new Vector3());
+  const physicalPosition = useRef(new Vector3());
+  const tailOrientation = useRef(new Quaternion());
+  const tailAxis = useRef(new Vector3(0, -1, 0));
   const selected = useExplorationStore(
     (state) => state.selectedBodyId === body.id,
   );
@@ -273,21 +296,25 @@ function ExtendedBodyObject({
     };
   }, [body.id, interactionRadius, planetObjects]);
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     const node = groupRef.current;
     if (!node) return;
     const now = currentSimulationTimeMs(useSimulationStore.getState());
     const position = extendedBodyPosition(body, now, scaleMode);
     node.position.set(...position);
-    if (surfaceRef.current) surfaceRef.current.rotation.y += 0.0015;
+    if (motionEnabled && surfaceRef.current) {
+      surfaceRef.current.rotation.y += delta * 0.09;
+    }
 
     if (tailRef.current && isComet) {
-      const away = new Vector3(...position).normalize();
+      const away = awayFromSun.current.set(...position);
+      if (away.lengthSq() > Number.EPSILON) away.normalize();
       tailRef.current.quaternion.copy(
-        new Quaternion().setFromUnitVectors(new Vector3(0, -1, 0), away),
+        tailOrientation.current.setFromUnitVectors(tailAxis.current, away),
       );
-      const physicalPosition = extendedBodyPosition(body, now, "scientific");
-      const distanceAu = new Vector3(...physicalPosition).length() / 12;
+      const physical = extendedBodyPosition(body, now, "scientific");
+      const distanceAu =
+        physicalPosition.current.set(...physical).length() / 12;
       const activity = Math.max(0, Math.min(1, (5.2 - distanceAu) / 4.2));
       tailRef.current.visible = activity > 0.015;
       tailRef.current.scale.setScalar(0.18 + activity * 0.82);
@@ -312,7 +339,7 @@ function ExtendedBodyObject({
 
   return (
     <>
-      {orbitsVisible ? (
+      {orbitsVisible && active ? (
         <>
           <OrbitPath
             active={active}
@@ -435,6 +462,7 @@ function ExtendedBodyObject({
           <PlanetLabel
             active
             color={body.color}
+            compact
             mode={scaleMode}
             offsetY={interactionRadius + 0.7}
             placement="north"
@@ -514,6 +542,7 @@ function OortCloud({
       }}
     >
       <RegionRegistry
+        cameraFocusRadius={scaleMode === "scientific" ? 520 : 42}
         id="oort-cloud"
         planetObjects={planetObjects}
         renderRadius={scaleMode === "scientific" ? 720 : 165}
@@ -623,14 +652,10 @@ function DustAndMeteorLayer({
 }
 
 function Heliosphere({
-  labelsVisible,
   planetObjects,
   quality,
   scaleMode,
-}: Pick<
-  ExtendedSolarSystemProps,
-  "labelsVisible" | "planetObjects" | "quality" | "scaleMode"
->) {
+}: Pick<ExtendedSolarSystemProps, "planetObjects" | "quality" | "scaleMode">) {
   const strategy =
     scaleMode === "scientific" ? scientificScale : explorationScale;
   const termination = strategy.distanceFromAu(84);
@@ -646,9 +671,6 @@ function Heliosphere({
     [heliopause, quality.textureVariant],
   );
   const selectBody = useExplorationStore((state) => state.selectBody);
-  const selected = useExplorationStore(
-    (state) => state.selectedBodyId === "heliosphere",
-  );
   const earthDistance = strategy.distanceFromAu(1);
   const missionMarkers = [
     { name: "Parker Solar Probe", distanceAu: 0.08, angle: 0.48 },
@@ -658,6 +680,7 @@ function Heliosphere({
   return (
     <group userData={{ visualLayer: "solar-wind-heliosphere" }}>
       <RegionRegistry
+        cameraFocusRadius={scaleMode === "scientific" ? 240 : 24}
         id="heliosphere"
         planetObjects={planetObjects}
         renderRadius={heliopause}
@@ -739,41 +762,16 @@ function Heliosphere({
               <octahedronGeometry args={[1, 0]} />
               <meshBasicMaterial color="#d5e6f2" toneMapped={false} />
             </mesh>
-            {labelsVisible && selected ? (
-              <PlanetLabel
-                active
-                color="#8fc7e9"
-                mode={scaleMode}
-                offsetY={0.55}
-                placement="north"
-                positionCaption={`${marker.distanceAu} AU CONTEXT`}
-                selected={false}
-                text={marker.name}
-              />
-            ) : null}
           </group>
         );
       })}
-      {labelsVisible && selected ? (
-        <group position={[earthDistance * 0.56, 0.3, 0]}>
-          <PlanetLabel
-            active
-            color="#74b9e6"
-            mode={scaleMode}
-            offsetY={0.5}
-            placement="north"
-            positionCaption="CONTEXT · NOT A FORECAST"
-            selected={false}
-            text="DONKI Sun–Earth event chain"
-          />
-        </group>
-      ) : null}
     </group>
   );
 }
 
 export function ExtendedSolarSystem({
   labelsVisible,
+  motionEnabled,
   orbitsVisible,
   planetObjects,
   quality,
@@ -821,6 +819,7 @@ export function ExtendedSolarSystem({
           key={body.id}
           body={body}
           labelsVisible={labelsVisible}
+          motionEnabled={motionEnabled}
           orbitsVisible={orbitsVisible}
           planetObjects={planetObjects}
           quality={quality}
@@ -839,7 +838,6 @@ export function ExtendedSolarSystem({
       ) : null}
       {heliosphereVisible ? (
         <Heliosphere
-          labelsVisible={labelsVisible}
           planetObjects={planetObjects}
           quality={quality}
           scaleMode={scaleMode}

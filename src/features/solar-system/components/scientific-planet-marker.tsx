@@ -151,7 +151,10 @@ export function ScientificPlanetMarker({
     [material, texture],
   );
 
-  const size = selected ? 0.105 : active ? 0.088 : 0.074;
+  // These are navigation aids for otherwise sub-pixel 1:1 bodies. Keeping the
+  // passive marker close to three percent of the viewport prevents eight
+  // markers from becoming the scene itself at system overview distance.
+  const size = selected ? 0.065 : active ? 0.052 : 0.032;
 
   return (
     <sprite

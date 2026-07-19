@@ -56,13 +56,15 @@ const fragmentShader = /* glsl */ `
     // Suppress the blue basemap while retaining dim amber urban clusters.
     // The source is a photographic night composite, so the extraction needs
     // to preserve both warm excess and small high-luminance settlements.
-    float luminance = dot(sampleColor, vec3(0.56, 0.34, 0.10));
-    float warmExcess = max(
-      sampleColor.r - sampleColor.b * 0.45,
-      sampleColor.g - sampleColor.b * 0.62
-    );
-    float warmSignal = max(warmExcess, luminance * 0.16);
-    warmSignal = pow(clamp((warmSignal - 0.006) * 7.2, 0.0, 1.0), 1.05);
+    // The source contains a dim blue basemap as well as lights. A neutral
+    // brightness channel retains compressed white/yellow cities (Tokyo and
+    // northern Europe included), while warm excess rejects blue terrain and
+    // oceans. This is substantially more stable than a raw luminance mask.
+    float neutralBrightness = min(sampleColor.r, min(sampleColor.g, sampleColor.b));
+    float warmExcess = max(sampleColor.r, sampleColor.g) - sampleColor.b * 0.72;
+    float neutralSignal = clamp((neutralBrightness - 0.16) * 3.2, 0.0, 1.0);
+    float amberSignal = clamp((warmExcess - 0.08) * 2.8, 0.0, 1.0);
+    float warmSignal = pow(max(neutralSignal, amberSignal), 1.12);
     float alpha = warmSignal * night * uIntensity;
     if (alpha < 0.003) discard;
 
@@ -92,10 +94,10 @@ export function EarthCityLights({
       uIntensity: {
         value:
           textureVariant === "high"
-            ? 1.85
+            ? 2.35
             : textureVariant === "medium"
-              ? 1.55
-              : 1.2,
+              ? 1.95
+              : 1.55,
       },
       uNightMap: { value: texture },
     }),
