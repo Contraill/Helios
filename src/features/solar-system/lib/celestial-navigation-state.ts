@@ -1,4 +1,5 @@
 import type {
+  CelestialNavigatorCategory,
   NavigatorAction,
   NavigatorFrame,
   NavigatorState,
@@ -17,6 +18,19 @@ export const initialNavigatorState: NavigatorState = Object.freeze({
 
 export function currentNavigatorView(state: NavigatorState): NavigatorView {
   return state.frames[state.frames.length - 1]?.view ?? ROOT_FRAME.view;
+}
+
+export function activeNavigatorCategory(
+  view: NavigatorView,
+): CelestialNavigatorCategory | "overview" {
+  if (view.kind === "categories") return "overview";
+  if (view.kind === "moon-parents" || view.kind === "moons") {
+    return "planetary-moons";
+  }
+  if (view.kind === "dwarf-parents" || view.kind === "dwarf-system") {
+    return "dwarf-kuiper";
+  }
+  return view.category;
 }
 
 export function navigatorReducer(

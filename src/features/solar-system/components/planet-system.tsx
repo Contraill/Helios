@@ -10,17 +10,20 @@ import { planetTextureSources } from "@/content/sources/planet-textures";
 import { planetEphemerisRepresentation } from "@/lib/data/ephemeris/models";
 import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
 import { parentEquatorialQuaternion } from "@/features/solar-system/lib/body-equatorial-orientation";
-import { currentNavigatorView } from "@/features/solar-system/lib/celestial-navigation-state";
 import { PLANET_VISUAL_PROFILES } from "@/features/solar-system/lib/planet-visual-profiles";
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import { rotationAngleAt } from "@/features/solar-system/lib/orbital-motion";
+import {
+  labelPriorityForBody,
+  shouldMountLabel,
+} from "@/features/solar-system/lib/label-visibility-policy";
 import { planetOrbitVisibility } from "@/features/solar-system/lib/orbit-visibility-policy";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import {
   sceneScaleFor,
   type ScenePlanet,
 } from "@/features/solar-system/lib/scene-planets";
-import { planetSceneVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
+import { effectiveBodyVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
 import {
   textureMaterialKey,
   useSceneTexture,
@@ -38,7 +41,7 @@ import {
 import { uiStrings } from "@/lib/i18n/ui-strings";
 import { useEphemerisStore } from "@/stores/ephemeris-store";
 import { useExplorationStore } from "@/stores/exploration-store";
-import { useExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
+import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 import {
   currentSimulationTimeMs,
   useSimulationStore,
@@ -52,6 +55,8 @@ import { OrbitPath } from "./orbit-path";
 import { PlanetLabel, type ScientificLabelPlacement } from "./planet-label";
 import { PlanetaryRingSystem } from "./planetary-ring-system";
 import { SaturnRings } from "./saturn-rings";
+
+const DISABLED_RAYCAST = () => undefined;
 
 const SCIENTIFIC_LABEL_PLACEMENTS: Readonly<
   Record<ScenePlanet["id"], ScientificLabelPlacement>
@@ -101,24 +106,28 @@ export function PlanetSystem({
   const clearHoveredPlanet = useExplorationStore(
     (state) => state.clearHoveredPlanet,
   );
-  const navigator = useExploreSceneUiStore((state) => state.navigator);
   const active = selected || hovered;
   const equatorialOrientation = useMemo(
     () => parentEquatorialQuaternion(planet.id),
     [planet.id],
   );
-  const navigatorView = currentNavigatorView(navigator);
-  const visibility = planetSceneVisibility(planet.id, {
-    navigatorView,
-    selectedBodyId: selected ? planet.id : null,
+  const visible = useSceneVisibilityStore((state) =>
+    effectiveBodyVisibility(planet.id, state),
+  );
+  const labelPriority = labelPriorityForBody("planet", {
+    bodyVisible: visible,
+    hovered,
+    labelsVisible,
+    scaleMode,
+    selected,
   });
   const orbitEmphasis = planetOrbitVisibility(planet.id, {
-    navigatorView,
+    bodyVisible: visible,
     orbitsVisible,
     selectedBodyId: selected ? planet.id : null,
     hoveredBodyId: hovered ? planet.id : null,
   });
-  const primary = visibility === "primary";
+  const primary = visible;
   const visualProfile = PLANET_VISUAL_PROFILES[planet.id];
   const surfaceAsset = planetTextureSources[planet.id].asset;
   const surfaceTexture = useSceneTexture(surfaceAsset.path, {
@@ -166,7 +175,6 @@ export function PlanetSystem({
     scale.radius * 1.65,
     profile.body.minimumInteractionRadius,
   );
-  const scientificMode = profile.scale.bodyProfile === "physical-ratio";
 
   useLayoutEffect(() => {
     if (surfaceTexture) markMaterialApplied(surfaceAsset.owner);
@@ -239,116 +247,127 @@ export function PlanetSystem({
   });
 
   const handlePointerOver = (event: ThreeEvent<PointerEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     setHoveredPlanet(planet.id);
   };
 
   const handlePointerOut = (event: ThreeEvent<PointerEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     clearHoveredPlanet(planet.id);
   };
 
   const handleClick = (event: ThreeEvent<MouseEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     selectPlanet(planet.id);
   };
 
   return (
     <>
-      {orbitEmphasis !== "hidden" ? (
-        orbitPoints ? (
+      {orbitPoints ? (
+        <OrbitPath
+          bodyId={planet.id}
+          orbitClass="planet"
+          color={planet.color}
+          emphasis={orbitEmphasis}
+          points={orbitPoints}
+          segments={quality.orbitSegments}
+          semiMajorAxis={scale.semiMajorAxis}
+          semiMinorAxis={scale.semiMinorAxis}
+        />
+      ) : (
+        <group rotation-x={planet.inclinationRadians}>
           <OrbitPath
             bodyId={planet.id}
             orbitClass="planet"
             color={planet.color}
             emphasis={orbitEmphasis}
-            points={orbitPoints}
             segments={quality.orbitSegments}
             semiMajorAxis={scale.semiMajorAxis}
             semiMinorAxis={scale.semiMinorAxis}
           />
-        ) : (
-          <group rotation-x={planet.inclinationRadians}>
-            <OrbitPath
-              bodyId={planet.id}
-              orbitClass="planet"
-              color={planet.color}
-              emphasis={orbitEmphasis}
-              segments={quality.orbitSegments}
-              semiMajorAxis={scale.semiMajorAxis}
-              semiMinorAxis={scale.semiMinorAxis}
-            />
-          </group>
-        )
-      ) : null}
-      <group ref={bodyRef} position={scale.initialPosition}>
-        <group quaternion={equatorialOrientation}>
-          <mesh
-            ref={surfaceRef}
-            name={planet.name}
-            scale={scale.radius}
-            userData={{ planetId: planet.id }}
-          >
-            <sphereGeometry
-              args={[1, quality.planetSegments[0], quality.planetSegments[1]]}
-            />
-            <meshStandardMaterial
-              key={textureMaterialKey(surfaceTexture)}
-              userData={{
-                testSurfaceBodyId: planet.id,
-                texturePath: surfaceTexture?.name ?? null,
-              }}
-              color={surfaceTexture ? visualProfile.surfaceTint : planet.color}
-              depthWrite={primary}
-              emissive="#000000"
-              emissiveIntensity={0}
-              map={surfaceTexture ?? undefined}
-              metalness={0}
-              opacity={primary ? 1 : 0.3}
-              roughness={visualProfile.roughness}
-              transparent={!primary}
-            />
-            {primary && planet.id === "earth" ? (
-              <EarthCityLights segments={quality.atmosphereSegments} />
-            ) : null}
-            {primary && planet.id === "earth" ? (
-              <EarthCloudLayer segments={quality.atmosphereSegments} />
-            ) : null}
-          </mesh>
-
-          {primary && visualProfile.atmosphere ? (
-            <AtmosphereShell
-              profile={visualProfile.atmosphere}
-              radius={scale.radius}
-              segments={quality.atmosphereSegments}
-            />
-          ) : null}
-
-          {primary && planet.id === "saturn" ? (
-            <SaturnRings
-              radius={scale.radius}
-              segments={quality.ringSegments}
-            />
-          ) : null}
-
-          {primary &&
-          (planet.id === "jupiter" ||
-            planet.id === "uranus" ||
-            planet.id === "neptune") ? (
-            <PlanetaryRingSystem
-              active={active}
-              planetId={planet.id}
-              radius={scale.radius}
-              segments={quality.ringSegments}
-            />
-          ) : null}
-
-          {primary ? (
+        </group>
+      )}
+      <group
+        ref={bodyRef}
+        position={scale.initialPosition}
+        userData={{ bodyId: planet.id, visualLayer: "planet-system" }}
+      >
+        <group
+          visible={visible}
+          userData={{ bodyId: planet.id, testBodyRoot: true }}
+        >
+          <group quaternion={equatorialOrientation}>
             <mesh
+              ref={surfaceRef}
+              name={planet.name}
+              scale={scale.radius}
+              userData={{ planetId: planet.id }}
+            >
+              <sphereGeometry
+                args={[1, quality.planetSegments[0], quality.planetSegments[1]]}
+              />
+              <meshStandardMaterial
+                key={textureMaterialKey(surfaceTexture)}
+                userData={{
+                  testSurfaceBodyId: planet.id,
+                  texturePath: surfaceTexture?.name ?? null,
+                }}
+                color={
+                  surfaceTexture ? visualProfile.surfaceTint : planet.color
+                }
+                depthWrite={primary}
+                emissive="#000000"
+                emissiveIntensity={0}
+                map={surfaceTexture ?? undefined}
+                metalness={0}
+                opacity={primary ? 1 : 0.3}
+                roughness={visualProfile.roughness}
+                transparent={!primary}
+              />
+              {planet.id === "earth" ? (
+                <EarthCityLights segments={quality.atmosphereSegments} />
+              ) : null}
+              {planet.id === "earth" ? (
+                <EarthCloudLayer segments={quality.atmosphereSegments} />
+              ) : null}
+            </mesh>
+
+            {visualProfile.atmosphere ? (
+              <AtmosphereShell
+                profile={visualProfile.atmosphere}
+                radius={scale.radius}
+                segments={quality.atmosphereSegments}
+              />
+            ) : null}
+
+            {planet.id === "saturn" ? (
+              <SaturnRings
+                radius={scale.radius}
+                segments={quality.ringSegments}
+              />
+            ) : null}
+
+            {planet.id === "jupiter" ||
+            planet.id === "uranus" ||
+            planet.id === "neptune" ? (
+              <PlanetaryRingSystem
+                active={visible && active}
+                planetId={planet.id}
+                radius={scale.radius}
+                segments={quality.ringSegments}
+              />
+            ) : null}
+
+            <mesh
+              raycast={visible ? undefined : DISABLED_RAYCAST}
               onClick={handleClick}
               onPointerOut={handlePointerOut}
               onPointerOver={handlePointerOver}
               scale={interactionRadius}
+              userData={{ testInteractiveBodyId: planet.id }}
             >
               <sphereGeometry args={[1, 14, 10]} />
               <meshBasicMaterial
@@ -358,6 +377,41 @@ export function PlanetSystem({
                 transparent
               />
             </mesh>
+          </group>
+
+          {primary && active ? (
+            <mesh
+              raycast={() => undefined}
+              scale={scale.radius * (selected ? 1.065 : 1.045)}
+            >
+              <sphereGeometry args={[1, 32, 24]} />
+              <meshBasicMaterial
+                color={selected ? "#c7d3e3" : planet.color}
+                depthWrite={false}
+                opacity={selected ? 0.12 : 0.07}
+                side={BackSide}
+                transparent
+              />
+            </mesh>
+          ) : null}
+
+          {shouldMountLabel(labelPriority) ? (
+            <PlanetLabel
+              active={active}
+              bodyId={planet.id}
+              color={planet.color}
+              mode={scaleMode}
+              offsetY={scale.radius + 1.15}
+              placement={SCIENTIFIC_LABEL_PLACEMENTS[planet.id]}
+              priority={labelPriority}
+              positionCaption={
+                selected
+                  ? uiStrings.pages.explore.scientificSelectedMarkerCaption
+                  : uiStrings.pages.explore.scientificMarkerCaption
+              }
+              selected={selected}
+              text={planet.name}
+            />
           ) : null}
         </group>
 
@@ -368,39 +422,6 @@ export function PlanetSystem({
           quality={quality}
           scaleMode={scaleMode}
         />
-
-        {primary && active ? (
-          <mesh
-            raycast={() => undefined}
-            scale={scale.radius * (selected ? 1.065 : 1.045)}
-          >
-            <sphereGeometry args={[1, 32, 24]} />
-            <meshBasicMaterial
-              color={selected ? "#c7d3e3" : planet.color}
-              depthWrite={false}
-              opacity={selected ? 0.12 : 0.07}
-              side={BackSide}
-              transparent
-            />
-          </mesh>
-        ) : null}
-
-        {primary && labelsVisible && (active || scientificMode) ? (
-          <PlanetLabel
-            active={active}
-            color={planet.color}
-            mode={scaleMode}
-            offsetY={scale.radius + 1.15}
-            placement={SCIENTIFIC_LABEL_PLACEMENTS[planet.id]}
-            positionCaption={
-              selected
-                ? uiStrings.pages.explore.scientificSelectedMarkerCaption
-                : uiStrings.pages.explore.scientificMarkerCaption
-            }
-            selected={selected}
-            text={planet.name}
-          />
-        ) : null}
       </group>
     </>
   );

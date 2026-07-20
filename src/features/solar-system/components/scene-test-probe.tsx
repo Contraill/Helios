@@ -5,6 +5,12 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
 import type { Material, Mesh, Object3D, ShaderMaterial, Texture } from "three";
 
+import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
+import {
+  currentSimulationTimeMs,
+  useSimulationStore,
+} from "@/stores/simulation-store";
+
 import {
   textureCacheSnapshot,
   textureDisposalCount,
@@ -65,6 +71,18 @@ export interface HeliosSceneTestSnapshot {
     >
   >;
   readonly orbits: Readonly<Record<"planet" | "moon" | "extended", number>>;
+  readonly sceneContract: {
+    readonly mountedBodyIds: readonly string[];
+    readonly visibleBodyIds: readonly string[];
+    readonly interactiveBodyIds: readonly string[];
+    readonly visibleOrbitBodyIds: readonly string[];
+    readonly visibleLabelBodyIds: readonly string[];
+    readonly visibilityCategories: Readonly<Record<string, boolean>>;
+  };
+  readonly simulation: {
+    readonly atMs: number;
+    readonly isPaused: boolean;
+  };
   readonly surfaces: Readonly<Record<string, string | null>>;
   readonly textureCache: ReturnType<typeof textureCacheSnapshot>;
   readonly textureDisposals: number;
@@ -86,6 +104,15 @@ function materialsFor(object: Object3D): readonly Material[] {
 
 function texturePath(texture: Texture | null | undefined): string | null {
   return texture?.name?.replace(/^helios:/, "") ?? null;
+}
+
+function isEffectivelyVisible(object: Object3D): boolean {
+  let current: Object3D | null = object;
+  while (current) {
+    if (!current.visible) return false;
+    current = current.parent;
+  }
+  return true;
 }
 
 /**
@@ -141,6 +168,11 @@ function ActiveSceneTestProbe() {
       tileCount: 0,
       bodyIds: [] as string[],
     };
+    const mountedBodyIds = new Set<string>();
+    const visibleBodyIds = new Set<string>();
+    const interactiveBodyIds = new Set<string>();
+    const visibleOrbitBodyIds = new Set<string>();
+    const visibleLabelBodyIds = new Set<string>();
 
     scene.traverse((object) => {
       if (object.userData.testCatalogue === true) {
@@ -157,16 +189,35 @@ function ActiveSceneTestProbe() {
       const orbitClass = object.userData.testOrbitClass as
         keyof typeof orbits | undefined;
       const orbitBodyId = object.userData.testOrbitBodyId as string | undefined;
-      if (orbitClass && object.visible) orbits[orbitClass] += 1;
+      const objectVisible = isEffectivelyVisible(object);
+      if (orbitClass && objectVisible) orbits[orbitClass] += 1;
+      if (orbitClass && orbitBodyId && objectVisible) {
+        visibleOrbitBodyIds.add(orbitBodyId);
+      }
       if (orbitClass && orbitBodyId) {
         orbitResources[orbitBodyId] = {
           boundsRadius: Number(object.userData.testBoundsRadius ?? 0),
           geometryUuid: String(object.userData.testGeometryUuid ?? ""),
           materialUuid: String(object.userData.testMaterialUuid ?? ""),
           orbitClass,
-          visible: object.visible,
+          visible: objectVisible,
         };
       }
+
+      const rootBodyId = object.userData.testBodyRoot
+        ? (object.userData.bodyId as string | undefined)
+        : undefined;
+      if (rootBodyId) {
+        mountedBodyIds.add(rootBodyId);
+        if (objectVisible) visibleBodyIds.add(rootBodyId);
+      }
+      const interactiveBodyId = object.userData.testInteractiveBodyId as
+        string | undefined;
+      if (interactiveBodyId && objectVisible) {
+        interactiveBodyIds.add(interactiveBodyId);
+      }
+      const labelBodyId = object.userData.testLabelBodyId as string | undefined;
+      if (labelBodyId && objectVisible) visibleLabelBodyIds.add(labelBodyId);
 
       const bodyId = object.userData.bodyId as string | undefined;
       if (bodyId && !bodyPositions[bodyId]) {
@@ -224,6 +275,7 @@ function ActiveSceneTestProbe() {
     });
 
     const cityMaterial = cityMaterials[0];
+    const simulationState = useSimulationStore.getState();
     const cityTexture = cityMaterial?.uniforms.uNightMap?.value as
       Texture | null | undefined;
     window.__HELIOS_SCENE_TEST__ = {
@@ -249,6 +301,22 @@ function ActiveSceneTestProbe() {
       },
       orbitResources,
       orbits,
+      sceneContract: {
+        mountedBodyIds: [...mountedBodyIds].sort(),
+        visibleBodyIds: [...visibleBodyIds].sort(),
+        interactiveBodyIds: [...interactiveBodyIds].sort(),
+        visibleOrbitBodyIds: [...visibleOrbitBodyIds].sort(),
+        visibleLabelBodyIds: [...visibleLabelBodyIds].sort(),
+        visibilityCategories: {
+          ...useSceneVisibilityStore.getState().categories,
+          orbits: useSceneVisibilityStore.getState().orbitsVisible,
+          labels: useSceneVisibilityStore.getState().labelsVisible,
+        },
+      },
+      simulation: {
+        atMs: currentSimulationTimeMs(simulationState),
+        isPaused: simulationState.isPaused,
+      },
       surfaces,
       textureCache: textureCacheSnapshot(),
       textureDisposals: textureDisposalCount(),

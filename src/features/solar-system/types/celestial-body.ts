@@ -1,4 +1,4 @@
-import type { PlanetId } from "@/lib/data/schemas/planet";
+import { planetIdSchema, type PlanetId } from "@/lib/data/schemas/planet";
 
 export const FEATURED_MOON_PARENT_IDS = [
   "earth",
@@ -132,4 +132,17 @@ export function isDwarfSystemParentId(
 
 export function isSystemRegionIdValue(value: string): value is SystemRegionId {
   return (SYSTEM_REGION_IDS as readonly string[]).includes(value);
+}
+
+export function isCelestialBodyIdValue(
+  value: string,
+): value is CelestialBodyId {
+  return (
+    value === "sun" ||
+    planetIdSchema.safeParse(value).success ||
+    isMoonIdValue(value) ||
+    isExtendedBodyIdValue(value) ||
+    isDwarfSatelliteIdValue(value) ||
+    isSystemRegionIdValue(value)
+  );
 }

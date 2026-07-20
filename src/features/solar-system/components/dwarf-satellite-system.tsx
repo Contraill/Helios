@@ -8,15 +8,19 @@ import type { Group } from "three";
 import {
   DWARF_SATELLITE_BY_ID,
   dwarfSatellitesFor,
-  isDwarfSatelliteId,
   type DwarfSatellite,
   type DwarfSystemParentId,
 } from "@/features/solar-system/lib/dwarf-satellite-catalogue";
-import { currentNavigatorView } from "@/features/solar-system/lib/celestial-navigation-state";
+import { effectiveBodyVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
+import {
+  labelPriorityForBody,
+  shouldMountLabel,
+} from "@/features/solar-system/lib/label-visibility-policy";
+import { moonOrbitVisibility } from "@/features/solar-system/lib/orbit-visibility-policy";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { useExplorationStore } from "@/stores/exploration-store";
-import { useExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
+import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 import {
   currentSimulationTimeMs,
   useSimulationStore,
@@ -25,6 +29,8 @@ import {
 import { CelestialVisualSurface } from "./celestial-visual-surface";
 import { OrbitPath } from "./orbit-path";
 import { PlanetLabel } from "./planet-label";
+
+const DISABLED_RAYCAST = () => undefined;
 
 const DAY_MS = 86_400_000;
 
@@ -100,7 +106,8 @@ function SatelliteObject({
   const selected = useExplorationStore(
     (state) => state.selectedBodyId === moon.id,
   );
-  const orbitsVisible = useExplorationStore((state) => state.orbitsVisible);
+  const orbitsVisible = useSceneVisibilityStore((state) => state.orbitsVisible);
+  const labelsVisible = useSceneVisibilityStore((state) => state.labelsVisible);
   const hovered = useExplorationStore(
     (state) => state.hoveredBodyId === moon.id,
   );
@@ -113,6 +120,22 @@ function SatelliteObject({
     parentRadius * (moon.meanRadiusKm / parentMeanRadiusKm);
   const visualRadius = Math.max(physicalRadius, parentRadius * 0.075);
   const interactionRadius = Math.max(visualRadius * 2.3, parentRadius * 0.2);
+  const visible = useSceneVisibilityStore((state) =>
+    effectiveBodyVisibility(moon.id, state),
+  );
+  const labelPriority = labelPriorityForBody("dwarf-satellite", {
+    bodyVisible: visible,
+    hovered,
+    labelsVisible,
+    scaleMode,
+    selected,
+  });
+  const orbitEmphasis = moonOrbitVisibility(moon.id, {
+    bodyVisible: visible,
+    orbitsVisible,
+    selectedBodyId: selected ? moon.id : null,
+    hoveredBodyId: hovered ? moon.id : null,
+  });
   const initialPosition = satellitePosition(
     moon,
     simulationAtMs,
@@ -171,39 +194,43 @@ function SatelliteObject({
   });
 
   const over = (event: ThreeEvent<PointerEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     setHoveredBody(moon.id);
   };
   const out = (event: ThreeEvent<PointerEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     clearHoveredBody(moon.id);
   };
   const click = (event: ThreeEvent<MouseEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     selectBody(moon.id);
   };
 
   return (
     <>
-      {orbitsVisible ? (
-        <OrbitPath
-          bodyId={moon.id}
-          color="#9dabbc"
-          emphasis={selected || hovered ? "selected" : "context"}
-          lineWidth={0.75}
-          orbitClass="moon"
-          points={orbitPoints}
-          segments={96}
-          semiMajorAxis={orbitDistance}
-          semiMinorAxis={
-            orbitDistance * Math.sqrt(1 - (moon.eccentricity ?? 0) ** 2)
-          }
-        />
-      ) : null}
+      <OrbitPath
+        bodyId={moon.id}
+        color="#9dabbc"
+        emphasis={orbitEmphasis}
+        lineWidth={0.75}
+        orbitClass="moon"
+        points={orbitPoints}
+        segments={96}
+        semiMajorAxis={orbitDistance}
+        semiMinorAxis={
+          orbitDistance * Math.sqrt(1 - (moon.eccentricity ?? 0) ** 2)
+        }
+      />
       <group
         ref={groupRef}
         position={initialPosition as [number, number, number]}
+        visible={visible}
         userData={{
+          bodyId: moon.id,
+          testBodyRoot: true,
           angularOrbitResolved: moon.inclinationDeg !== null,
           sourceTarget: moon.sourceTarget,
           visualLayer: "dwarf-system-satellite",
@@ -211,26 +238,31 @@ function SatelliteObject({
       >
         <CelestialVisualSurface
           bodyId={moon.id}
+          textureLoadPolicy="scheduled"
           radius={visualRadius}
           rootRef={surfaceRef}
         />
         <mesh
+          raycast={visible ? undefined : DISABLED_RAYCAST}
           onClick={click}
           onPointerOut={out}
           onPointerOver={over}
           scale={interactionRadius}
+          userData={{ testInteractiveBodyId: moon.id }}
         >
           <sphereGeometry args={[1, 12, 8]} />
           <meshBasicMaterial depthWrite={false} opacity={0} transparent />
         </mesh>
-        {selected || hovered ? (
+        {shouldMountLabel(labelPriority) ? (
           <PlanetLabel
             active
+            bodyId={moon.id}
             color="#d9d3c7"
             compact
             mode={scaleMode}
             offsetY={interactionRadius + 0.2}
             placement="north"
+            priority={labelPriority}
             positionCaption="DWARF-SYSTEM CONTEXT"
             selected={selected}
             text={moon.name}
@@ -254,22 +286,8 @@ export function DwarfSatelliteSystem({
   planetObjects: PlanetObjectRegistry;
   scaleMode: ScaleMode;
 }) {
-  const navigator = useExploreSceneUiStore((state) => state.navigator);
-  const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
-  const view = currentNavigatorView(navigator);
-  const moons = useMemo(() => {
-    if (view.kind === "dwarf-system" && view.parentBodyId === parentId) {
-      return dwarfSatellitesFor(parentId);
-    }
-    if (selectedBodyId && isDwarfSatelliteId(selectedBodyId)) {
-      const moon = DWARF_SATELLITE_BY_ID[selectedBodyId];
-      return moon.parentId === parentId ? [moon] : [];
-    }
-    if (selectedBodyId === parentId) return dwarfSatellitesFor(parentId);
-    return [];
-  }, [parentId, selectedBodyId, view]);
+  const moons = useMemo(() => dwarfSatellitesFor(parentId), [parentId]);
 
-  if (moons.length === 0) return null;
   return (
     <group
       userData={{

@@ -157,13 +157,12 @@ export function CelestialNavigator({
     consumeFocusRequest();
   }, [consumeFocusRequest, navigator.focusRequestKey]);
 
-  const selectAndShow = (bodyId: CelestialBodyId) => {
+  const selectBodyAndOpenSummary = (bodyId: CelestialBodyId) => {
     selectBody(bodyId);
     setActiveDockPanel("selection");
   };
 
   const openParent = (parentPlanetId: MoonParentPlanetId, key: string) => {
-    selectPlanet(parentPlanetId);
     openMoonParent(parentPlanetId, key);
   };
 
@@ -175,8 +174,6 @@ export function CelestialNavigator({
   };
 
   const handleBack = () => {
-    if (view.kind === "moons") selectPlanet(view.parentPlanetId);
-    if (view.kind === "dwarf-system") selectBody(view.parentBodyId);
     goBack();
   };
 
@@ -337,7 +334,7 @@ export function CelestialNavigator({
                 aria-pressed={selectedBodyId === moon.id}
                 data-focus-key={`body-${moon.id}`}
                 data-navigator-item
-                onClick={() => selectAndShow(moon.id)}
+                onClick={() => selectBodyAndOpenSummary(moon.id)}
                 type="button"
               >
                 <span aria-hidden="true">◌</span>
@@ -367,7 +364,7 @@ export function CelestialNavigator({
                   aria-pressed={selectedBodyId === entry.id}
                   data-focus-key={`dwarf-parent-${entry.id}`}
                   data-navigator-item
-                  onClick={() => selectAndShow(entry.id)}
+                  onClick={() => selectBodyAndOpenSummary(entry.id)}
                   type="button"
                 >
                   <span aria-hidden="true">◎</span>
@@ -378,10 +375,9 @@ export function CelestialNavigator({
                     aria-label={`Open ${entry.displayName} system (${moonCount} satellites)`}
                     className={gateStyles.moonShortcut}
                     data-navigator-item
-                    onClick={() => {
-                      selectBody(parentId);
-                      openDwarfSystem(parentId, `dwarf-parent-${entry.id}`);
-                    }}
+                    onClick={() =>
+                      openDwarfSystem(parentId, `dwarf-parent-${entry.id}`)
+                    }
                     type="button"
                   >
                     {moonCount} · system
@@ -403,7 +399,7 @@ export function CelestialNavigator({
               aria-pressed={selectedBodyId === view.parentBodyId}
               data-focus-key={`body-${view.parentBodyId}`}
               data-navigator-item
-              onClick={() => selectAndShow(view.parentBodyId)}
+              onClick={() => selectBodyAndOpenSummary(view.parentBodyId)}
               type="button"
             >
               <span aria-hidden="true">◎</span>
@@ -420,7 +416,7 @@ export function CelestialNavigator({
                 aria-pressed={selectedBodyId === moon.id}
                 data-focus-key={`body-${moon.id}`}
                 data-navigator-item
-                onClick={() => selectAndShow(moon.id)}
+                onClick={() => selectBodyAndOpenSummary(moon.id)}
                 type="button"
               >
                 <span aria-hidden="true">◌</span>
@@ -442,7 +438,7 @@ export function CelestialNavigator({
                 aria-pressed={selectedBodyId === entry.id}
                 data-focus-key={`body-${entry.id}`}
                 data-navigator-item
-                onClick={() => selectAndShow(entry.id)}
+                onClick={() => selectBodyAndOpenSummary(entry.id)}
                 type="button"
               >
                 <span aria-hidden="true">
@@ -467,7 +463,7 @@ export function CelestialNavigator({
                   aria-pressed={selectedBodyId === entry.id}
                   data-focus-key={`body-${entry.id}`}
                   data-navigator-item
-                  onClick={() => selectAndShow(entry.id)}
+                  onClick={() => selectBodyAndOpenSummary(entry.id)}
                   type="button"
                 >
                   <span aria-hidden="true">◎</span>

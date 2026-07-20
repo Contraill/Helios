@@ -21,6 +21,7 @@ import {
 import {
   textureMaterialKey,
   useSceneTexture,
+  useTextureReadiness,
 } from "@/features/solar-system/lib/texture-cache";
 import { useReducedMotionPreference } from "@/hooks/use-reduced-motion-preference";
 
@@ -217,6 +218,7 @@ export interface CelestialVisualSurfaceProps {
   readonly radius: number;
   readonly rootRef?: RefObject<Group | null>;
   readonly position?: readonly [number, number, number];
+  readonly textureLoadPolicy?: "immediate" | "scheduled";
 }
 
 export function CelestialVisualSurface({
@@ -224,9 +226,16 @@ export function CelestialVisualSurface({
   radius,
   rootRef,
   position = [0, 0, 0],
+  textureLoadPolicy = "immediate",
 }: CelestialVisualSurfaceProps) {
   const profile = visualProfileFor(bodyId);
-  const texture = useSceneTexture(profile.surface.assetPath);
+  const readiness = useTextureReadiness(profile.surface.assetPath);
+  const texture = useSceneTexture(profile.surface.assetPath, {
+    enabled:
+      textureLoadPolicy === "immediate" ||
+      readiness === "loading" ||
+      readiness === "ready",
+  });
   const ring = useMemo(() => bodyRing(profile), [profile]);
 
   return (

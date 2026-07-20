@@ -1,26 +1,50 @@
 "use client";
 
 import styles from "@/app/explore/explore.module.css";
+import {
+  SCENE_VISIBILITY_CATEGORIES,
+  type SceneVisibilityCategory,
+} from "@/features/solar-system/lib/scene-visibility-policy";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import { uiStrings } from "@/lib/i18n/ui-strings";
 import { useExplorationStore } from "@/stores/exploration-store";
+import {
+  sceneVisibilityIsDefault,
+  useSceneVisibilityStore,
+} from "@/stores/scene-visibility-store";
 
 import gateStyles from "./explore-scene-gate.module.css";
 
 const profiles: readonly ScaleMode[] = ["exploration", "scientific"];
+const visibilityLabels: Readonly<Record<SceneVisibilityCategory, string>> = {
+  planets: "Planets",
+  moons: "Moons",
+  asteroids: "Asteroids",
+  "dwarf-kuiper": "Dwarf & Kuiper worlds",
+  comets: "Comets",
+  regions: "Regions",
+};
 
 export function ViewControls() {
   const copy = uiStrings.pages.explore.controls;
   const scaleMode = useExplorationStore((state) => state.scaleMode);
-  const orbitsVisible = useExplorationStore((state) => state.orbitsVisible);
-  const labelsVisible = useExplorationStore((state) => state.labelsVisible);
   const cameraMode = useExplorationStore((state) => state.cameraMode);
   const setScaleMode = useExplorationStore((state) => state.setScaleMode);
-  const toggleOrbits = useExplorationStore((state) => state.toggleOrbits);
-  const toggleLabels = useExplorationStore((state) => state.toggleLabels);
   const enterFreeCamera = useExplorationStore((state) => state.enterFreeCamera);
   const exitFreeCamera = useExplorationStore((state) => state.exitFreeCamera);
   const clearSelection = useExplorationStore((state) => state.clearSelection);
+  const categories = useSceneVisibilityStore((state) => state.categories);
+  const orbitsVisible = useSceneVisibilityStore((state) => state.orbitsVisible);
+  const labelsVisible = useSceneVisibilityStore((state) => state.labelsVisible);
+  const toggleCategoryVisibility = useSceneVisibilityStore(
+    (state) => state.toggleCategoryVisibility,
+  );
+  const toggleOrbits = useSceneVisibilityStore((state) => state.toggleOrbits);
+  const toggleLabels = useSceneVisibilityStore((state) => state.toggleLabels);
+  const restoreAllVisibility = useSceneVisibilityStore(
+    (state) => state.restoreAllVisibility,
+  );
+  const visibilityIsDefault = useSceneVisibilityStore(sceneVisibilityIsDefault);
 
   return (
     <div
@@ -53,24 +77,45 @@ export function ViewControls() {
           </div>
         </fieldset>
 
-        <fieldset>
-          <legend>{copy.scene}</legend>
-          <div className={styles.toggleControls}>
-            <button
-              aria-pressed={orbitsVisible}
+        <fieldset className={gateStyles.visibilityFieldset}>
+          <legend>Visibility</legend>
+          <div className={gateStyles.visibilityGrid}>
+            {SCENE_VISIBILITY_CATEGORIES.map((category) => (
+              <VisibilityToggle
+                key={category}
+                label={visibilityLabels[category]}
+                onClick={() => toggleCategoryVisibility(category)}
+                pressed={categories[category]}
+              />
+            ))}
+            <VisibilityToggle
+              label={copy.orbits}
               onClick={toggleOrbits}
-              type="button"
-            >
-              {copy.orbits}
-            </button>
-            <button
-              aria-pressed={labelsVisible}
+              pressed={orbitsVisible}
+            />
+            <VisibilityToggle
+              label={copy.labels}
               onClick={toggleLabels}
-              type="button"
-            >
-              {copy.labels}
-            </button>
+              pressed={labelsVisible}
+            />
           </div>
+          <button
+            aria-describedby="restore-visibility-description"
+            className={gateStyles.restoreVisibility}
+            disabled={visibilityIsDefault}
+            onClick={restoreAllVisibility}
+            type="button"
+          >
+            Restore all visibility
+          </button>
+          <span
+            className={gateStyles.srOnly}
+            id="restore-visibility-description"
+          >
+            {visibilityIsDefault
+              ? "All categories, orbits and labels are already visible."
+              : "Shows every category, clears object overrides and enables orbits and labels."}
+          </span>
         </fieldset>
 
         <fieldset>
@@ -105,5 +150,30 @@ export function ViewControls() {
         by staged loading, bounded pixel ratio, mipmaps and texture leases.
       </p>
     </div>
+  );
+}
+
+function VisibilityToggle({
+  label,
+  onClick,
+  pressed,
+}: {
+  label: string;
+  onClick: () => void;
+  pressed: boolean;
+}) {
+  return (
+    <button
+      aria-label={`${label}: ${pressed ? "visible" : "hidden"}`}
+      aria-pressed={pressed}
+      className={gateStyles.visibilityToggle}
+      onClick={onClick}
+      type="button"
+    >
+      <span>{label}</span>
+      <span aria-hidden="true" className={gateStyles.visibilityState}>
+        {pressed ? "On" : "Off"}
+      </span>
+    </button>
   );
 }

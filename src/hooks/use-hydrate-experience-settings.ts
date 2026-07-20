@@ -6,6 +6,7 @@ import { migrateLegacyExplorePreferences } from "@/features/solar-system/lib/exp
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useExtendedSystemStore } from "@/stores/extended-system-store";
 import { useSimulationStore } from "@/stores/simulation-store";
+import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 
 export function useHydrateExperienceSettings(): boolean {
   const [hydrated, setHydrated] = useState(false);
@@ -17,6 +18,7 @@ export function useHydrateExperienceSettings(): boolean {
       useExplorationStore.persist.rehydrate(),
       useSimulationStore.persist.rehydrate(),
       useExtendedSystemStore.persist.rehydrate(),
+      useSceneVisibilityStore.persist.rehydrate(),
     ]).then(() => {
       if (active) setHydrated(true);
     });

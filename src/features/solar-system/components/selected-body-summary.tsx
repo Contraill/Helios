@@ -17,6 +17,10 @@ import {
 } from "@/features/solar-system/lib/celestial-representation";
 import { visualProfileFor } from "@/features/solar-system/lib/celestial-visual-registry";
 import { createCelestialRegistry } from "@/features/solar-system/lib/celestial-registry";
+import {
+  effectiveBodyVisibility,
+  effectiveBodyVisibilityReason,
+} from "@/features/solar-system/lib/scene-visibility-policy";
 import type { ExplorePlanetSummary } from "@/features/solar-system/lib/explore-planets";
 import {
   MOON_BY_ID,
@@ -29,6 +33,7 @@ import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
 import { useEphemerisStore } from "@/stores/ephemeris-store";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useSimulationStore } from "@/stores/simulation-store";
+import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 
 import gateStyles from "./explore-scene-gate.module.css";
 
@@ -307,15 +312,47 @@ function SummaryHeader({
   name: string;
   onClose: () => void;
 }) {
+  const bodyId = useExplorationStore((state) => state.selectedBodyId);
+  const visible = useSceneVisibilityStore((state) =>
+    bodyId ? effectiveBodyVisibility(bodyId, state) : true,
+  );
+  const reason = useSceneVisibilityStore((state) =>
+    bodyId ? effectiveBodyVisibilityReason(bodyId, state) : "visible",
+  );
+  const hideObject = useSceneVisibilityStore((state) => state.hideObject);
+  const showObject = useSceneVisibilityStore((state) => state.showObject);
+  const statusLabels = {
+    visible: "Visible",
+    "hidden-by-category": "Hidden by category",
+    "hidden-individually": "Hidden individually",
+    "explicitly-shown": "Explicitly shown",
+  } as const;
+
   return (
-    <header className={gateStyles.summaryHeader}>
-      <div>
-        <p className={gateStyles.eyebrow}>{eyebrow}</p>
-        <h2>{name}</h2>
-      </div>
-      <button aria-label={closeLabel} onClick={onClose} type="button">
-        ×
-      </button>
-    </header>
+    <>
+      <header className={gateStyles.summaryHeader}>
+        <div>
+          <p className={gateStyles.eyebrow}>{eyebrow}</p>
+          <h2>{name}</h2>
+        </div>
+        <button aria-label={closeLabel} onClick={onClose} type="button">
+          ×
+        </button>
+      </header>
+      {bodyId ? (
+        <div className={gateStyles.objectVisibilityAction}>
+          <button
+            aria-pressed={visible}
+            onClick={() => (visible ? hideObject(bodyId) : showObject(bodyId))}
+            type="button"
+          >
+            {visible ? "Hide this object" : "Show this object"}
+          </button>
+          <span className={gateStyles.objectVisibilityStatus} role="status">
+            {statusLabels[reason]}
+          </span>
+        </div>
+      ) : null}
+    </>
   );
 }

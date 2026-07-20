@@ -1,110 +1,112 @@
+import { isPlanetId } from "@/content/planets";
 import {
-  DWARF_SATELLITE_BY_ID,
-  isDwarfSatelliteId,
-} from "@/features/solar-system/lib/dwarf-satellite-catalogue";
-import type { ExtendedBody } from "@/features/solar-system/lib/extended-system";
-import { extendedBodyNavigatorCategory } from "@/features/solar-system/lib/celestial-registry";
-import type { Moon } from "@/features/solar-system/lib/moon-catalogue";
-import type {
-  CelestialBodyId,
-  SystemRegionId,
+  EXTENDED_BODY_BY_ID,
+  isExtendedBodyId,
+} from "@/features/solar-system/lib/extended-system";
+import { isDwarfSatelliteId } from "@/features/solar-system/lib/dwarf-satellite-catalogue";
+import { isMoonId } from "@/features/solar-system/lib/moon-catalogue";
+import type { CelestialKind } from "@/features/solar-system/lib/celestial-registry";
+import {
+  isSystemRegionIdValue,
+  type CelestialBodyId,
 } from "@/features/solar-system/types/celestial-body";
-import type {
-  CelestialNavigatorCategory,
-  NavigatorView,
-} from "@/features/solar-system/types/celestial-navigation";
-import type { PlanetId } from "@/lib/data/schemas/planet";
 
-export type SceneVisibility = "hidden" | "anchor" | "primary";
+export const SCENE_VISIBILITY_CATEGORIES = [
+  "planets",
+  "moons",
+  "asteroids",
+  "dwarf-kuiper",
+  "comets",
+  "regions",
+] as const;
 
-export interface SceneVisibilityContext {
-  readonly navigatorView: NavigatorView;
-  readonly selectedBodyId: CelestialBodyId | null;
+export type SceneVisibilityCategory =
+  (typeof SCENE_VISIBILITY_CATEGORIES)[number];
+export type ObjectVisibilityOverride = "visible" | "hidden";
+export type SceneVisibility = "hidden" | "primary";
+
+export type SceneVisibilityCategoryState = Readonly<
+  Record<SceneVisibilityCategory, boolean>
+>;
+
+export interface EffectiveVisibilityState {
+  readonly categories: SceneVisibilityCategoryState;
+  readonly objectOverrides: Readonly<
+    Partial<Record<CelestialBodyId, ObjectVisibilityOverride>>
+  >;
 }
 
-export function activeSceneCategory(
-  view: NavigatorView,
-): CelestialNavigatorCategory | "overview" {
-  if (view.kind === "categories") return "overview";
-  if (view.kind === "moon-parents" || view.kind === "moons") {
-    return "planetary-moons";
-  }
-  if (view.kind === "dwarf-parents" || view.kind === "dwarf-system") {
+export const DEFAULT_SCENE_VISIBILITY_CATEGORIES: SceneVisibilityCategoryState =
+  Object.freeze({
+    planets: true,
+    moons: true,
+    asteroids: true,
+    "dwarf-kuiper": true,
+    comets: true,
+    regions: true,
+  });
+
+/**
+ * The single category mapping used by the visibility store, controls and renderers.
+ * Navigator categories are deliberately not accepted as input.
+ */
+export function sceneVisibilityCategoryForBody(
+  bodyId: CelestialBodyId,
+): SceneVisibilityCategory | null {
+  if (bodyId === "sun") return null;
+  if (isPlanetId(bodyId)) return "planets";
+  if (isMoonId(bodyId) || isDwarfSatelliteId(bodyId)) return "moons";
+  if (isSystemRegionIdValue(bodyId)) return "regions";
+  if (isExtendedBodyId(bodyId)) {
+    const body = EXTENDED_BODY_BY_ID[bodyId];
+    if (body.kind === "comet") return "comets";
+    if (body.kind === "asteroid" || body.id === "ceres") return "asteroids";
     return "dwarf-kuiper";
   }
-  return view.category;
+  return null;
 }
 
-export function planetSceneVisibility(
-  planetId: PlanetId,
-  context: SceneVisibilityContext,
-): SceneVisibility {
-  if (context.selectedBodyId === planetId) return "primary";
-  const category = activeSceneCategory(context.navigatorView);
-  if (category === "overview" || category === "sun-planets") return "primary";
-  if (
-    context.navigatorView.kind === "moons" &&
-    context.navigatorView.parentPlanetId === planetId
-  ) {
-    return "primary";
-  }
-  return "anchor";
+export function sceneVisibilityCategoryForKind(
+  kind: CelestialKind,
+): SceneVisibilityCategory | null {
+  if (kind === "star") return null;
+  if (kind === "planet") return "planets";
+  if (kind === "moon" || kind === "dwarf-satellite") return "moons";
+  if (kind === "asteroid") return "asteroids";
+  if (kind === "comet") return "comets";
+  if (kind === "region") return "regions";
+  return "dwarf-kuiper";
 }
 
-export function sunSceneVisibility(
-  context: SceneVisibilityContext,
-): SceneVisibility {
-  if (context.selectedBodyId === "sun") return "primary";
-  const category = activeSceneCategory(context.navigatorView);
-  return category === "overview" || category === "sun-planets"
-    ? "primary"
-    : "anchor";
+export function effectiveBodyVisibility(
+  bodyId: CelestialBodyId,
+  state: EffectiveVisibilityState,
+): boolean {
+  const override = state.objectOverrides[bodyId];
+  if (override) return override === "visible";
+  const category = sceneVisibilityCategoryForBody(bodyId);
+  return category === null ? true : state.categories[category];
 }
 
-export function moonSceneVisibility(
-  moon: Pick<Moon, "id" | "parentPlanetId">,
-  context: SceneVisibilityContext,
-): SceneVisibility {
-  if (
-    context.navigatorView.kind === "moons" &&
-    context.navigatorView.parentPlanetId === moon.parentPlanetId
-  ) {
-    return "primary";
-  }
-  return context.selectedBodyId === moon.id ? "primary" : "hidden";
+export function effectiveBodyVisibilityReason(
+  bodyId: CelestialBodyId,
+  state: EffectiveVisibilityState,
+):
+  | "visible"
+  | "hidden-by-category"
+  | "hidden-individually"
+  | "explicitly-shown" {
+  const override = state.objectOverrides[bodyId];
+  if (override === "visible") return "explicitly-shown";
+  if (override === "hidden") return "hidden-individually";
+  return effectiveBodyVisibility(bodyId, state)
+    ? "visible"
+    : "hidden-by-category";
 }
 
-export function extendedBodySceneVisibility(
-  body: Pick<ExtendedBody, "id" | "kind">,
-  context: SceneVisibilityContext,
+export function bodySceneVisibility(
+  bodyId: CelestialBodyId,
+  state: EffectiveVisibilityState,
 ): SceneVisibility {
-  if (
-    context.selectedBodyId &&
-    isDwarfSatelliteId(context.selectedBodyId) &&
-    DWARF_SATELLITE_BY_ID[context.selectedBodyId].parentId === body.id
-  ) {
-    return "primary";
-  }
-  const category = activeSceneCategory(context.navigatorView);
-  if (category === extendedBodyNavigatorCategory(body)) return "primary";
-  return context.selectedBodyId === body.id ? "primary" : "hidden";
-}
-
-export function regionSceneVisibility(
-  regionId: SystemRegionId,
-  context: SceneVisibilityContext,
-): SceneVisibility {
-  const category = activeSceneCategory(context.navigatorView);
-  if (
-    category === "overview" &&
-    (regionId === "asteroid-belt" || regionId === "kuiper-belt")
-  ) {
-    return "anchor";
-  }
-  if (category === "regions-context") return "primary";
-  if (category === "main-belt" && regionId === "asteroid-belt") return "anchor";
-  if (category === "dwarf-kuiper" && regionId === "kuiper-belt") {
-    return "anchor";
-  }
-  return context.selectedBodyId === regionId ? "primary" : "hidden";
+  return effectiveBodyVisibility(bodyId, state) ? "primary" : "hidden";
 }

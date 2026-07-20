@@ -17,8 +17,6 @@ interface ExplorationState {
   hoveredPlanetId: PlanetId | null;
   cameraMode: CameraMode;
   scaleMode: ScaleMode;
-  orbitsVisible: boolean;
-  labelsVisible: boolean;
   selectSun: () => void;
   selectPlanet: (planetId: PlanetId) => void;
   selectBody: (bodyId: CelestialBodyId) => void;
@@ -34,8 +32,6 @@ interface ExplorationState {
     mode: Extract<CameraMode, "overview" | "focus">,
   ) => void;
   setScaleMode: (scaleMode: ScaleMode) => void;
-  toggleOrbits: () => void;
-  toggleLabels: () => void;
 }
 
 export const initialExplorationState = {
@@ -45,8 +41,6 @@ export const initialExplorationState = {
   hoveredPlanetId: null,
   cameraMode: "overview" as const,
   scaleMode: "exploration" as ScaleMode,
-  orbitsVisible: true,
-  labelsVisible: true,
 };
 
 export const useExplorationStore = create<ExplorationState>()(
@@ -144,20 +138,20 @@ export const useExplorationStore = create<ExplorationState>()(
             ? state
             : { scaleMode, cameraMode: "transition" },
         ),
-      toggleOrbits: () =>
-        set((state) => ({ orbitsVisible: !state.orbitsVisible })),
-      toggleLabels: () =>
-        set((state) => ({ labelsVisible: !state.labelsVisible })),
     }),
     {
       name: "helios-exploration",
-      version: 1,
+      version: 2,
       storage: createJSONStorage(() => localStorage),
-      partialize: ({ labelsVisible, orbitsVisible, scaleMode }) => ({
-        labelsVisible,
-        orbitsVisible,
-        scaleMode,
-      }),
+      partialize: ({ scaleMode }) => ({ scaleMode }),
+      migrate: (persisted) => {
+        const state =
+          persisted && typeof persisted === "object" ? persisted : {};
+        const scaleMode = (state as { scaleMode?: unknown }).scaleMode;
+        return {
+          scaleMode: scaleMode === "scientific" ? "scientific" : "exploration",
+        };
+      },
       skipHydration: true,
     },
   ),

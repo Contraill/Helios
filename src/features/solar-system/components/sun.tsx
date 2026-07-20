@@ -8,11 +8,14 @@ import type { Group, Mesh } from "three";
 
 import { planetTextureSources } from "@/content/sources/planet-textures";
 import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
-import { currentNavigatorView } from "@/features/solar-system/lib/celestial-navigation-state";
+import {
+  labelPriorityForBody,
+  shouldMountLabel,
+} from "@/features/solar-system/lib/label-visibility-policy";
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
-import { sunSceneVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
+import { effectiveBodyVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
 import {
   textureMaterialKey,
   useSceneTexture,
@@ -21,9 +24,11 @@ import type { ScaleMode } from "@/features/solar-system/types/experience-setting
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
 import { useExplorationStore } from "@/stores/exploration-store";
-import { useExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
+import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 
 import { PlanetLabel } from "./planet-label";
+
+const DISABLED_RAYCAST = () => undefined;
 
 interface SunProps {
   labelsVisible: boolean;
@@ -58,13 +63,18 @@ export function Sun({
   const clearHoveredBody = useExplorationStore(
     (state) => state.clearHoveredBody,
   );
-  const navigator = useExploreSceneUiStore((state) => state.navigator);
+  const visible = useSceneVisibilityStore((state) =>
+    effectiveBodyVisibility("sun", state),
+  );
   const active = selected || hovered;
-  const visibility = sunSceneVisibility({
-    navigatorView: currentNavigatorView(navigator),
-    selectedBodyId: selected ? "sun" : null,
+  const labelPriority = labelPriorityForBody("star", {
+    bodyVisible: visible,
+    hovered,
+    labelsVisible,
+    scaleMode,
+    selected,
   });
-  const primary = visibility === "primary";
+  const primary = visible;
   const profile = sceneProfileFor(scaleMode);
   const radius = sun.scales[scaleMode];
   const surfaceAsset = planetTextureSources.sun.asset;
@@ -104,22 +114,29 @@ export function Sun({
   });
 
   const handlePointerOver = (event: ThreeEvent<PointerEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     setHoveredBody("sun");
   };
 
   const handlePointerOut = (event: ThreeEvent<PointerEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     clearHoveredBody("sun");
   };
 
   const handleClick = (event: ThreeEvent<MouseEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     selectSun();
   };
 
   return (
-    <group ref={bodyRef}>
+    <group
+      ref={bodyRef}
+      visible={visible}
+      userData={{ bodyId: sun.id, testBodyRoot: true }}
+    >
       <mesh ref={surfaceRef} name={sun.name} scale={radius}>
         <sphereGeometry
           args={[1, quality.planetSegments[0], quality.planetSegments[1]]}
@@ -138,17 +155,17 @@ export function Sun({
           transparent={!primary}
         />
       </mesh>
-      {primary ? (
-        <mesh
-          onClick={handleClick}
-          onPointerOut={handlePointerOut}
-          onPointerOver={handlePointerOver}
-          scale={radius * 1.12}
-        >
-          <sphereGeometry args={[1, 18, 14]} />
-          <meshBasicMaterial depthWrite={false} opacity={0} transparent />
-        </mesh>
-      ) : null}
+      <mesh
+        raycast={visible ? undefined : DISABLED_RAYCAST}
+        onClick={handleClick}
+        onPointerOut={handlePointerOut}
+        onPointerOver={handlePointerOver}
+        scale={radius * 1.12}
+        userData={{ testInteractiveBodyId: "sun" }}
+      >
+        <sphereGeometry args={[1, 18, 14]} />
+        <meshBasicMaterial depthWrite={false} opacity={0} transparent />
+      </mesh>
       {primary ? (
         <group
           ref={prominenceRef}
@@ -199,13 +216,15 @@ export function Sun({
           />
         </mesh>
       ) : null}
-      {primary && labelsVisible && active ? (
+      {shouldMountLabel(labelPriority) ? (
         <PlanetLabel
-          active
+          active={active}
+          bodyId="sun"
           color="#f2b766"
           mode={scaleMode}
           offsetY={radius + 1.15}
           placement="north"
+          priority={labelPriority}
           positionCaption={selected ? exploreSceneCopy.labels.selectedStar : ""}
           selected={selected}
           text={sun.name}

@@ -30,3 +30,45 @@ describe("Explore preference retirement", () => {
     expect(localStorage.getItem("helios-preferences")).toBeNull();
   });
 });
+
+it("migrates legacy orbit and label choices into versioned visibility state", async () => {
+  localStorage.setItem(
+    "helios-exploration",
+    JSON.stringify({
+      state: {
+        scaleMode: "scientific",
+        orbitsVisible: false,
+        labelsVisible: true,
+      },
+      version: 1,
+    }),
+  );
+
+  migrateLegacyExplorePreferences(localStorage);
+
+  const visibility = JSON.parse(
+    localStorage.getItem("helios-scene-visibility") ?? "null",
+  ) as { state: Record<string, unknown>; version: number };
+  expect(visibility.version).toBe(1);
+  expect(visibility.state.orbitsVisible).toBe(false);
+  expect(visibility.state.labelsVisible).toBe(true);
+  expect(
+    Object.values(visibility.state.categories as Record<string, boolean>),
+  ).toEqual([true, true, true, true, true, true]);
+
+  const exploration = JSON.parse(
+    localStorage.getItem("helios-exploration") ?? "null",
+  ) as { state: Record<string, unknown>; version: number };
+  expect(exploration.version).toBe(2);
+  expect(exploration.state).not.toHaveProperty("orbitsVisible");
+  expect(exploration.state).not.toHaveProperty("labelsVisible");
+});
+
+it("drops malformed envelopes so hydration can fall back safely", () => {
+  localStorage.setItem("helios-exploration", "{bad-json");
+  localStorage.setItem("helios-scene-visibility", "not-json");
+
+  expect(() => migrateLegacyExplorePreferences(localStorage)).not.toThrow();
+  expect(localStorage.getItem("helios-exploration")).toBeNull();
+  expect(localStorage.getItem("helios-scene-visibility")).toBeNull();
+});

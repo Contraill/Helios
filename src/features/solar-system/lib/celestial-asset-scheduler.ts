@@ -59,14 +59,15 @@ export interface SecondaryAssetPriorityContext {
 }
 
 /**
- * Keeps a bounded residency window. Selection wins, then open parent system,
- * then active category. Assets outside the window release their cache leases.
+ * Produces a stable priority order. Selection wins, then the open parent
+ * system, then the active Navigator category. Request concurrency is owned by
+ * the secondary texture queue rather than by visibility or scene mounting.
  */
 export function prioritizedSecondaryAssets({
   activeCategory,
   parentBodyId: promotedParent,
   promotedBodyId,
-  limit = 12,
+  limit = secondaryCelestialAssets.length,
 }: SecondaryAssetPriorityContext): readonly SecondaryCelestialAsset[] {
   return [...secondaryCelestialAssets]
     .map((asset) => ({
@@ -79,9 +80,9 @@ export function prioritizedSecondaryAssets({
         (asset.bodyId === promotedParent ? 3_000 : 0) +
         (asset.parentBodyId === promotedParent ? 2_500 : 0) +
         (asset.category === activeCategory ? 1_000 : 0) +
-        asset.priority,
+        asset.priority +
+        1,
     }))
-    .filter(({ score }) => score >= 1_000 || promotedBodyId !== null)
     .sort((left, right) => right.score - left.score)
     .slice(0, Math.max(1, limit))
     .map(({ asset }) => asset);

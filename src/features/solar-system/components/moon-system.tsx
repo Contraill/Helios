@@ -8,10 +8,12 @@ import { Quaternion, type Group } from "three";
 import {
   featuredMoonsForPlanet,
   isFeaturedMoonParentPlanetId,
-  isMoonId,
-  MOON_BY_ID,
   type Moon,
 } from "@/features/solar-system/lib/moon-catalogue";
+import {
+  labelPriorityForBody,
+  shouldMountLabel,
+} from "@/features/solar-system/lib/label-visibility-policy";
 import {
   moonLocalPositionAt,
   moonOrbitDistanceScene,
@@ -27,13 +29,12 @@ import {
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
-import { moonSceneVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
+import { effectiveBodyVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
-import { currentNavigatorView } from "@/features/solar-system/lib/celestial-navigation-state";
 import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
 import { useExplorationStore } from "@/stores/exploration-store";
-import { useExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
+import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 import {
   currentSimulationTimeMs,
   useSimulationStore,
@@ -42,6 +43,8 @@ import {
 import { CelestialVisualSurface } from "./celestial-visual-surface";
 import { OrbitPath } from "./orbit-path";
 import { PlanetLabel } from "./planet-label";
+
+const DISABLED_RAYCAST = () => undefined;
 
 interface PlanetaryMoonSystemProps {
   parentPlanet: ScenePlanet;
@@ -66,28 +69,32 @@ function MoonObject({
   const tidalScratch = useRef(createTidalLockScratch());
   const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
   const hoveredBodyId = useExplorationStore((state) => state.hoveredBodyId);
-  const orbitsVisible = useExplorationStore((state) => state.orbitsVisible);
+  const orbitsVisible = useSceneVisibilityStore((state) => state.orbitsVisible);
+  const labelsVisible = useSceneVisibilityStore((state) => state.labelsVisible);
   const selectBody = useExplorationStore((state) => state.selectBody);
   const setHoveredBody = useExplorationStore((state) => state.setHoveredBody);
   const clearHoveredBody = useExplorationStore(
     (state) => state.clearHoveredBody,
   );
-  const navigator = useExploreSceneUiStore((state) => state.navigator);
   const simulationAtMs = useSimulationStore((state) => state.simulationAtMs);
-  const navigatorView = currentNavigatorView(navigator);
-  const visibility = moonSceneVisibility(moon, {
-    navigatorView,
-    selectedBodyId,
-  });
-  const orbitEmphasis = moonOrbitVisibility(moon, {
-    navigatorView,
+  const visible = useSceneVisibilityStore((state) =>
+    effectiveBodyVisibility(moon.id, state),
+  );
+  const orbitEmphasis = moonOrbitVisibility(moon.id, {
+    bodyVisible: visible,
     orbitsVisible,
     selectedBodyId,
     hoveredBodyId,
   });
   const selected = selectedBodyId === moon.id;
   const hovered = hoveredBodyId === moon.id;
-  const active = selected || hovered;
+  const labelPriority = labelPriorityForBody("moon", {
+    bodyVisible: visible,
+    hovered,
+    labelsVisible,
+    scaleMode,
+    selected,
+  });
   const profile = sceneProfileFor(scaleMode);
   const orbitDistance = moonOrbitDistanceScene(
     moon,
@@ -172,41 +179,42 @@ function MoonObject({
     }
   });
 
-  if (visibility === "hidden") return null;
-
   const handleClick = (event: ThreeEvent<MouseEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     selectBody(moon.id);
   };
   const handlePointerOver = (event: ThreeEvent<PointerEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     setHoveredBody(moon.id);
   };
   const handlePointerOut = (event: ThreeEvent<PointerEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     clearHoveredBody(moon.id);
   };
 
   return (
     <>
-      {orbitEmphasis !== "hidden" ? (
-        <OrbitPath
-          bodyId={moon.id}
-          orbitClass="moon"
-          color={moon.visualProfile.color}
-          emphasis={orbitEmphasis}
-          lineWidth={0.9}
-          points={orbitPoints}
-          segments={quality.orbitSegments}
-          semiMajorAxis={orbitDistance}
-          semiMinorAxis={orbitDistance * Math.sqrt(1 - moon.eccentricity ** 2)}
-        />
-      ) : null}
+      <OrbitPath
+        bodyId={moon.id}
+        orbitClass="moon"
+        color={moon.visualProfile.color}
+        emphasis={orbitEmphasis}
+        lineWidth={0.9}
+        points={orbitPoints}
+        segments={quality.orbitSegments}
+        semiMajorAxis={orbitDistance}
+        semiMinorAxis={orbitDistance * Math.sqrt(1 - moon.eccentricity ** 2)}
+      />
       <group
         ref={groupRef}
         position={initialPosition as [number, number, number]}
+        visible={visible}
         userData={{
           bodyId: moon.id,
+          testBodyRoot: true,
           moonId: moon.id,
           parentPlanetId: moon.parentPlanetId,
           referenceFrame: moon.representation.referenceFrame,
@@ -216,28 +224,33 @@ function MoonObject({
       >
         <CelestialVisualSurface
           bodyId={moon.id}
+          textureLoadPolicy="scheduled"
           radius={renderRadius}
           rootRef={surfaceRef}
         />
 
         <mesh
+          raycast={visible ? undefined : DISABLED_RAYCAST}
           onClick={handleClick}
           onPointerOut={handlePointerOut}
           onPointerOver={handlePointerOver}
           scale={interactionRadius}
+          userData={{ testInteractiveBodyId: moon.id }}
         >
           <sphereGeometry args={[1, 12, 8]} />
           <meshBasicMaterial depthWrite={false} opacity={0} transparent />
         </mesh>
 
-        {active ? (
+        {shouldMountLabel(labelPriority) ? (
           <PlanetLabel
             active
+            bodyId={moon.id}
             color={moon.visualProfile.color}
             compact
             mode={scaleMode}
             offsetY={interactionRadius + 0.3}
             placement="north"
+            priority={labelPriority}
             positionCaption={exploreSceneCopy.labels.moonRepresentative}
             selected={selected}
             text={moon.name}
@@ -249,26 +262,14 @@ function MoonObject({
 }
 
 export function PlanetaryMoonSystem(props: PlanetaryMoonSystemProps) {
-  const navigator = useExploreSceneUiStore((state) => state.navigator);
-  const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
-  const view = currentNavigatorView(navigator);
-  const moons = useMemo(() => {
-    if (!isFeaturedMoonParentPlanetId(props.parentPlanet.id)) return [];
-    if (
-      view.kind === "moons" &&
-      view.parentPlanetId === props.parentPlanet.id
-    ) {
-      return featuredMoonsForPlanet(props.parentPlanet.id);
-    }
-    if (selectedBodyId && isMoonId(selectedBodyId)) {
-      const selectedMoon = MOON_BY_ID[selectedBodyId];
-      return selectedMoon.parentPlanetId === props.parentPlanet.id
-        ? [selectedMoon]
-        : [];
-    }
-    return [];
-  }, [props.parentPlanet.id, selectedBodyId, view]);
-  if (moons.length === 0) return null;
+  const moons = useMemo(
+    () =>
+      isFeaturedMoonParentPlanetId(props.parentPlanet.id)
+        ? featuredMoonsForPlanet(props.parentPlanet.id)
+        : [],
+    [props.parentPlanet.id],
+  );
+
   return (
     <group
       userData={{

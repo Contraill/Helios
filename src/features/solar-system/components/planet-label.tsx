@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
+
+import {
+  labelOpacity,
+  type LabelPriority,
+} from "@/features/solar-system/lib/label-visibility-policy";
 import {
   CanvasTexture,
   LinearFilter,
@@ -20,10 +25,12 @@ export type ScientificLabelPlacement =
 
 interface PlanetLabelProps {
   active: boolean;
+  bodyId?: string;
   color: string;
   compact?: boolean;
   mode: "exploration" | "scientific";
   placement: ScientificLabelPlacement;
+  priority: LabelPriority;
   offsetY: number;
   positionCaption: string;
   selected: boolean;
@@ -118,12 +125,14 @@ function createLabelTexture(
 
 export function PlanetLabel({
   active,
+  bodyId,
   color,
   compact = false,
   mode,
   offsetY,
   placement,
   positionCaption,
+  priority,
   selected,
   text,
 }: PlanetLabelProps) {
@@ -148,11 +157,11 @@ export function PlanetLabel({
         depthWrite: false,
         map: texture,
         fog: false,
-        opacity: active || mode === "scientific" ? 1 : 0.82,
+        opacity: labelOpacity(priority),
         sizeAttenuation: false,
         transparent: true,
       }),
-    [active, mode, texture],
+    [active, priority, texture],
   );
 
   useEffect(
@@ -175,6 +184,7 @@ export function PlanetLabel({
   return (
     <sprite
       material={material}
+      userData={{ testLabelBodyId: bodyId }}
       position={[0, scientific ? 0 : offsetY, 0]}
       raycast={() => undefined}
       renderOrder={20}

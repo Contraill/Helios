@@ -11,6 +11,7 @@ import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
 import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useSimulationStore } from "@/stores/simulation-store";
+import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 
 import { CameraRig } from "./camera-rig";
 import { ExploreBloom } from "./explore-bloom";
@@ -48,8 +49,8 @@ export function SolarSystemScene({
 }: SolarSystemSceneProps) {
   const planetObjects = useRef<Map<CelestialBodyId, Object3D>>(new Map());
   const scaleMode = useExplorationStore((state) => state.scaleMode);
-  const orbitsVisible = useExplorationStore((state) => state.orbitsVisible);
-  const labelsVisible = useExplorationStore((state) => state.labelsVisible);
+  const orbitsVisible = useSceneVisibilityStore((state) => state.orbitsVisible);
+  const labelsVisible = useSceneVisibilityStore((state) => state.labelsVisible);
   const isPaused = useSimulationStore((state) => state.isPaused);
   const timeScale = useSimulationStore((state) => state.timeScale);
   const resetVersion = useSimulationStore((state) => state.resetVersion);

@@ -346,10 +346,10 @@ test("legacy quality, motion and panel storage is retired while supported stores
   );
   await page.getByRole("tab", { name: "View" }).click();
   await expect(
-    page.getByRole("button", { name: "Orbit paths" }),
+    page.getByRole("button", { name: /Orbit paths: hidden/i }),
   ).toHaveAttribute("aria-pressed", "false");
   await expect(
-    page.getByRole("button", { name: "Body labels" }),
+    page.getByRole("button", { name: /Body labels: hidden/i }),
   ).toHaveAttribute("aria-pressed", "false");
   expect(audit.pageErrors).toEqual([]);
   expect(

@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import {
   ClampToEdgeWrapping,
   LinearFilter,
@@ -63,6 +69,15 @@ export function textureReadinessVersion(): number {
 
 export function textureReadinessFor(path: string): TextureReadiness {
   return textureReadiness.get(path) ?? "idle";
+}
+
+export function useTextureReadiness(path: string): TextureReadiness {
+  const getSnapshot = useCallback(() => textureReadinessFor(path), [path]);
+  return useSyncExternalStore(
+    subscribeTextureReadiness,
+    getSnapshot,
+    () => "idle",
+  );
 }
 
 function disposeLoadedTexture(texture: Texture): void {
@@ -170,6 +185,7 @@ export function textureMaterialKey(texture: Texture | null): string {
 }
 
 export interface SceneTextureOptions {
+  readonly enabled?: boolean;
   readonly onError?: (error: unknown, path: string) => void;
   readonly onReady?: (path: string, texture: Texture) => void;
 }
@@ -192,6 +208,8 @@ export function useSceneTexture(
   }, [options.onError, options.onReady]);
 
   useEffect(() => {
+    if (options.enabled === false) return;
+
     let active = true;
     const candidateLease = acquireTexture(path);
 
@@ -215,7 +233,7 @@ export function useSceneTexture(
       active = false;
       if (retainedLease.current !== candidateLease) candidateLease.release();
     };
-  }, [path]);
+  }, [options.enabled, path]);
 
   useEffect(
     () => () => {

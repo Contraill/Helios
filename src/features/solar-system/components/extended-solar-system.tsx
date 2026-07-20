@@ -16,24 +16,22 @@ import {
   type SystemRegionId,
 } from "@/features/solar-system/lib/extended-system";
 import { visualProfileFor } from "@/features/solar-system/lib/celestial-visual-registry";
-import { currentNavigatorView } from "@/features/solar-system/lib/celestial-navigation-state";
-import { extendedBodyOrbitVisibility } from "@/features/solar-system/lib/orbit-visibility-policy";
 import {
-  activeSceneCategory,
-  extendedBodySceneVisibility,
-  regionSceneVisibility,
-} from "@/features/solar-system/lib/scene-visibility-policy";
+  labelPriorityForBody,
+  shouldMountLabel,
+} from "@/features/solar-system/lib/label-visibility-policy";
+import { extendedBodyOrbitVisibility } from "@/features/solar-system/lib/orbit-visibility-policy";
+import { effectiveBodyVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import {
   sceneProfileFor,
   type SceneProfile,
 } from "@/features/solar-system/lib/scene-profiles";
-import type { NavigatorView } from "@/features/solar-system/types/celestial-navigation";
 import { isDwarfSystemParentId } from "@/features/solar-system/types/celestial-body";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { useExplorationStore } from "@/stores/exploration-store";
-import { useExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
+import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 import { useExtendedSystemStore } from "@/stores/extended-system-store";
 import {
   currentSimulationTimeMs,
@@ -47,6 +45,8 @@ import {
 } from "./dwarf-satellite-system";
 import { OrbitPath } from "./orbit-path";
 import { PlanetLabel } from "./planet-label";
+
+const DISABLED_RAYCAST = () => undefined;
 
 interface ExtendedSolarSystemProps {
   labelsVisible: boolean;
@@ -151,17 +151,19 @@ function RegionRegistry({
       registry.delete(id);
     };
   }, [cameraFocusRadius, id, planetObjects, renderRadius]);
-  return <group ref={ref} />;
+  return <group ref={ref} userData={{ bodyId: id, testBodyRoot: true }} />;
 }
 
 function BeltLayer({
   layer,
   planetObjects,
   scaleMode,
+  visible,
 }: {
   layer: "asteroid" | "kuiper";
   planetObjects: PlanetObjectRegistry;
   scaleMode: ScaleMode;
+  visible: boolean;
 }) {
   const density = useExtendedSystemStore((state) => state.density);
   const representation = useExtendedSystemStore(
@@ -202,7 +204,10 @@ function BeltLayer({
       />
       <points
         frustumCulled={false}
+        raycast={visible ? undefined : DISABLED_RAYCAST}
+        userData={{ testInteractiveBodyId: id }}
         onClick={(event) => {
+          if (!visible) return;
           event.stopPropagation();
           selectBody(id);
         }}
@@ -229,7 +234,6 @@ function ExtendedBodyObject({
   body,
   labelsVisible,
   motionEnabled,
-  navigatorView,
   orbitsVisible,
   planetObjects,
   quality,
@@ -238,7 +242,6 @@ function ExtendedBodyObject({
   body: ExtendedBody;
   labelsVisible: boolean;
   motionEnabled: boolean;
-  navigatorView: NavigatorView;
   orbitsVisible: boolean;
   planetObjects: PlanetObjectRegistry;
   quality: SceneQuality;
@@ -290,12 +293,18 @@ function ExtendedBodyObject({
   const parentVisualOffset = dwarfSystemParent
     ? dwarfParentVisualOffset(body.id, radius)
     : ([0, 0, 0] as const);
-  const sceneVisibility = extendedBodySceneVisibility(body, {
-    navigatorView,
-    selectedBodyId: selected ? body.id : null,
+  const visible = useSceneVisibilityStore((state) =>
+    effectiveBodyVisibility(body.id, state),
+  );
+  const labelPriority = labelPriorityForBody(body.kind, {
+    bodyVisible: visible,
+    hovered,
+    labelsVisible,
+    scaleMode,
+    selected,
   });
-  const orbitEmphasis = extendedBodyOrbitVisibility(body, {
-    navigatorView,
+  const orbitEmphasis = extendedBodyOrbitVisibility(body.id, {
+    bodyVisible: visible,
     orbitsVisible,
     selectedBodyId: selected ? body.id : null,
     hoveredBodyId: hovered ? body.id : null,
@@ -357,14 +366,17 @@ function ExtendedBodyObject({
   });
 
   const pointerOver = (event: ThreeEvent<PointerEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     setHoveredBody(body.id);
   };
   const pointerOut = (event: ThreeEvent<PointerEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     clearHoveredBody(body.id);
   };
   const click = (event: ThreeEvent<MouseEvent>) => {
+    if (!visible) return;
     event.stopPropagation();
     selectBody(body.id);
   };
@@ -378,55 +390,145 @@ function ExtendedBodyObject({
     cometVisual?.dustLength ?? profile.extended.cometTailLength;
   const ionTailLength = cometVisual?.ionLength ?? tailLength * 1.25;
 
-  if (sceneVisibility === "hidden") return null;
-
   return (
     <>
-      {orbitEmphasis !== "hidden" ? (
-        <>
-          <OrbitPath
-            bodyId={body.id}
-            color={body.color}
-            emphasis={orbitEmphasis}
-            orbitClass="extended"
-            points={orbitPoints}
-            segments={quality.orbitSegments}
-            semiMajorAxis={1}
-            semiMinorAxis={1}
+      <OrbitPath
+        bodyId={body.id}
+        color={body.color}
+        emphasis={orbitEmphasis}
+        orbitClass="extended"
+        points={orbitPoints}
+        segments={quality.orbitSegments}
+        semiMajorAxis={1}
+        semiMinorAxis={1}
+      />
+      {isComet && active && visible ? (
+        <points
+          frustumCulled={false}
+          raycast={() => undefined}
+          userData={{ visualLayer: "comet-orbit-particle-trail" }}
+        >
+          <bufferGeometry>
+            <bufferAttribute
+              attach="attributes-position"
+              args={[trailPositions, 3]}
+            />
+          </bufferGeometry>
+          <pointsMaterial
+            color="#c7b58e"
+            depthWrite={false}
+            opacity={0.28}
+            size={0.035}
+            transparent
           />
-          {isComet && active ? (
-            <points
-              frustumCulled={false}
-              raycast={() => undefined}
-              userData={{ visualLayer: "comet-orbit-particle-trail" }}
-            >
-              <bufferGeometry>
-                <bufferAttribute
-                  attach="attributes-position"
-                  args={[trailPositions, 3]}
-                />
-              </bufferGeometry>
-              <pointsMaterial
-                color="#c7b58e"
-                depthWrite={false}
-                opacity={active ? 0.28 : 0.1}
-                size={0.035}
-                transparent
-              />
-            </points>
-          ) : null}
-        </>
+        </points>
       ) : null}
       <group
         ref={groupRef}
         position={initialPosition as [number, number, number]}
+        userData={{ bodyId: body.id, visualLayer: "extended-body-system" }}
       >
-        <CelestialVisualSurface
-          bodyId={body.id}
-          position={parentVisualOffset}
-          radius={radius}
-          rootRef={surfaceRef}
-        />
+        <group
+          visible={visible}
+          userData={{ bodyId: body.id, testBodyRoot: true }}
+        >
+          <CelestialVisualSurface
+            bodyId={body.id}
+            textureLoadPolicy="scheduled"
+            position={parentVisualOffset}
+            radius={radius}
+            rootRef={surfaceRef}
+          />
+
+          {isComet ? (
+            <group
+              ref={tailRef}
+              userData={{
+                testCometBodyId: body.id,
+                visualLayer: "physical-comet-tails",
+              }}
+            >
+              <mesh position={[0, -tailLength / 2, 0]}>
+                <coneGeometry
+                  args={[
+                    cometVisual?.dustWidth ?? 0.3,
+                    tailLength,
+                    24,
+                    1,
+                    true,
+                  ]}
+                />
+                <meshBasicMaterial
+                  blending={AdditiveBlending}
+                  color={cometVisual?.dustColor ?? "#e7c68f"}
+                  depthWrite={false}
+                  opacity={0.28}
+                  side={BackSide}
+                  transparent
+                />
+              </mesh>
+              <mesh position={[0.12, -ionTailLength / 2, 0]}>
+                <coneGeometry
+                  args={[
+                    cometVisual?.ionWidth ?? 0.2,
+                    ionTailLength,
+                    18,
+                    1,
+                    true,
+                  ]}
+                />
+                <meshBasicMaterial
+                  blending={AdditiveBlending}
+                  color={cometVisual?.ionColor ?? "#65bfff"}
+                  depthWrite={false}
+                  opacity={0.34}
+                  side={BackSide}
+                  transparent
+                />
+              </mesh>
+              <mesh scale={Math.max(radius * 3.8, 0.16)}>
+                <sphereGeometry args={[1, 20, 14]} />
+                <meshBasicMaterial
+                  blending={AdditiveBlending}
+                  color={cometVisual?.comaColor ?? "#dff6e8"}
+                  depthWrite={false}
+                  opacity={0.34}
+                  transparent
+                />
+              </mesh>
+            </group>
+          ) : null}
+
+          <mesh
+            raycast={visible ? undefined : DISABLED_RAYCAST}
+            onClick={click}
+            onPointerOut={pointerOut}
+            onPointerOver={pointerOver}
+            scale={interactionRadius}
+            userData={{ testInteractiveBodyId: body.id }}
+          >
+            <sphereGeometry args={[1, 12, 8]} />
+            <meshBasicMaterial depthWrite={false} opacity={0} transparent />
+          </mesh>
+
+          {shouldMountLabel(labelPriority) ? (
+            <PlanetLabel
+              active
+              bodyId={body.id}
+              color={body.color}
+              compact
+              mode={scaleMode}
+              offsetY={interactionRadius + 0.7}
+              placement="north"
+              priority={labelPriority}
+              positionCaption={
+                isComet ? "ANTI-SOLAR TAIL" : "REPRESENTATIVE ORBIT"
+              }
+              selected={selected}
+              text={body.name}
+            />
+          ) : null}
+        </group>
 
         {dwarfSystemParent ? (
           <DwarfSatelliteSystem
@@ -437,87 +539,6 @@ function ExtendedBodyObject({
             scaleMode={scaleMode}
           />
         ) : null}
-
-        {isComet ? (
-          <group
-            ref={tailRef}
-            userData={{
-              testCometBodyId: body.id,
-              visualLayer: "physical-comet-tails",
-            }}
-          >
-            <mesh position={[0, -tailLength / 2, 0]}>
-              <coneGeometry
-                args={[cometVisual?.dustWidth ?? 0.3, tailLength, 24, 1, true]}
-              />
-              <meshBasicMaterial
-                blending={AdditiveBlending}
-                color={cometVisual?.dustColor ?? "#e7c68f"}
-                depthWrite={false}
-                opacity={0.28}
-                side={BackSide}
-                transparent
-              />
-            </mesh>
-            <mesh position={[0.12, -ionTailLength / 2, 0]}>
-              <coneGeometry
-                args={[
-                  cometVisual?.ionWidth ?? 0.2,
-                  ionTailLength,
-                  18,
-                  1,
-                  true,
-                ]}
-              />
-              <meshBasicMaterial
-                blending={AdditiveBlending}
-                color={cometVisual?.ionColor ?? "#65bfff"}
-                depthWrite={false}
-                opacity={0.34}
-                side={BackSide}
-                transparent
-              />
-            </mesh>
-            <mesh scale={Math.max(radius * 3.8, 0.16)}>
-              <sphereGeometry args={[1, 20, 14]} />
-              <meshBasicMaterial
-                blending={AdditiveBlending}
-                color={cometVisual?.comaColor ?? "#dff6e8"}
-                depthWrite={false}
-                opacity={0.34}
-                transparent
-              />
-            </mesh>
-          </group>
-        ) : null}
-
-        {sceneVisibility === "primary" ? (
-          <mesh
-            onClick={click}
-            onPointerOut={pointerOut}
-            onPointerOver={pointerOver}
-            scale={interactionRadius}
-          >
-            <sphereGeometry args={[1, 12, 8]} />
-            <meshBasicMaterial depthWrite={false} opacity={0} transparent />
-          </mesh>
-        ) : null}
-
-        {labelsVisible && sceneVisibility === "primary" && active ? (
-          <PlanetLabel
-            active
-            color={body.color}
-            compact
-            mode={scaleMode}
-            offsetY={interactionRadius + 0.7}
-            placement="north"
-            positionCaption={
-              isComet ? "ANTI-SOLAR TAIL" : "REPRESENTATIVE ORBIT"
-            }
-            selected={selected}
-            text={body.name}
-          />
-        ) : null}
       </group>
     </>
   );
@@ -526,7 +547,10 @@ function ExtendedBodyObject({
 function OortCloud({
   planetObjects,
   scaleMode,
-}: Pick<ExtendedSolarSystemProps, "planetObjects" | "scaleMode">) {
+  visible,
+}: Pick<ExtendedSolarSystemProps, "planetObjects" | "scaleMode"> & {
+  visible: boolean;
+}) {
   const innerMaterialRef = useRef<PointsMaterial>(null);
   const outerMaterialRef = useRef<PointsMaterial>(null);
   const profile = sceneProfileFor(scaleMode);
@@ -603,11 +627,16 @@ function OortCloud({
         <points
           frustumCulled={false}
           key={cloud.layer}
+          raycast={visible ? undefined : DISABLED_RAYCAST}
+          userData={{
+            testInteractiveBodyId: "oort-cloud",
+            visualLayer: cloud.layer,
+          }}
           onClick={(event) => {
+            if (!visible) return;
             event.stopPropagation();
             selectBody("oort-cloud");
           }}
-          userData={{ visualLayer: cloud.layer }}
         >
           <bufferGeometry>
             <bufferAttribute
@@ -674,7 +703,10 @@ function DustAndMeteorLayer({
 function Heliosphere({
   planetObjects,
   scaleMode,
-}: Pick<ExtendedSolarSystemProps, "planetObjects" | "scaleMode">) {
+  visible,
+}: Pick<ExtendedSolarSystemProps, "planetObjects" | "scaleMode"> & {
+  visible: boolean;
+}) {
   const profile = sceneProfileFor(scaleMode);
   const strategy = profile.scale.strategy;
   const termination = strategy.distanceFromAu(84);
@@ -705,7 +737,10 @@ function Heliosphere({
       ].map((shell) => (
         <mesh
           key={shell.radius}
+          raycast={visible ? undefined : DISABLED_RAYCAST}
+          userData={{ testInteractiveBodyId: "heliosphere" }}
           onClick={(event) => {
+            if (!visible) return;
             event.stopPropagation();
             selectBody("heliosphere");
           }}
@@ -792,60 +827,69 @@ export function ExtendedSolarSystem({
   scaleMode,
 }: ExtendedSolarSystemProps) {
   const dustVisible = useExtendedSystemStore((state) => state.dustVisible);
-  const navigator = useExploreSceneUiStore((state) => state.navigator);
-  const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
-  const navigatorView = currentNavigatorView(navigator);
-  const visibilityContext = { navigatorView, selectedBodyId } as const;
-  const bodies = EXTENDED_BODIES.filter(
-    (body) => extendedBodySceneVisibility(body, visibilityContext) !== "hidden",
+  const asteroidBeltVisible = useSceneVisibilityStore((state) =>
+    effectiveBodyVisibility("asteroid-belt", state),
   );
-  const showAsteroidBelt =
-    regionSceneVisibility("asteroid-belt", visibilityContext) !== "hidden";
-  const showKuiperBelt =
-    regionSceneVisibility("kuiper-belt", visibilityContext) !== "hidden";
-  const showOort =
-    regionSceneVisibility("oort-cloud", visibilityContext) !== "hidden";
-  const showHeliosphere =
-    regionSceneVisibility("heliosphere", visibilityContext) !== "hidden";
-  const showDust =
-    activeSceneCategory(navigatorView) === "regions-context" && dustVisible;
+  const kuiperBeltVisible = useSceneVisibilityStore((state) =>
+    effectiveBodyVisibility("kuiper-belt", state),
+  );
+  const oortVisible = useSceneVisibilityStore((state) =>
+    effectiveBodyVisibility("oort-cloud", state),
+  );
+  const heliosphereVisible = useSceneVisibilityStore((state) =>
+    effectiveBodyVisibility("heliosphere", state),
+  );
+  const regionsVisible = useSceneVisibilityStore(
+    (state) => state.categories.regions,
+  );
 
   return (
     <>
-      {showAsteroidBelt ? (
+      <group visible={asteroidBeltVisible}>
         <BeltLayer
           layer="asteroid"
           planetObjects={planetObjects}
           scaleMode={scaleMode}
+          visible={asteroidBeltVisible}
         />
-      ) : null}
-      {showKuiperBelt ? (
+      </group>
+      <group visible={kuiperBeltVisible}>
         <BeltLayer
           layer="kuiper"
           planetObjects={planetObjects}
           scaleMode={scaleMode}
+          visible={kuiperBeltVisible}
         />
-      ) : null}
-      {bodies.map((body) => (
+      </group>
+      {EXTENDED_BODIES.map((body) => (
         <ExtendedBodyObject
           key={body.id}
           body={body}
           labelsVisible={labelsVisible}
           motionEnabled={motionEnabled}
-          navigatorView={navigatorView}
           orbitsVisible={orbitsVisible}
           planetObjects={planetObjects}
           quality={quality}
           scaleMode={scaleMode}
         />
       ))}
-      {showOort ? (
-        <OortCloud planetObjects={planetObjects} scaleMode={scaleMode} />
-      ) : null}
-      {showDust ? <DustAndMeteorLayer scaleMode={scaleMode} /> : null}
-      {showHeliosphere ? (
-        <Heliosphere planetObjects={planetObjects} scaleMode={scaleMode} />
-      ) : null}
+      <group visible={oortVisible}>
+        <OortCloud
+          planetObjects={planetObjects}
+          scaleMode={scaleMode}
+          visible={oortVisible}
+        />
+      </group>
+      <group visible={regionsVisible && dustVisible}>
+        <DustAndMeteorLayer scaleMode={scaleMode} />
+      </group>
+      <group visible={heliosphereVisible}>
+        <Heliosphere
+          planetObjects={planetObjects}
+          scaleMode={scaleMode}
+          visible={heliosphereVisible}
+        />
+      </group>
     </>
   );
 }

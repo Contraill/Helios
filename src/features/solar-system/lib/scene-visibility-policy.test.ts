@@ -1,76 +1,179 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
-import { EXTENDED_BODY_BY_ID } from "./extended-system";
-import { MOON_BY_ID } from "./moon-catalogue";
+import { planetIds } from "@/content/planets";
 import {
-  extendedBodySceneVisibility,
-  moonSceneVisibility,
-  planetSceneVisibility,
-  regionSceneVisibility,
+  DWARF_SATELLITE_IDS,
+  EXTENDED_BODY_IDS,
+  FEATURED_MOON_IDS,
+  SYSTEM_REGION_IDS,
+  type CelestialBodyId,
+} from "@/features/solar-system/types/celestial-body";
+import {
+  resetExploreSceneUiStore,
+  useExploreSceneUiStore,
+} from "@/stores/explore-scene-ui-store";
+import {
+  initialSceneVisibilityState,
+  resetSceneVisibilityStore,
+  useSceneVisibilityStore,
+} from "@/stores/scene-visibility-store";
+
+import {
+  SCENE_VISIBILITY_CATEGORIES,
+  effectiveBodyVisibility,
+  sceneVisibilityCategoryForBody,
 } from "./scene-visibility-policy";
 
-describe("scene visibility policy", () => {
-  it("keeps non-category planets as low-emphasis anchors without moon targets", () => {
-    const navigatorView = { kind: "moons", parentPlanetId: "jupiter" } as const;
-    expect(
-      planetSceneVisibility("jupiter", {
-        navigatorView,
-        selectedBodyId: null,
-      }),
-    ).toBe("primary");
-    expect(
-      planetSceneVisibility("saturn", {
-        navigatorView,
-        selectedBodyId: null,
-      }),
-    ).toBe("anchor");
-    expect(
-      moonSceneVisibility(MOON_BY_ID["moon-jupiter-europa"], {
-        navigatorView,
-        selectedBodyId: null,
-      }),
-    ).toBe("primary");
-    expect(
-      moonSceneVisibility(MOON_BY_ID["moon-saturn-titan"], {
-        navigatorView,
-        selectedBodyId: null,
-      }),
-    ).toBe("hidden");
+const CURATED_BODY_IDS: readonly CelestialBodyId[] = [
+  "sun",
+  ...planetIds,
+  ...FEATURED_MOON_IDS,
+  ...DWARF_SATELLITE_IDS,
+  ...EXTENDED_BODY_IDS,
+  ...SYSTEM_REGION_IDS,
+];
+
+function visibleBodyIds(): readonly CelestialBodyId[] {
+  const state = useSceneVisibilityStore.getState();
+  return CURATED_BODY_IDS.filter((bodyId) =>
+    effectiveBodyVisibility(bodyId, state),
+  );
+}
+
+describe("scene visibility domain", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    resetSceneVisibilityStore();
+    resetExploreSceneUiStore();
   });
 
-  it("keeps overview belts as anchors and category context overrides removed persisted toggles", () => {
+  it("keeps fresh visibility complete and independent from Navigator browsing", () => {
+    const initial = useSceneVisibilityStore.getState();
     expect(
-      regionSceneVisibility("asteroid-belt", {
-        navigatorView: { kind: "categories" },
-        selectedBodyId: null,
-      }),
-    ).toBe("anchor");
-    expect(
-      regionSceneVisibility("kuiper-belt", {
-        navigatorView: { kind: "dwarf-parents" },
-        selectedBodyId: null,
-      }),
-    ).toBe("anchor");
+      SCENE_VISIBILITY_CATEGORIES.every(
+        (category) => initial.categories[category],
+      ),
+    ).toBe(true);
+    expect(initial.orbitsVisible).toBe(true);
+    expect(initial.labelsVisible).toBe(true);
+    expect(visibleBodyIds()).toEqual(CURATED_BODY_IDS);
+
+    const before = visibleBodyIds();
+    useExploreSceneUiStore
+      .getState()
+      .openCategory("planetary-moons", "category:planetary-moons");
+    useExploreSceneUiStore
+      .getState()
+      .openMoonParent("jupiter", "moon-parent:jupiter");
+    expect(visibleBodyIds()).toEqual(before);
   });
 
-  it("isolates small bodies by category and retains a selected region", () => {
+  it("resolves category and object overrides deterministically", () => {
+    const visibility = useSceneVisibilityStore.getState();
+    visibility.setCategoryVisibility("moons", false);
+
+    expect(sceneVisibilityCategoryForBody("moon-jupiter-europa")).toBe("moons");
     expect(
-      extendedBodySceneVisibility(EXTENDED_BODY_BY_ID.halley, {
-        navigatorView: { kind: "category", category: "comets" },
-        selectedBodyId: null,
-      }),
-    ).toBe("primary");
+      effectiveBodyVisibility(
+        "moon-jupiter-europa",
+        useSceneVisibilityStore.getState(),
+      ),
+    ).toBe(false);
     expect(
-      extendedBodySceneVisibility(EXTENDED_BODY_BY_ID.vesta, {
-        navigatorView: { kind: "category", category: "comets" },
-        selectedBodyId: null,
-      }),
-    ).toBe("hidden");
+      effectiveBodyVisibility(
+        "dwarf-satellite-charon",
+        useSceneVisibilityStore.getState(),
+      ),
+    ).toBe(false);
     expect(
-      regionSceneVisibility("oort-cloud", {
-        navigatorView: { kind: "category", category: "sun-planets" },
-        selectedBodyId: "oort-cloud",
+      effectiveBodyVisibility("earth", useSceneVisibilityStore.getState()),
+    ).toBe(true);
+
+    visibility.showObject("moon-jupiter-europa");
+    expect(
+      effectiveBodyVisibility(
+        "moon-jupiter-europa",
+        useSceneVisibilityStore.getState(),
+      ),
+    ).toBe(true);
+
+    visibility.setCategoryVisibility("planets", true);
+    visibility.hideObject("earth");
+    expect(
+      effectiveBodyVisibility("earth", useSceneVisibilityStore.getState()),
+    ).toBe(false);
+
+    visibility.setCategoryVisibility("moons", true);
+    expect(
+      useSceneVisibilityStore.getState().objectOverrides["moon-jupiter-europa"],
+    ).toBe("visible");
+  });
+
+  it("restores every category without touching Navigator state and keeps Sun special", () => {
+    useExploreSceneUiStore.getState().openCategory("comets", "category:comets");
+    const navigatorBefore = useExploreSceneUiStore.getState().navigator;
+    const visibility = useSceneVisibilityStore.getState();
+    visibility.setCategoryVisibility("regions", false);
+    visibility.hideObject("sun");
+    visibility.setOrbitsVisible(false);
+    visibility.setLabelsVisible(false);
+
+    expect(
+      effectiveBodyVisibility("sun", useSceneVisibilityStore.getState()),
+    ).toBe(false);
+    expect(sceneVisibilityCategoryForBody("sun")).toBeNull();
+
+    visibility.restoreAllVisibility();
+    const restored = useSceneVisibilityStore.getState();
+    expect(restored.categories).toEqual(initialSceneVisibilityState.categories);
+    expect(restored.objectOverrides).toEqual({});
+    expect(restored.orbitsVisible).toBe(true);
+    expect(restored.labelsVisible).toBe(true);
+    expect(effectiveBodyVisibility("sun", restored)).toBe(true);
+    expect(useExploreSceneUiStore.getState().navigator).toEqual(
+      navigatorBefore,
+    );
+
+    const persisted = JSON.parse(
+      localStorage.getItem("helios-scene-visibility") ?? "null",
+    ) as { state?: Record<string, unknown> } | null;
+    expect(persisted?.state).toMatchObject({
+      categories: initialSceneVisibilityState.categories,
+      labelsVisible: true,
+      objectOverrides: {},
+      orbitsVisible: true,
+    });
+  });
+
+  it("normalizes an older partial persisted visibility envelope safely", async () => {
+    localStorage.setItem(
+      "helios-scene-visibility",
+      JSON.stringify({
+        state: {
+          categories: { moons: false, planets: "invalid" },
+          objectOverrides: {
+            earth: "hidden",
+            halley: "visible",
+            mars: "invalid",
+            unknown: "hidden",
+          },
+          orbitsVisible: false,
+          labelsVisible: "invalid",
+        },
+        version: 0,
       }),
-    ).toBe("primary");
+    );
+
+    await useSceneVisibilityStore.persist.rehydrate();
+    const hydrated = useSceneVisibilityStore.getState();
+    expect(hydrated.categories.moons).toBe(false);
+    expect(hydrated.categories.planets).toBe(true);
+    expect(hydrated.categories.regions).toBe(true);
+    expect(hydrated.objectOverrides).toEqual({
+      earth: "hidden",
+      halley: "visible",
+    });
+    expect(hydrated.orbitsVisible).toBe(false);
+    expect(hydrated.labelsVisible).toBe(true);
   });
 });

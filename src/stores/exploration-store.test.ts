@@ -16,13 +16,13 @@ describe("exploration store", () => {
     resetExplorationStore();
   });
 
-  it("starts in exploration overview with visible scene layers", () => {
+  it("starts in exploration overview without owning scene visibility", () => {
     expect(state().selectedBodyId).toBeNull();
     expect(state().selectedPlanetId).toBeNull();
     expect(state().cameraMode).toBe("overview");
     expect(state().scaleMode).toBe("exploration");
-    expect(state().orbitsVisible).toBe(true);
-    expect(state().labelsVisible).toBe(true);
+    expect("orbitsVisible" in state()).toBe(false);
+    expect("labelsVisible" in state()).toBe(false);
   });
 
   it("moves into transition mode when a planet is selected or cleared", () => {
@@ -102,7 +102,7 @@ describe("exploration store", () => {
     expect(state().hoveredBodyId).toBeNull();
   });
 
-  it("persists scale and scene layers without restoring selection", async () => {
+  it("persists scale without restoring or owning visibility", async () => {
     useExplorationStore.setState({
       ...initialExplorationState,
       selectedPlanetId: "mars",
@@ -122,8 +122,8 @@ describe("exploration store", () => {
     await useExplorationStore.persist.rehydrate();
 
     expect(state().scaleMode).toBe("scientific");
-    expect(state().orbitsVisible).toBe(false);
-    expect(state().labelsVisible).toBe(false);
+    expect("orbitsVisible" in state()).toBe(false);
+    expect("labelsVisible" in state()).toBe(false);
     expect(state().selectedPlanetId).toBe("mars");
   });
 });

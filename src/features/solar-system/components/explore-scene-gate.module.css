@@ -534,3 +534,91 @@
     animation: none;
   }
 }
+
+.visibilityFieldset {
+  min-width: 0;
+}
+
+.visibilityGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.viewPanel .visibilityToggle {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  min-height: 2.75rem;
+  min-width: 0;
+  text-align: left;
+}
+
+.visibilityToggle > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.visibilityState {
+  flex: 0 0 auto;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-left: 0.45rem;
+  text-transform: uppercase;
+}
+
+.visibilityToggle[aria-pressed="false"] {
+  border-style: dashed;
+  opacity: 0.78;
+}
+
+.viewPanel .restoreVisibility {
+  margin-top: 0.65rem;
+  min-height: 2.75rem;
+  width: 100%;
+}
+
+.restoreVisibility:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.srOnly {
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.objectVisibilityAction {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+}
+
+.objectVisibilityStatus {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  opacity: 0.72;
+  text-transform: uppercase;
+}
+
+@media (max-width: 430px) {
+  .visibilityGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .visibilityToggle {
+    font-size: 0.76rem;
+    padding-inline: 0.65rem;
+  }
+}
