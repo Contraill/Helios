@@ -5,6 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
+import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { useExplorationStore } from "@/stores/exploration-store";
 
@@ -28,6 +29,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
   const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
   const cameraMode = useExplorationStore((state) => state.cameraMode);
   const scaleMode = useExplorationStore((state) => state.scaleMode);
+  const profile = sceneProfileFor(scaleMode);
   const settleCamera = useExplorationStore((state) => state.settleCamera);
 
   const overviewPosition = useMemo(
@@ -58,10 +60,10 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
     orbitControls.enableDamping = false;
     orbitControls.enablePan = true;
     orbitControls.screenSpacePanning = true;
-    orbitControls.minDistance = scaleMode === "scientific" ? 2 : 6;
+    orbitControls.minDistance = profile.camera.minimumDistance;
     // The experience ends at an exterior Milky Way view. There is no
     // extragalactic/deep-field zoom stage beyond this boundary.
-    orbitControls.maxDistance = scaleMode === "scientific" ? 5_800 : 1_050;
+    orbitControls.maxDistance = profile.camera.maximumDistance;
     orbitControls.keyPanSpeed = 18;
     controls.current = orbitControls;
 
@@ -153,7 +155,12 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       orbitControls.dispose();
       controls.current = null;
     };
-  }, [camera, gl.domElement, scaleMode]);
+  }, [
+    camera,
+    gl.domElement,
+    profile.camera.maximumDistance,
+    profile.camera.minimumDistance,
+  ]);
 
   useFrame((_, delta) => {
     const aspect = width / Math.max(height, 1);
@@ -173,7 +180,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       if (controls.current) {
         controls.current.minDistance = Math.max(
           radius * 1.35,
-          scaleMode === "scientific" ? 0.000_001 : 0.8,
+          profile.camera.minimumDistance * 0.000_000_5,
         );
       }
       const anchorKey = `${selectedBodyId}:${scaleMode}:${width}:${height}`;
@@ -196,7 +203,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
         .add(focusOffset.current);
     } else {
       if (controls.current) {
-        controls.current.minDistance = scaleMode === "scientific" ? 2 : 6;
+        controls.current.minDistance = profile.camera.minimumDistance;
       }
       focusAnchorKey.current = "";
       desiredTarget.current.set(0, 0, 0);

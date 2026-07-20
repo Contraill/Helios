@@ -48,3 +48,6 @@ next-env.d.ts
 !.env.example
 
 # Project decisions and phase reports are intentionally version-controlled.
+# python cache
+__pycache__/
+*.py[cod]

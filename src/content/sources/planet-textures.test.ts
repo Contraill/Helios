@@ -1,18 +1,18 @@
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
 import {
+  blockingPrimaryTextureAssets,
   earthCityLightsTextureSource,
   earthCloudTextureSource,
   planetTextureSources,
-  saturnRingTextureVariants,
-  textureVariantFor,
+  saturnRingTextureSource,
 } from "./planet-textures";
 
-describe("planet texture source manifest", () => {
-  it("covers the Sun and every planet with traceable local variants", () => {
+describe("runtime celestial texture manifest", () => {
+  it("owns one canonical runtime asset for the Sun and every planet", () => {
     const sources = Object.values(planetTextureSources);
     const paths = new Set<string>();
 
@@ -22,35 +22,55 @@ describe("planet texture source manifest", () => {
       expect(source.sourceUrl).toMatch(/^https:\/\//);
       expect(source.attribution).not.toHaveLength(0);
       expect(source.license).toMatch(/NASA|Creative Commons/);
-
-      for (const variant of Object.values(source.variants)) {
-        expect(variant.decodedBytes).toBe(variant.width * variant.height * 4);
-        expect(paths.has(variant.path)).toBe(false);
-        expect(
-          existsSync(join(process.cwd(), "public", variant.path.slice(1))),
-        ).toBe(true);
-        paths.add(variant.path);
-      }
-    }
-
-    for (const layer of [
-      earthCloudTextureSource,
-      earthCityLightsTextureSource,
-    ]) {
-      for (const variant of Object.values(layer.variants)) {
-        expect(
-          existsSync(join(process.cwd(), "public", variant.path.slice(1))),
-        ).toBe(true);
-        expect(paths.has(variant.path)).toBe(false);
-        paths.add(variant.path);
-      }
+      expect(source.asset.width).toBeLessThanOrEqual(2048);
+      expect(source.asset.height).toBeLessThanOrEqual(1024);
+      expect(source.asset.decodedBytes).toBe(
+        source.asset.width * source.asset.height * 4,
+      );
+      expect(paths.has(source.asset.path)).toBe(false);
+      const localPath = join(
+        process.cwd(),
+        "public",
+        source.asset.path.slice(1),
+      );
+      expect(existsSync(localPath)).toBe(true);
+      expect(statSync(localPath).size).toBeGreaterThan(0);
+      paths.add(source.asset.path);
     }
   });
 
-  it("maps every quality choice directly without silently downgrading it", () => {
-    expect(textureVariantFor("mars", "high").path).toContain("-high.");
-    expect(textureVariantFor("earth", "medium").path).toContain("-medium.");
-    expect(textureVariantFor("sun", "low").path).toContain("-low.");
+  it("keeps primary special layers within the fixed runtime ceiling", () => {
+    for (const source of [
+      earthCloudTextureSource,
+      earthCityLightsTextureSource,
+    ]) {
+      expect(source.asset.width).toBeLessThanOrEqual(2048);
+      expect(source.asset.height).toBeLessThanOrEqual(1024);
+      expect(source.asset.width).toBeGreaterThan(source.asset.height);
+      expect(
+        existsSync(join(process.cwd(), "public", source.asset.path.slice(1))),
+      ).toBe(true);
+    }
+    expect(saturnRingTextureSource.width).toBeLessThanOrEqual(2048);
+    expect(saturnRingTextureSource.height).toBeLessThanOrEqual(256);
+    expect(saturnRingTextureSource.width).toBeGreaterThan(
+      saturnRingTextureSource.height,
+    );
+    expect(
+      existsSync(
+        join(process.cwd(), "public", saturnRingTextureSource.path.slice(1)),
+      ),
+    ).toBe(true);
+  });
+
+  it("defines the complete blocking primary stage without duplicate owners", () => {
+    expect(blockingPrimaryTextureAssets).toHaveLength(12);
+    expect(
+      new Set(blockingPrimaryTextureAssets.map(({ owner }) => owner)).size,
+    ).toBe(12);
+    expect(
+      new Set(blockingPrimaryTextureAssets.map(({ path }) => path)).size,
+    ).toBe(12);
   });
 
   it("does not present reference-derived simulations as observations", () => {
@@ -60,18 +80,5 @@ describe("planet texture source manifest", () => {
     expect(planetTextureSources.neptune.representation).toBe("simulation");
     expect(earthCloudTextureSource.representation).toBe("simulation");
     expect(earthCityLightsTextureSource.representation).toBe("simulation");
-  });
-
-  it("gives focused high quality a real 2K minimum and a detailed ring profile", () => {
-    for (const source of Object.values(planetTextureSources)) {
-      expect(source.variants.medium.width).toBe(512);
-      expect(source.variants.high.width).toBeGreaterThanOrEqual(2048);
-    }
-    expect(saturnRingTextureVariants.high.width).toBe(4096);
-    expect(saturnRingTextureVariants.high.width).toBeGreaterThan(
-      saturnRingTextureVariants.high.height,
-    );
-    expect(planetTextureSources.sun.variants.high.width).toBe(4096);
-    expect(earthCityLightsTextureSource.variants.high.width).toBe(4096);
   });
 });

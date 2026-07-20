@@ -1,7 +1,8 @@
 import type { PlanetId } from "@/lib/data/schemas/planet";
 
 export type TextureBodyId = "sun" | PlanetId;
-export type TextureVariantName = "low" | "medium" | "high";
+export type RuntimeTextureKind =
+  "primary-surface" | "primary-layer" | "ring-albedo";
 export type TextureRepresentation =
   | "enhanced-color-mosaic"
   | "radar-composite"
@@ -9,14 +10,18 @@ export type TextureRepresentation =
   | "topographic-composite"
   | "simulation";
 
-export interface PlanetTextureVariant {
+export interface RuntimeTextureAsset {
   readonly decodedBytes: number;
   readonly height: number;
+  readonly kind: RuntimeTextureKind;
+  readonly owner: string;
   readonly path: string;
+  readonly stage: "blocking-primary" | "background-secondary";
   readonly width: number;
 }
 
 export interface PlanetTextureSource {
+  readonly asset: RuntimeTextureAsset;
   readonly attribution: string;
   readonly bodyId: TextureBodyId;
   readonly colorSpace: "srgb";
@@ -25,32 +30,25 @@ export interface PlanetTextureSource {
   readonly provider: string;
   readonly representation: TextureRepresentation;
   readonly sourceId: string;
+  readonly sourceMasterNote: string;
   readonly sourceUrl: string;
-  readonly variants: Readonly<Record<TextureVariantName, PlanetTextureVariant>>;
 }
 
-const variant = (
-  body: TextureBodyId,
-  name: TextureVariantName,
+const asset = (
+  path: string,
+  owner: string,
+  kind: RuntimeTextureKind,
   width: number,
   height: number,
-): PlanetTextureVariant =>
+): RuntimeTextureAsset =>
   Object.freeze({
     decodedBytes: width * height * 4,
     height,
-    path: `/textures/planets/${body}-${name}.webp`,
+    kind,
+    owner,
+    path,
+    stage: "blocking-primary" as const,
     width,
-  });
-
-const variants = (
-  body: TextureBodyId,
-  highWidth: number,
-  highHeight: number,
-): PlanetTextureSource["variants"] =>
-  Object.freeze({
-    low: variant(body, "low", 256, 128),
-    medium: variant(body, "medium", 512, 256),
-    high: variant(body, "high", highWidth, highHeight),
   });
 
 const NASA_MEDIA_LICENSE =
@@ -60,95 +58,73 @@ const SOLAR_SYSTEM_SCOPE_LICENSE =
 const SOLAR_SYSTEM_SCOPE_URL = "https://www.solarsystemscope.com/textures/";
 const SOLAR_SYSTEM_SCOPE_ATTRIBUTION =
   "Solar System Scope, based on NASA elevation and imagery data; colours are adjusted and unmapped gaps may contain corresponding fictional terrain";
+const SOURCE_MASTER_NOTE =
+  "The larger source master is attribution-only and is not shipped in public/ or the runtime bundle. The production derivative is capped at 2048×1024.";
+
+function surfaceSource(
+  bodyId: TextureBodyId,
+  sourceId: string,
+  representation: TextureRepresentation,
+): PlanetTextureSource {
+  return Object.freeze({
+    asset: asset(
+      `/textures/planets/${bodyId}.webp`,
+      `celestial:${bodyId}:surface`,
+      "primary-surface",
+      2048,
+      1024,
+    ),
+    attribution: SOLAR_SYSTEM_SCOPE_ATTRIBUTION,
+    bodyId,
+    colorSpace: "srgb",
+    license: SOLAR_SYSTEM_SCOPE_LICENSE,
+    materialSlot: "map",
+    provider: "Solar System Scope",
+    representation,
+    sourceId,
+    sourceMasterNote: SOURCE_MASTER_NOTE,
+    sourceUrl: SOLAR_SYSTEM_SCOPE_URL,
+  });
+}
 
 export const planetTextureSources: Readonly<
   Record<TextureBodyId, PlanetTextureSource>
 > = Object.freeze({
-  sun: Object.freeze({
-    bodyId: "sun",
-    sourceId: "solar-system-scope-sun-8k",
-    sourceUrl: SOLAR_SYSTEM_SCOPE_URL,
-    provider: "Solar System Scope",
-    license: SOLAR_SYSTEM_SCOPE_LICENSE,
-    attribution: SOLAR_SYSTEM_SCOPE_ATTRIBUTION,
-    representation: "simulation",
-    colorSpace: "srgb",
-    materialSlot: "map",
-    variants: variants("sun", 4096, 2048),
-  }),
-  mercury: Object.freeze({
-    bodyId: "mercury",
-    sourceId: "solar-system-scope-mercury-8k",
-    sourceUrl: SOLAR_SYSTEM_SCOPE_URL,
-    provider: "Solar System Scope",
-    license: SOLAR_SYSTEM_SCOPE_LICENSE,
-    attribution: SOLAR_SYSTEM_SCOPE_ATTRIBUTION,
-    representation: "enhanced-color-mosaic",
-    colorSpace: "srgb",
-    materialSlot: "map",
-    variants: variants("mercury", 4096, 2048),
-  }),
-  venus: Object.freeze({
-    bodyId: "venus",
-    sourceId: "solar-system-scope-venus-surface-8k",
-    sourceUrl: SOLAR_SYSTEM_SCOPE_URL,
-    provider: "Solar System Scope",
-    license: SOLAR_SYSTEM_SCOPE_LICENSE,
-    attribution: SOLAR_SYSTEM_SCOPE_ATTRIBUTION,
-    representation: "radar-composite",
-    colorSpace: "srgb",
-    materialSlot: "map",
-    variants: variants("venus", 4096, 2048),
-  }),
-  earth: Object.freeze({
-    bodyId: "earth",
-    sourceId: "solar-system-scope-earth-daymap-8k",
-    sourceUrl: SOLAR_SYSTEM_SCOPE_URL,
-    provider: "Solar System Scope",
-    license: SOLAR_SYSTEM_SCOPE_LICENSE,
-    attribution: SOLAR_SYSTEM_SCOPE_ATTRIBUTION,
-    representation: "topographic-composite",
-    colorSpace: "srgb",
-    materialSlot: "map",
-    variants: variants("earth", 4096, 2048),
-  }),
-  mars: Object.freeze({
-    bodyId: "mars",
-    sourceId: "solar-system-scope-mars-8k",
-    sourceUrl: SOLAR_SYSTEM_SCOPE_URL,
-    provider: "Solar System Scope",
-    license: SOLAR_SYSTEM_SCOPE_LICENSE,
-    attribution: SOLAR_SYSTEM_SCOPE_ATTRIBUTION,
-    representation: "imaging-composite",
-    colorSpace: "srgb",
-    materialSlot: "map",
-    variants: variants("mars", 4096, 2048),
-  }),
-  jupiter: Object.freeze({
-    bodyId: "jupiter",
-    sourceId: "solar-system-scope-jupiter-8k",
-    sourceUrl: SOLAR_SYSTEM_SCOPE_URL,
-    provider: "Solar System Scope",
-    license: SOLAR_SYSTEM_SCOPE_LICENSE,
-    attribution: SOLAR_SYSTEM_SCOPE_ATTRIBUTION,
-    representation: "imaging-composite",
-    colorSpace: "srgb",
-    materialSlot: "map",
-    variants: variants("jupiter", 4096, 2048),
-  }),
-  saturn: Object.freeze({
-    bodyId: "saturn",
-    sourceId: "solar-system-scope-saturn-8k",
-    sourceUrl: SOLAR_SYSTEM_SCOPE_URL,
-    provider: "Solar System Scope",
-    license: SOLAR_SYSTEM_SCOPE_LICENSE,
-    attribution: SOLAR_SYSTEM_SCOPE_ATTRIBUTION,
-    representation: "simulation",
-    colorSpace: "srgb",
-    materialSlot: "map",
-    variants: variants("saturn", 4096, 2048),
-  }),
+  sun: surfaceSource("sun", "solar-system-scope-sun-8k", "simulation"),
+  mercury: surfaceSource(
+    "mercury",
+    "solar-system-scope-mercury-8k",
+    "enhanced-color-mosaic",
+  ),
+  venus: surfaceSource(
+    "venus",
+    "solar-system-scope-venus-surface-8k",
+    "radar-composite",
+  ),
+  earth: surfaceSource(
+    "earth",
+    "solar-system-scope-earth-daymap-8k",
+    "topographic-composite",
+  ),
+  mars: surfaceSource(
+    "mars",
+    "solar-system-scope-mars-8k",
+    "imaging-composite",
+  ),
+  jupiter: surfaceSource(
+    "jupiter",
+    "solar-system-scope-jupiter-8k",
+    "imaging-composite",
+  ),
+  saturn: surfaceSource("saturn", "solar-system-scope-saturn-8k", "simulation"),
   uranus: Object.freeze({
+    asset: asset(
+      "/textures/planets/uranus.webp",
+      "celestial:uranus:surface",
+      "primary-surface",
+      2048,
+      1024,
+    ),
     bodyId: "uranus",
     sourceId: "nasa-voyager-pia01391",
     sourceUrl: "https://science.nasa.gov/photojournal/uranus/",
@@ -158,9 +134,16 @@ export const planetTextureSources: Readonly<
     representation: "simulation",
     colorSpace: "srgb",
     materialSlot: "map",
-    variants: variants("uranus", 2048, 1024),
+    sourceMasterNote: SOURCE_MASTER_NOTE,
   }),
   neptune: Object.freeze({
+    asset: asset(
+      "/textures/planets/neptune.webp",
+      "celestial:neptune:surface",
+      "primary-surface",
+      2048,
+      1024,
+    ),
     bodyId: "neptune",
     sourceId: "nasa-3d-neptune-simulation",
     sourceUrl: "https://science.nasa.gov/3d-resources/neptune/",
@@ -170,11 +153,18 @@ export const planetTextureSources: Readonly<
     representation: "simulation",
     colorSpace: "srgb",
     materialSlot: "map",
-    variants: variants("neptune", 2048, 1024),
+    sourceMasterNote: SOURCE_MASTER_NOTE,
   }),
 });
 
 export const earthCloudTextureSource: PlanetTextureSource = Object.freeze({
+  asset: asset(
+    "/textures/planets/earth-clouds.webp",
+    "celestial:earth:clouds",
+    "primary-layer",
+    2048,
+    1024,
+  ),
   bodyId: "earth",
   sourceId: "solar-system-scope-earth-clouds-8k",
   sourceUrl: SOLAR_SYSTEM_SCOPE_URL,
@@ -184,29 +174,17 @@ export const earthCloudTextureSource: PlanetTextureSource = Object.freeze({
   representation: "simulation",
   colorSpace: "srgb",
   materialSlot: "map",
-  variants: Object.freeze({
-    low: Object.freeze({
-      decodedBytes: 128 * 64 * 4,
-      height: 64,
-      path: "/textures/planets/earth-clouds-low.webp",
-      width: 128,
-    }),
-    medium: Object.freeze({
-      decodedBytes: 512 * 256 * 4,
-      height: 256,
-      path: "/textures/planets/earth-clouds-medium.webp",
-      width: 512,
-    }),
-    high: Object.freeze({
-      decodedBytes: 2048 * 1024 * 4,
-      height: 1024,
-      path: "/textures/planets/earth-clouds-high.webp",
-      width: 2048,
-    }),
-  }),
+  sourceMasterNote: SOURCE_MASTER_NOTE,
 });
 
 export const earthCityLightsTextureSource: PlanetTextureSource = Object.freeze({
+  asset: asset(
+    "/textures/planets/earth-city-lights.webp",
+    "celestial:earth:city-lights",
+    "primary-layer",
+    2048,
+    1024,
+  ),
   bodyId: "earth",
   sourceId: "three-globe-earth-night-map",
   sourceUrl: "https://www.npmjs.com/package/three-globe?activeTab=code",
@@ -217,54 +195,29 @@ export const earthCityLightsTextureSource: PlanetTextureSource = Object.freeze({
   representation: "simulation",
   colorSpace: "srgb",
   materialSlot: "map",
-  variants: Object.freeze({
-    low: Object.freeze({
-      decodedBytes: 256 * 128 * 4,
-      height: 128,
-      path: "/textures/planets/earth-city-lights-low.webp",
-      width: 256,
-    }),
-    medium: Object.freeze({
-      decodedBytes: 1024 * 512 * 4,
-      height: 512,
-      path: "/textures/planets/earth-city-lights-medium.webp",
-      width: 1024,
-    }),
-    high: Object.freeze({
-      decodedBytes: 4096 * 2048 * 4,
-      height: 2048,
-      path: "/textures/planets/earth-city-lights-high.webp",
-      width: 4096,
-    }),
-  }),
+  sourceMasterNote: SOURCE_MASTER_NOTE,
 });
 
-export function textureVariantFor(
-  bodyId: TextureBodyId,
-  quality: TextureVariantName,
-): PlanetTextureVariant {
-  return planetTextureSources[bodyId].variants[quality];
-}
+export const saturnRingTextureSource: RuntimeTextureAsset = asset(
+  "/textures/rings/saturn.webp",
+  "celestial:saturn:rings",
+  "ring-albedo",
+  2048,
+  125,
+);
 
-export const saturnRingTextureVariants: Readonly<
-  Record<TextureVariantName, PlanetTextureVariant>
-> = Object.freeze({
-  low: Object.freeze({
-    decodedBytes: 512 * 32 * 4,
-    height: 32,
-    path: "/textures/rings/saturn-low.webp",
-    width: 512,
-  }),
-  medium: Object.freeze({
-    decodedBytes: 2048 * 125 * 4,
-    height: 125,
-    path: "/textures/rings/saturn-medium.webp",
-    width: 2048,
-  }),
-  high: Object.freeze({
-    decodedBytes: 4096 * 250 * 4,
-    height: 250,
-    path: "/textures/rings/saturn-high.webp",
-    width: 4096,
-  }),
-});
+export const blockingPrimaryTextureAssets: readonly RuntimeTextureAsset[] =
+  Object.freeze([
+    planetTextureSources.sun.asset,
+    planetTextureSources.mercury.asset,
+    planetTextureSources.venus.asset,
+    planetTextureSources.earth.asset,
+    planetTextureSources.mars.asset,
+    planetTextureSources.jupiter.asset,
+    planetTextureSources.saturn.asset,
+    planetTextureSources.uranus.asset,
+    planetTextureSources.neptune.asset,
+    earthCloudTextureSource.asset,
+    earthCityLightsTextureSource.asset,
+    saturnRingTextureSource,
+  ]);

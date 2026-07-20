@@ -127,24 +127,10 @@ async function frameSample(page, durationMs = 4_000) {
   );
 }
 
-async function runtimeMetrics(browser, quality) {
+async function runtimeMetrics(browser) {
   const context = await browser.newContext({
     viewport: { height: 1_000, width: 1_440 },
   });
-  await context.addInitScript((qualityLevel) => {
-    localStorage.setItem(
-      "helios-preferences",
-      JSON.stringify({
-        state: {
-          controlDeckExpanded: true,
-          motionPreference: "standard",
-          qualityLevel,
-          timePanelExpanded: false,
-        },
-        version: 1,
-      }),
-    );
-  }, quality);
   const page = await context.newPage();
   const errors = [];
   const requestedPaths = [];
@@ -157,11 +143,11 @@ async function runtimeMetrics(browser, quality) {
   page.on("pageerror", (error) => errors.push(`pageerror: ${error.message}`));
   await page.goto(`${BASE_URL}/explore`, { waitUntil: "networkidle" });
   await page.locator(".solar-canvas-shell").waitFor();
-  await page.locator(".solar-canvas-shell").evaluate((element, expected) => {
-    if (element.getAttribute("data-quality") !== expected) {
-      throw new Error(`Expected ${expected} quality`);
+  await page.locator(".solar-canvas-shell").evaluate((element) => {
+    if (element.getAttribute("data-visual-contract") !== "high") {
+      throw new Error("Expected automatic high visual contract");
     }
-  }, quality);
+  });
   await page.getByRole("button", { name: "Saturn", exact: true }).click();
   await page.waitForTimeout(1_200);
 

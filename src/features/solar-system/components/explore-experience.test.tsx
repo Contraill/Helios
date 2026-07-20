@@ -10,20 +10,34 @@ import {
   resetExplorationStore,
   useExplorationStore,
 } from "@/stores/exploration-store";
-import {
-  resetPreferencesStore,
-  usePreferencesStore,
-} from "@/stores/preferences-store";
+import { resetExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
 import { resetSimulationStore } from "@/stores/simulation-store";
 
 import { ExploreExperience } from "./explore-experience";
 
+vi.mock("@/hooks/use-hydrate-experience-settings", () => ({
+  useHydrateExperienceSettings: () => true,
+}));
 vi.mock("./explore-canvas-client", () => ({
   ExploreCanvasClient: () => <div data-testid="solar-system-canvas" />,
 }));
-
-vi.mock("./ephemeris-controls", () => ({
-  EphemerisControls: () => <div data-testid="ephemeris-controls" />,
+vi.mock("./ephemeris-controller", () => ({
+  useEphemerisController: () => ({
+    beginEdit: vi.fn(),
+    commitScrub: vi.fn(),
+    copyLink: vi.fn(),
+    discardDraft: vi.fn(),
+    goNow: vi.fn(),
+    navigateTo: vi.fn(),
+    previewScrub: vi.fn(),
+    refreshView: vi.fn(),
+    setPendingValue: vi.fn(),
+    stepByDays: vi.fn(),
+    stepByYears: vi.fn(),
+  }),
+}));
+vi.mock("./ephemeris-panel", () => ({
+  EphemerisPanel: () => <div>Embedded time panel</div>,
 }));
 
 const props = {
@@ -32,71 +46,61 @@ const props = {
   sceneSun: createSceneSun(sun),
 };
 
-describe("ExploreExperience", () => {
+describe("ExploreExperience integration shell", () => {
   beforeEach(() => {
     localStorage.clear();
     resetExplorationStore();
-    resetPreferencesStore();
+    resetExploreSceneUiStore();
     resetSimulationStore();
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
+    vi.spyOn(window, "getComputedStyle").mockReturnValue({
+      getPropertyValue: (name: string) =>
+        name === "--explore-shell-mode" ? "desktop" : "",
+    } as CSSStyleDeclaration);
   });
 
-  it("describes the active scale and motion state accurately", () => {
+  it("describes the shared scene profile while retaining one dock owner", () => {
     const { rerender } = render(<ExploreExperience {...props} />);
-
+    expect(screen.getByTestId("solar-system-canvas")).toBeVisible();
     expect(
-      screen.getByRole("region", {
-        name: "Animated exploration-scale model of the Sun and the eight planets",
-      }),
-    ).toBeInTheDocument();
+      screen.getByRole("complementary", { name: "Explore scene controls" }),
+    ).toBeVisible();
 
     useExplorationStore.getState().setScaleMode("scientific");
-    usePreferencesStore.getState().setMotionPreference("reduced");
     rerender(<ExploreExperience {...props} />);
-
     expect(
       screen.getByRole("region", {
-        name: "Static scientific-scale model of the Sun and the eight planets",
+        name: "Animated scientific-scale model of the Sun and the eight planets",
       }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        "Scientific positions · locator discs identify worlds, not body size",
-      ),
-    ).toBeInTheDocument();
+    ).toBeVisible();
   });
 
-  it("selects a planet from the semantic navigator", () => {
+  it("drills to a planet through the semantic category navigator", () => {
     render(<ExploreExperience {...props} />);
-
-    const marsButton = screen.getByRole("button", { name: "Mars" });
-    fireEvent.click(marsButton);
-
-    expect(marsButton).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("heading", { name: "Mars" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Open the Mars reference page" }),
-    ).toHaveAttribute("href", "/planet/mars");
+    fireEvent.click(screen.getByRole("button", { name: /Sun & planets/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Mars" }));
+    expect(useExplorationStore.getState().selectedBodyId).toBe("mars");
+    expect(screen.getByRole("tab", { name: "Selection" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+    expect(screen.getByRole("heading", { name: "Mars" })).toBeVisible();
   });
 
-  it("returns to overview with Escape and restores focus", async () => {
+  it("announces and closes an extended body using registry metadata", async () => {
     render(<ExploreExperience {...props} />);
-
-    const earthButton = screen.getByRole("button", { name: "Earth" });
-    fireEvent.click(earthButton);
+    fireEvent.click(screen.getByRole("button", { name: /Comets/i }));
+    fireEvent.click(screen.getByRole("button", { name: "Halley" }));
+    expect(screen.getByRole("heading", { name: "Halley" })).toBeVisible();
     fireEvent.keyDown(window, { key: "Escape" });
-
-    await waitFor(() => expect(earthButton).toHaveFocus());
-    expect(earthButton).toHaveAttribute("aria-pressed", "false");
-    expect(screen.queryByRole("heading", { name: "Earth" })).toBeNull();
-  });
-
-  it("exposes keyboard focus as a scene hover without selecting", () => {
-    render(<ExploreExperience {...props} />);
-
-    const venusButton = screen.getByRole("button", { name: "Venus" });
-    fireEvent.focus(venusButton);
-
-    expect(venusButton).toHaveAttribute("aria-pressed", "false");
-    expect(screen.queryByRole("heading", { name: "Venus" })).toBeNull();
+    await waitFor(() =>
+      expect(useExplorationStore.getState().selectedBodyId).toBeNull(),
+    );
   });
 });

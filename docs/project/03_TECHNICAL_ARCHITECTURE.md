@@ -409,13 +409,12 @@ Cache davranışı framework varsayımlarına bırakılmamalı; kodda açıkça 
 - timeScale
 - simulationEpoch veya elapsedSimulationDays
 
-### Preferences store
+### Preferences / environment sınırı
 
-- language
-- qualityLevel
-- reducedMotion override
-- soundEnabled
-- introSeen
+- language ve introSeen gibi uygulama tercihleri, ilgili özellik yüzeyinde gerekliyse saklanabilir
+- Explore render quality kullanıcı tercihi değildir; tek High visual contract runtime tarafından uygulanır
+- reduced motion override saklanmaz; `prefers-reduced-motion` otomatik izlenir
+- zaman, pause ve ephemeris request lifecycle'ı persistent Explore controller tarafından yönetilir
 
 API response’ları store’a kalıcı olarak doldurulmamalıdır. Frame içi çok hızlı değerler React’e reaktif biçimde bağlanmamalıdır.
 

@@ -1,6 +1,4 @@
 export type ScaleMode = "exploration" | "scientific";
-export type QualityLevel = "low" | "medium" | "high";
-export type MotionPreference = "system" | "reduced" | "standard";
 
 export const SECONDS_PER_JULIAN_YEAR = 31_557_600;
 

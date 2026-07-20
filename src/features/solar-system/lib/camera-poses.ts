@@ -1,6 +1,6 @@
+import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 
-const MIN_FOCUS_DISTANCE = 4.1;
 const RADIUS_DISTANCE_MULTIPLIER = 5.4;
 
 function assertPositiveFinite(value: number, label: string): void {
@@ -19,14 +19,20 @@ export function overviewCameraPosition(
 
   const aspect = width / height;
   const portrait = aspect < 0.85;
-
-  if (scaleMode === "scientific") {
-    const distance = portrait ? 1_060 : aspect < 1.2 ? 820 : 690;
-    return [0, distance * (portrait ? 0.58 : 0.42), distance];
-  }
-
-  const distance = portrait ? 128 : aspect < 1.2 ? 108 : 90;
-  return [0, distance * (portrait ? 0.74 : 0.52), distance];
+  const overview = sceneProfileFor(scaleMode).camera.overview;
+  const distance = portrait
+    ? overview.portraitDistance
+    : aspect < 1.2
+      ? overview.compactDistance
+      : overview.wideDistance;
+  return [
+    0,
+    distance *
+      (portrait
+        ? overview.portraitHeightMultiplier
+        : overview.landscapeHeightMultiplier),
+    distance,
+  ];
 }
 
 export function focusCameraOffset(
@@ -38,7 +44,8 @@ export function focusCameraOffset(
   assertPositiveFinite(aspect, "Viewport aspect");
 
   const portraitMultiplier = aspect < 0.85 ? 1.28 : aspect < 1.2 ? 1.12 : 1;
-  const minimumDistance = scaleMode === "scientific" ? 0 : MIN_FOCUS_DISTANCE;
+  const minimumDistance =
+    sceneProfileFor(scaleMode).camera.focusMinimumDistance;
   const distance =
     Math.max(minimumDistance, radius * RADIUS_DISTANCE_MULTIPLIER) *
     portraitMultiplier;

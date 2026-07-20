@@ -88,13 +88,14 @@ export const uiStrings = {
       formatGravity: (value: string): string => `${value} m/s²`,
       formatEarthDays: (value: string): string => `${value} Earth days`,
       formatMinutes: (value: string): string => `${value} min`,
-      scientificMarkerCaption: "",
-      scientificSelectedMarkerCaption: "Selected locator · not body size",
+      scientificMarkerCaption:
+        "Scientific profile · shared body representation",
+      scientificSelectedMarkerCaption: "Selected · scientific scale profile",
       scaleNotices: {
         exploration:
           "Exploration scale · bodies enlarged and distance compressed",
         scientific:
-          "Scientific positions · locator discs identify worlds, not body size",
+          "Scientific profile · shared scene graph with physical-ratio body and distance scaling",
       },
       gravityLabel: "Gravity",
       yearLabel: "Orbital year",
@@ -119,28 +120,11 @@ export const uiStrings = {
           ? `${name} is in focus.`
           : `Moving toward ${name}.`;
       },
-      motionPaused:
-        "Continuous motion is paused by the current motion preference.",
       controls: {
-        label: "Simulation controls",
-        eyebrow: "System state",
-        pause: "Pause",
-        resume: "Resume",
-        reset: "Reset",
-        collapseControls: "Collapse simulation controls",
-        openControls: "Open controls",
-        compactStatus: (
-          paused: boolean,
-          speed: string,
-          scale: string,
-        ): string => `${paused ? "Paused" : speed} · ${scale}`,
-        speed: "Simulation advance per real second",
-        scale: "Scale model",
+        scale: "Scale profile",
         scene: "Scene layers",
         orbits: "Orbit paths",
-        labels: "Planet labels",
-        quality: "Render quality",
-        motion: "Motion",
+        labels: "Body labels",
         camera: "Camera",
         freeCamera: "Free",
         guidedCamera: "Guided",
@@ -149,25 +133,12 @@ export const uiStrings = {
           exploration: "Explore",
           scientific: "Scientific",
         },
-        qualityOptions: {
-          low: "Low",
-          medium: "Medium",
-          high: "High",
-        },
-        motionOptions: {
-          system: "System",
-          reduced: "Reduced",
-          standard: "Standard",
-        },
         scaleDescriptions: {
           exploration:
-            "Exploration scale enlarges bodies and compresses distance for legibility. It is intentionally not to scale.",
+            "Explore keeps the same bodies and materials while enlarging them and compressing distance for legibility.",
           scientific:
-            "Scientific scale uses one shared ratio for radii and distance. Colored locator discs preserve planet identity and mark position only; they do not represent physical size.",
+            "Scientific keeps the same scene graph, textures and materials while applying the shared physical-ratio scale profile.",
         },
-        visualSources:
-          "Planet maps use NASA/JPL/USGS source material and attributed CC BY 4.0 rendering assets. Enhanced-colour, composite and simulated surfaces are identified in the project manifest.",
-        visualSourcesLink: "Visual texture source and licence",
       },
     },
     compare: {

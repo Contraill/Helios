@@ -1,4 +1,4 @@
-import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
+import type { SceneProfile } from "@/features/solar-system/lib/scene-profiles";
 
 export interface UniverseLayerOpacities {
   readonly localStars: number;
@@ -33,22 +33,12 @@ function smoothRange(range: readonly [number, number], value: number): number {
 
 export function universeLayerOpacities(
   distanceFromSun: number,
-  scaleMode: ScaleMode,
+  profile: SceneProfile,
 ): UniverseLayerOpacities {
   const distance = Math.max(0, distanceFromSun);
-  const thresholds =
-    scaleMode === "scientific"
-      ? {
-          localOut: [1_100, 2_400] as const,
-          milkyWayIn: [1_300, 2_900] as const,
-        }
-      : {
-          localOut: [180, 380] as const,
-          milkyWayIn: [220, 520] as const,
-        };
-
-  const localStars = 1 - smoothRange(thresholds.localOut, distance);
-  const milkyWay = smoothRange(thresholds.milkyWayIn, distance);
+  const localStars =
+    1 - smoothRange(profile.backdrop.localStarsFadeOut, distance);
+  const milkyWay = smoothRange(profile.backdrop.milkyWayFadeIn, distance);
 
   return { localStars, milkyWay };
 }

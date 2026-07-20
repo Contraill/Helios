@@ -28,7 +28,7 @@ for (const route of auditedRoutes) {
   });
 }
 
-test("system reduced motion removes continuous scene motion and bloom", async ({
+test("system reduced motion removes continuous scene motion", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -40,14 +40,9 @@ test("system reduced motion removes continuous scene motion and bloom", async ({
     }),
   ).toBeVisible();
   await expect(page.locator(".solar-canvas-shell")).toHaveAttribute(
-    "data-bloom",
-    "disabled",
-  );
-  await expect(page.locator(".solar-canvas-shell")).toHaveAttribute(
     "data-render-loop",
     "demand",
   );
-  await expect(page.getByText(/Continuous motion is paused/i)).toBeVisible();
 });
 
 test("a hidden Explore document switches the renderer to demand mode", async ({
@@ -71,6 +66,8 @@ test("keyboard focus remains visible and Escape restores the triggering planet",
   page,
 }) => {
   await page.goto("/explore");
+  await page.getByRole("tab", { name: "Navigator" }).click();
+  await page.getByRole("button", { name: /Sun & planets/i }).click();
   const earth = page.getByRole("button", { name: "Earth", exact: true });
   await earth.focus();
   const focusPresentation = await earth.evaluate((element) => {
@@ -88,7 +85,7 @@ test("keyboard focus remains visible and Escape restores the triggering planet",
   ).toBe(true);
 
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("region", { name: "Earth" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Earth" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(earth).toBeFocused();
 });

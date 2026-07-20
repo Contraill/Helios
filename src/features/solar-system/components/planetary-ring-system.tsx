@@ -2,7 +2,6 @@
 
 import { AdditiveBlending, DoubleSide, NormalBlending } from "three";
 
-import type { TextureVariantName } from "@/content/sources/planet-textures";
 import {
   PLANETARY_RING_PROFILES,
   type PlanetaryRingBand,
@@ -14,7 +13,6 @@ interface PlanetaryRingSystemProps {
   planetId: ProceduralRingPlanetId;
   radius: number;
   segments: number;
-  textureVariant: TextureVariantName;
 }
 
 interface RingBandProps {
@@ -74,12 +72,9 @@ export function PlanetaryRingSystem({
   planetId,
   radius,
   segments,
-  textureVariant,
 }: PlanetaryRingSystemProps) {
   const profile = PLANETARY_RING_PROFILES[planetId];
-  const qualityMultiplier =
-    textureVariant === "high" ? 1.35 : textureVariant === "medium" ? 1 : 0.72;
-  const opacityMultiplier = qualityMultiplier * (active ? 1.22 : 1);
+  const opacityMultiplier = 1.35 * (active ? 1.22 : 1);
 
   return (
     <group userData={{ visualLayer: `${planetId}-rings` }}>

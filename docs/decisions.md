@@ -162,7 +162,7 @@
 
 ## Simülasyon ve tercih state sınırları
 
-- **Durum:** Kabul edildi
+- **Durum:** Yerine yeni karar geçti — 19 Temmuz 2026 Explore kontrol temeli
 - **Tarih:** 17 Temmuz 2026
 - **Karar:** Seçim, kamera modu ve sahne görünürlüğü exploration store'da; pause, zaman hızı ve reset sürümü simulation store'da; kalite ve hareket tercihi preferences store'da tutulur. Frame içi açı, dönüş ve kamera koordinatları store'a yazılmaz.
 - **Gerekçe:** Kalıcı ve düşük frekanslı seçimleri paylaşırken frame döngüsünü React reaktivitesinden ayırır.
@@ -170,21 +170,21 @@
 
 ## Bilimsel ölçek görünürlüğü
 
-- **Durum:** Kabul edildi
+- **Durum:** Yerine yeni karar geçti — tek scene / iki typed profile
 - **Tarih:** 17 Temmuz 2026
 - **Karar:** Bilimsel modda Güneş, gezegen yarıçapları ve yörünge mesafeleri aynı doğrusal oranı kullanır. Görünemeyecek kadar küçük gezegenler, kamera uzaklığından etkilenmeyen ekran-uzayı crosshair ve isim etiketleriyle bulunur. İşaretçiler gerçek mesh'i büyütmez ve boyut temsili olarak sunulmaz.
 - **Gerekçe:** Gerçek oranları bozarken bilimsel mod iddiasında bulunmak yerine, görünürlük yardımını açık ve erişilebilir bir sunum katmanı olarak ayırır.
 
 ## Kalite seviyelerinin ölçülebilir farkı
 
-- **Durum:** Kabul edildi
+- **Durum:** Yerine yeni karar geçti — kullanıcıya açık kalite seçimi kaldırıldı
 - **Tarih:** 17 Temmuz 2026
 - **Karar:** Low, medium ve high seviyeleri aynı sanat yönünü korur; DPR üst sınırı, yıldız sayısı, küre segmentleri ve yörünge örnekleme sayısı üzerinden render maliyetini değiştirir.
 - **Gerekçe:** Kalite seçimini yalnızca isim değiştiren bir kontrol olmaktan çıkarır ve zayıf cihazlar için gerçek maliyet farkı oluşturur.
 
 ## Kalıcı deneyim tercihleri
 
-- **Durum:** Kabul edildi
+- **Durum:** Yerine yeni karar geçti — yalnız desteklenen görünüm tercihleri saklanır
 - **Tarih:** 17 Temmuz 2026
 - **Karar:** Ölçek modu, yörünge ve etiket görünürlüğü, kalite, hareket tercihi ve zaman hızı cihazda saklanır. Seçili gezegen, hover durumu, kamera geçişi ve pause durumu reload sonrasında geri yüklenmez.
 - **Gerekçe:** Kullanıcının görünüm tercihlerini korurken geçici etkileşim ve yarım kalmış simülasyon durumunu yeni oturuma taşımamayı sağlar.
@@ -200,7 +200,7 @@
 
 ## Blok B açılışında kontrol yüzeyi
 
-- **Durum:** Kabul edildi
+- **Durum:** Yerine yeni karar geçti — Objects / Time / View / Selection sahipliği
 - **Tarih:** 18 Temmuz 2026
 - **Karar:** Simulation controls, genişletilmiş control deck ile sahneyi minimum örten kalıcı compact dock arasında geçer. Açık/kapalı tercih cihazda saklanır. Tablet ve mobilde summary, controls ve navigator absolute overlay yerine doğal grid akışında yer alır.
 - **Gerekçe:** Kontrolleri kaybetmeden sahne alanını geri verir; geçici gizleme butonu veya z-index telafisi üretmez.
@@ -208,7 +208,7 @@
 
 ## Bilimsel ölçekte gezegen kimliği
 
-- **Durum:** Kabul edildi
+- **Durum:** Yerine yeni karar geçti — Scientific gerçek celestial mesh/material graph'ını kullanır
 - **Tarih:** 18 Temmuz 2026
 - **Karar:** Bilimsel ölçekte gerçek mesh ve doğrusal ölçek korunur. Crosshair ana temsil olmaktan çıkar; ekran-uzayı renkli disk, ince halo ve lider çizgili isim etiketi yalnızca konum/kimlik yardımcısı olarak kullanılır. Genel ölçek notu locator disklerinin fiziksel boyut olmadığını görünür biçimde açıklar.
 - **Gerekçe:** Bilimsel dürüstlük korunurken sahne radar hedefleri dizisi yerine aynı gezegen ailesi olarak okunur.
@@ -307,3 +307,44 @@ Bu karar ilk Faz 8.5 diliminin geçmiş kaydı olarak korunur. ±370 günlük te
 - **Tarih:** 18 Temmuz 2026
 - **Karar:** Horizons, CAD ve Fireball aynı process-içi seri JPL SSD kuyruğunu kullanır; aynı anda en fazla bir JPL SSD isteği aktiftir. Duplicate Horizons bundle/window çağrıları aynı in-flight Promise'ı paylaşır.
 - **Gerekçe:** Provider fair-use sınırlarını gözetir, sekiz hedefli bundle sırasında burst üretmez ve eşzamanlı consumer'ların gereksiz tekrarını engeller.
+
+## Explore kontrol temeli, tek High contract ve staged asset bootstrap
+
+- **Durum:** Kabul edildi
+- **Tarih:** 19 Temmuz 2026
+- **Problem:** Simulation paneli zaman, kalite, hareket ve görünüm sorumluluklarını tek yüzeyde topluyor; kullanıcı kalite seçimi sahne kodunda variant dalları üretiyor; 250 ms clock publication tarih taslağını ezebiliyor; primary texture readiness yalnız ağ isteğini ölçmekle yetiniyordu.
+- **Karar:** Explore bilgi mimarisi `Objects`, `Time`, `View` ve `Selection` sahiplerine ayrılır. Time, görünür zaman kontrolünün tek sahibidir ve açık edit ownership uygular. Kullanıcıya açık low/medium/high ve Motion ayarları kaldırılır; sistem `prefers-reduced-motion` otomatik izlenir ve sahne tek `HIGH_VISUAL_CONTRACT` kullanır. Explore ve Scientific aynı scene graph/material/texture/selection sistemini paylaşır; yalnız merkezi typed profile ölçek, mesafe ve efekt yoğunluğunu değiştirir. Primary runtime surface texture'ları 2K tavanında kanonikleşir. Açılış loader'ı renderer, mounted material application ve ilk eksiksiz frame tamamlanmadan kapanmaz; secondary scheduler merkezi asset registry üzerinden devam eder.
+- **Gerekçe:** Kullanıcı yüzeyini sadeleştirir, zaman yaşam döngüsünü tek otoritede tutar, kalite dallarını ve hydration riskini kaldırır, ilerideki yörünge ve celestial asset kapılarına yeniden tasarım gerektirmeyen bir temel sağlar.
+- **Etkilenen dosyalar:** `src/features/solar-system/components/explore-scene-dock.tsx`, `ephemeris-controller.tsx`, `ephemeris-panel.tsx`, `view-controls.tsx`, `texture-preloader.tsx`, `scene-profiles.ts`, `asset-loading-lifecycle.ts`, `docs/explore/TEXTURE_RUNTIME_MANIFEST.json`, `REMOVAL_LEDGER.md`, `NEXT_EXPLORE_GATES.md`
+
+## Celestial representation status and scientific accuracy language
+
+- **Durum:** Kabul edildi
+- **Tarih:** 19 Temmuz 2026
+- **Karar:** Celestial positions use the typed states `horizons-window`, `latest-available`, `representative-mean-elements`, `propagated-preview`, `verified-fallback` and `unavailable`. `Scientific` remains a scale/effect profile and never implies navigation-grade accuracy. Only source-vector interpolation inside a returned Horizons window is labelled `horizons-window`; moon mean elements and small-body two-body propagation remain labelled previews.
+- **Gerekçe:** Geniş zaman navigasyonunu korurken her timestamp ve body için aynı doğruluk iddiasını önler.
+- **Etkilenen dosyalar:** `src/features/solar-system/lib/celestial-representation.ts`, `src/lib/data/ephemeris/models.ts`, `selected-body-summary.tsx`, `ephemeris-panel.tsx`
+
+## Tek reference-frame ve orbit evaluator zinciri
+
+- **Durum:** Kabul edildi
+- **Tarih:** 19 Temmuz 2026
+- **Karar:** Moon ve extended-body orbitleri mean anomaly → bounded elliptic Kepler solver → perifocal point → ω/i/Ω → explicit source-plane basis → J2000 ecliptic → tek Three.js y-up dönüşümü → typed scene scale zincirini kullanır. Body position ve orbit path aynı evaluator'dan çıkar. Laplace plane basis'i JPL pole RA/Dec ve ICRF-equator node tanımından türetilir; parent axial orientation ikinci kez uygulanmaz.
+- **Gerekçe:** Mesh/path epoch ve axis divergence'ını, double tilt'i ve bütün küçük cisimlerin aynı node/periapsis doğrultusuna düşmesini engeller.
+- **Etkilenen dosyalar:** `reference-frame-math.ts`, `elliptic-orbit-evaluator.ts`, `moon-position.ts`, `extended-system.ts`, `orbit-path.tsx`
+
+## Tidal lock ve texture yönelim sınırı
+
+- **Durum:** Kabul edildi
+- **Tarih:** 19 Temmuz 2026
+- **Karar:** Tidally locked moon orientation, transformed parent-direction vector ve orbit normal'inden türetilir; singularity için kararlı fallback basis kullanılır. IAU orientation source kaydedilir, ancak Prompt 3 kaynaklı texture prime-meridian doğrulaması tamamlanana kadar yüzey longitude doğruluğu iddia edilmez.
+- **Gerekçe:** Eğik/retrograde orbitlerde ani flip'i önlerken mevcut generic texture'ları bilimsel harita gibi sunmaz.
+- **Etkilenen dosyalar:** `tidal-lock-orientation.ts`, `moon-catalogue.ts`, `moon-system.tsx`
+
+## Extended-body fallback provenance
+
+- **Durum:** Kabul edildi
+- **Tarih:** 19 Temmuz 2026
+- **Karar:** Ceres, Pallas, Halley ve Encke JPL'nin yayımlanmış element örnekleri olarak `representative-mean-elements` taşır. Diğer mevcut extended records accepted six-element catalogue snapshots olarak `verified-fallback` kalır; build ortamında fresh SBDB payload alınamadığı açıkça belirtilir. Hiçbir eksik angle rastgele dağıtılmaz ve fallback current/accurate olarak etiketlenmez.
+- **Gerekçe:** Mevcut 18-body kapsamını korurken doğrulanmamış elementleri NASA/JPL'nin güncel kaydı gibi göstermeyi engeller.
+- **Etkilenen dosyalar:** `extended-system.ts`, `EXTENDED_BODY_ELEMENTS_AND_SOURCES.md`, `REPRESENTATION_STATUS_MATRIX.md`

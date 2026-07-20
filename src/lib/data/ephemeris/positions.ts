@@ -1,5 +1,9 @@
 import { explorationScale, scientificScale } from "@/lib/calculations/scale";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
+import {
+  normalizeRadiansSigned,
+  solveEllipticKepler,
+} from "@/features/solar-system/lib/elliptic-orbit-evaluator";
 
 import {
   MAX_PROPAGATION_DAYS,
@@ -41,27 +45,6 @@ function dot(left: CartesianVector, right: CartesianVector): number {
 
 function magnitude(vector: CartesianVector): number {
   return Math.hypot(vector.x, vector.y, vector.z);
-}
-
-function wrapRadians(angle: number): number {
-  return ((angle + Math.PI) % (Math.PI * 2)) - Math.PI;
-}
-
-function solveEccentricAnomaly(
-  meanAnomaly: number,
-  eccentricity: number,
-): number {
-  let eccentricAnomaly = meanAnomaly;
-  for (let iteration = 0; iteration < 10; iteration += 1) {
-    const correction =
-      (eccentricAnomaly -
-        eccentricity * Math.sin(eccentricAnomaly) -
-        meanAnomaly) /
-      (1 - eccentricity * Math.cos(eccentricAnomaly));
-    eccentricAnomaly -= correction;
-    if (Math.abs(correction) < 1e-12) break;
-  }
-  return eccentricAnomaly;
 }
 
 function osculatingOrbitFor(vector: EphemerisVector): OsculatingOrbit | null {
@@ -154,13 +137,13 @@ function positionOnOrbit(
   orbit: OsculatingOrbit,
   days: number,
 ): CartesianVector {
-  const meanAnomaly = wrapRadians(
+  const meanAnomaly = normalizeRadiansSigned(
     orbit.initialMeanAnomaly + orbit.meanMotion * days,
   );
-  const eccentricAnomaly = solveEccentricAnomaly(
+  const eccentricAnomaly = solveEllipticKepler(
     meanAnomaly,
     orbit.eccentricity,
-  );
+  ).eccentricAnomalyRadians;
   const perifocalX =
     orbit.semiMajorAxis * (Math.cos(eccentricAnomaly) - orbit.eccentricity);
   const perifocalY =
@@ -202,13 +185,13 @@ function writePositionAfterDays(
     return target;
   }
   if (orbit) {
-    const meanAnomaly = wrapRadians(
+    const meanAnomaly = normalizeRadiansSigned(
       orbit.initialMeanAnomaly + orbit.meanMotion * days,
     );
-    const eccentricAnomaly = solveEccentricAnomaly(
+    const eccentricAnomaly = solveEllipticKepler(
       meanAnomaly,
       orbit.eccentricity,
-    );
+    ).eccentricAnomalyRadians;
     const perifocalX =
       orbit.semiMajorAxis * (Math.cos(eccentricAnomaly) - orbit.eccentricity);
     const perifocalY =

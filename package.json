@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm audit:textures && pnpm build",
+    "audit:textures": "node scripts/audit-runtime-textures.mjs"
   },
   "dependencies": {
     "@react-three/fiber": "9.6.1",

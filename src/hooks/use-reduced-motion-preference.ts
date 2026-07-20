@@ -2,19 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-import type { MotionPreference } from "@/features/solar-system/types/experience-settings";
-
 const QUERY = "(prefers-reduced-motion: reduce)";
 
-export function useReducedMotionPreference(
-  preference: MotionPreference = "system",
-): boolean {
+/** System-owned motion policy. Explore no longer exposes a parallel override. */
+export function useReducedMotionPreference(): boolean {
   const [systemPrefersReducedMotion, setSystemPrefersReducedMotion] =
     useState(false);
 
   useEffect(() => {
     if (typeof window.matchMedia !== "function") return;
-
     const mediaQuery = window.matchMedia(QUERY);
     const update = () => setSystemPrefersReducedMotion(mediaQuery.matches);
     update();
@@ -22,7 +18,5 @@ export function useReducedMotionPreference(
     return () => mediaQuery.removeEventListener("change", update);
   }, []);
 
-  if (preference === "reduced") return true;
-  if (preference === "standard") return false;
   return systemPrefersReducedMotion;
 }

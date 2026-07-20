@@ -7,7 +7,7 @@ const useServerlessChromium =
   process.env.PLAYWRIGHT_CHROMIUM_FLAVOR === "serverless";
 const useExternalServer = process.env.PLAYWRIGHT_EXTERNAL_SERVER === "1";
 
-const localChromiumArgs = useServerlessChromium
+const chromiumArgs = useServerlessChromium
   ? [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -41,12 +41,19 @@ export default defineConfig({
       use: {
         ...devices["Desktop Chrome"],
         launchOptions: executablePath
-          ? {
-              executablePath,
-              args: localChromiumArgs,
-            }
+          ? { executablePath, args: chromiumArgs }
           : undefined,
       },
+    },
+    {
+      name: "firefox-smoke",
+      grep: /@browser-smoke/,
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "webkit-smoke",
+      grep: /@browser-smoke/,
+      use: { ...devices["Desktop Safari"] },
     },
   ],
   webServer: useExternalServer

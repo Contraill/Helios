@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { Points, PointsMaterial } from "three";
 
+import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import { createStarPositions } from "@/features/solar-system/lib/star-field";
 import { universeLayerOpacities } from "@/features/solar-system/lib/universe-backdrop";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
@@ -28,6 +29,7 @@ export function StarField({
   const pointsRef = useRef<Points>(null);
   const materialRef = useRef<PointsMaterial>(null);
   const positions = useMemo(() => createStarPositions(starCount), [starCount]);
+  const profile = sceneProfileFor(scaleMode);
 
   useEffect(() => {
     if (pointsRef.current) pointsRef.current.rotation.y = 0;
@@ -36,7 +38,7 @@ export function StarField({
   useFrame(({ camera }, delta) => {
     if (materialRef.current) {
       materialRef.current.opacity =
-        universeLayerOpacities(camera.position.length(), scaleMode).localStars *
+        universeLayerOpacities(camera.position.length(), profile).localStars *
         0.72;
     }
     if (motionEnabled && pointsRef.current) {
@@ -48,7 +50,7 @@ export function StarField({
     <points
       ref={pointsRef}
       frustumCulled={false}
-      scale={scaleMode === "scientific" ? 30 : 1}
+      scale={profile.backdrop.starFieldScale}
     >
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />

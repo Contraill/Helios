@@ -1,21 +1,24 @@
 "use client";
 
+import { useLayoutEffect } from "react";
+
 import { earthCloudTextureSource } from "@/content/sources/planet-textures";
-import type { TextureVariantName } from "@/content/sources/planet-textures";
+import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
 import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
 
 interface EarthCloudLayerProps {
   segments: readonly [number, number];
-  textureVariant: TextureVariantName;
 }
 
-export function EarthCloudLayer({
-  segments,
-  textureVariant,
-}: EarthCloudLayerProps) {
-  const texture = useSceneTexture(
-    earthCloudTextureSource.variants[textureVariant].path,
-  );
+export function EarthCloudLayer({ segments }: EarthCloudLayerProps) {
+  const source = earthCloudTextureSource.asset;
+  const texture = useSceneTexture(source.path, {
+    onError: () => markMaterialApplied(source.owner, true),
+  });
+
+  useLayoutEffect(() => {
+    if (texture) markMaterialApplied(source.owner);
+  }, [source.owner, texture]);
 
   return (
     <mesh

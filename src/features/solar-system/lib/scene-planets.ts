@@ -19,6 +19,7 @@ export interface ScenePlanet {
   readonly id: PlanetId;
   readonly name: string;
   readonly color: string;
+  readonly meanRadiusKm: number;
   readonly inclinationRadians: number;
   readonly axialTiltRadians: number;
   readonly initialAngle: number;
@@ -81,6 +82,7 @@ export function createScenePlanets(
         id: planet.id,
         name: planet.name.en,
         color: planet.accentColor,
+        meanRadiusKm: planet.physical.meanRadiusKm.value,
         inclinationRadians: (planet.orbit.inclinationDeg.value * Math.PI) / 180,
         axialTiltRadians: (planet.rotation.axialTiltDeg.value * Math.PI) / 180,
         initialAngle,

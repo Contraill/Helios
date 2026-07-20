@@ -231,6 +231,16 @@
   justify-content: flex-end;
 }
 
+.timeForm > [role="status"],
+.timeForm > [role="alert"] {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.applyTimeButton {
+  align-self: end;
+}
+
 .timePanel button,
 .dateTimeField input {
   appearance: none;
@@ -803,126 +813,6 @@
   }
 }
 
-.controlDeck,
-.controlDock {
-  position: absolute;
-  z-index: 3;
-  bottom: clamp(1.25rem, 3vw, 2.5rem);
-  left: clamp(1.25rem, 4vw, 3rem);
-}
-
-.controlDeck {
-  width: min(30rem, calc(100% - 26rem));
-  padding: 0.9rem 1rem 0.82rem;
-  border: 1px solid var(--helios-color-line);
-  border-radius: var(--helios-radius-lg);
-  background:
-    linear-gradient(112deg, rgb(24 29 39 / 0.9), rgb(7 8 12 / 0.86)),
-    rgb(7 8 12 / 0.86);
-  box-shadow: 0 1.25rem 4rem rgb(0 0 0 / 0.18);
-  backdrop-filter: blur(12px);
-}
-
-.controlDock {
-  width: min(14rem, calc(100% - 2.5rem));
-}
-
-.controlDockButton {
-  display: grid;
-  width: 100%;
-  min-height: 4rem;
-  grid-template-columns: 2.5rem minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 0.75rem;
-  border: 1px solid var(--helios-color-line);
-  border-radius: var(--helios-radius-lg);
-  background:
-    linear-gradient(112deg, rgb(23 28 38 / 0.92), rgb(7 8 12 / 0.88)),
-    rgb(7 8 12 / 0.9);
-  box-shadow: 0 1rem 3rem rgb(0 0 0 / 0.2);
-  color: var(--helios-color-text-primary);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition:
-    border-color var(--helios-duration-fast) var(--helios-ease-out),
-    transform var(--helios-duration-fast) var(--helios-ease-out),
-    background var(--helios-duration-fast) var(--helios-ease-out);
-}
-
-.controlDockButton:hover,
-.controlDockButton:focus-visible {
-  border-color: rgb(242 239 230 / 0.36);
-  background:
-    linear-gradient(112deg, rgb(31 37 49 / 0.96), rgb(9 10 15 / 0.92)),
-    rgb(7 8 12 / 0.94);
-  transform: translateY(-1px);
-}
-
-.controlDockOrbit {
-  position: relative;
-  display: grid;
-  width: 2.4rem;
-  height: 2.4rem;
-  place-items: center;
-  border: 1px solid rgb(232 165 75 / 0.36);
-  border-radius: 50%;
-}
-
-.controlDockOrbit::before {
-  position: absolute;
-  width: 1.85rem;
-  height: 0.78rem;
-  border: 1px solid rgb(232 165 75 / 0.62);
-  border-radius: 50%;
-  content: "";
-  transform: rotate(-24deg);
-}
-
-.controlDockOrbit span {
-  width: 0.42rem;
-  height: 0.42rem;
-  border-radius: 50%;
-  background: #e8a54b;
-  box-shadow: 0 0 1rem rgb(232 165 75 / 0.65);
-}
-
-.controlDockCopy {
-  display: flex;
-  min-width: 0;
-  flex-direction: column;
-  gap: 0.18rem;
-}
-
-.controlDockCopy strong {
-  font-family: var(--helios-font-display);
-  font-size: 0.82rem;
-  font-weight: 580;
-  letter-spacing: 0.01em;
-}
-
-.controlDockCopy small {
-  overflow: hidden;
-  color: var(--helios-color-text-secondary);
-  font-family: var(--helios-font-mono);
-  font-size: 0.59rem;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.controlDockChevron {
-  display: grid;
-  width: 1.65rem;
-  height: 1.65rem;
-  place-items: center;
-  border: 1px solid var(--helios-color-line);
-  border-radius: 50%;
-  color: var(--helios-color-text-secondary);
-  font-size: 0.68rem;
-}
-
 .controlDeckHeader {
   display: flex;
   align-items: flex-start;
@@ -945,7 +835,7 @@
   text-transform: uppercase;
 }
 
-.controlDeck h2 {
+.controlDeckHeader h2 {
   margin: 0;
   font-family: var(--helios-font-display);
   font-size: 1.04rem;
@@ -953,7 +843,7 @@
   letter-spacing: -0.025em;
 }
 
-.controlDeck button {
+.controlGrid button {
   appearance: none;
   min-height: 1.9rem;
   padding: 0.3rem 0.58rem;
@@ -970,25 +860,12 @@
     background var(--helios-duration-fast) var(--helios-ease-out);
 }
 
-.controlDeck button:hover,
-.controlDeck button:focus-visible,
-.controlDeck button[aria-pressed="true"] {
+.controlGrid button:hover,
+.controlGrid button:focus-visible,
+.controlGrid button[aria-pressed="true"] {
   border-color: rgb(242 239 230 / 0.42);
   background: rgb(242 239 230 / 0.09);
   color: var(--helios-color-text-primary);
-}
-
-.controlDeck .primaryControl {
-  border-color: rgb(232 165 75 / 0.45);
-  color: var(--helios-color-text-primary);
-}
-
-.controlDeck .collapseControl {
-  display: grid;
-  width: 1.9rem;
-  padding: 0;
-  place-items: center;
-  border-radius: 50%;
 }
 
 .transportControls,
@@ -1019,10 +896,6 @@
   font-size: 0.54rem;
   letter-spacing: 0.11em;
   text-transform: uppercase;
-}
-
-.controlGrid .motionFieldset {
-  grid-column: auto;
 }
 
 .scaleExplanation {
@@ -1064,16 +937,8 @@
     min-width: 16rem;
   }
 
-  .controlDeck {
-    width: min(28rem, calc(100% - 24rem));
-  }
-
   .controlGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .controlGrid .motionFieldset {
-    grid-column: auto;
   }
 }
 
@@ -1094,35 +959,12 @@
     backdrop-filter: none;
   }
 
-  .controlDeck,
-  .controlDock {
-    position: relative;
-    bottom: auto;
-    left: auto;
-    width: 100%;
-    min-width: 0;
-    margin: 0;
-    backdrop-filter: none;
-  }
-
-  .controlDockButton {
-    min-height: 4.25rem;
-  }
-
   .controlGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .controlGrid .motionFieldset {
-    grid-column: 1 / -1;
-  }
-
-  .controlDeck button {
+  .controlGrid button {
     min-height: 2.75rem;
-  }
-
-  .controlDeck .collapseControl {
-    width: 2.75rem;
   }
 
   .timePanel button,
@@ -1177,10 +1019,6 @@
   .controlGrid {
     grid-template-columns: 1fr;
   }
-
-  .controlGrid .motionFieldset {
-    grid-column: auto;
-  }
 }
 
 @media (max-height: 800px) and (min-width: 901px) {
@@ -1205,8 +1043,6 @@
 
   .timePanel,
   .timeDock,
-  .controlDeck,
-  .controlDock,
   .summaryPanel,
   .navigator,
   .scaleNotice {
@@ -1227,8 +1063,7 @@
     text-align: left;
   }
 
-  .timePanel,
-  .controlDeck {
+  .timePanel {
     grid-column: 1;
     max-width: 30rem;
     justify-self: start;
@@ -1237,12 +1072,6 @@
   .timeDock {
     grid-column: 1;
     max-width: 21rem;
-    justify-self: start;
-  }
-
-  .controlDock {
-    grid-column: 1;
-    max-width: 14rem;
     justify-self: start;
   }
 

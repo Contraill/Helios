@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 import { AdditiveBlending, BackSide, Color } from "three";
 
-import type { AtmosphereMode } from "@/features/solar-system/lib/quality";
 import type { AtmosphereProfile } from "@/features/solar-system/lib/planet-visual-profiles";
 
 const VERTEX_SHADER = /* glsl */ `
@@ -40,14 +39,12 @@ const FRAGMENT_SHADER = /* glsl */ `
 `;
 
 interface AtmosphereShellProps {
-  mode: AtmosphereMode;
   profile: AtmosphereProfile;
   radius: number;
   segments: readonly [number, number];
 }
 
 export function AtmosphereShell({
-  mode,
   profile,
   radius,
   segments,
@@ -68,26 +65,15 @@ export function AtmosphereShell({
       userData={{ visualLayer: "atmosphere" }}
     >
       <sphereGeometry args={[1, segments[0], segments[1]]} />
-      {mode === "simple" ? (
-        <meshBasicMaterial
-          blending={AdditiveBlending}
-          color={profile.color}
-          depthWrite={false}
-          opacity={profile.opacity * 0.55}
-          side={BackSide}
-          transparent
-        />
-      ) : (
-        <shaderMaterial
-          blending={AdditiveBlending}
-          depthWrite={false}
-          fragmentShader={FRAGMENT_SHADER}
-          side={BackSide}
-          transparent
-          uniforms={uniforms}
-          vertexShader={VERTEX_SHADER}
-        />
-      )}
+      <shaderMaterial
+        blending={AdditiveBlending}
+        depthWrite={false}
+        fragmentShader={FRAGMENT_SHADER}
+        side={BackSide}
+        transparent
+        uniforms={uniforms}
+        vertexShader={VERTEX_SHADER}
+      />
     </mesh>
   );
 }

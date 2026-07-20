@@ -3,16 +3,22 @@
 import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { Canvas } from "@react-three/fiber";
 
-import { SCENE_QUALITY } from "@/features/solar-system/lib/quality";
+import {
+  markRendererUnavailable,
+  useAssetLoadingSnapshot,
+} from "@/features/solar-system/lib/asset-loading-lifecycle";
+import { HIGH_VISUAL_CONTRACT } from "@/features/solar-system/lib/quality";
 import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
+import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import { useReducedMotionPreference } from "@/hooks/use-reduced-motion-preference";
 import { uiStrings } from "@/lib/i18n/ui-strings";
 import { useExplorationStore } from "@/stores/exploration-store";
-import { usePreferencesStore } from "@/stores/preferences-store";
 
+import { ExploreOpeningLoader } from "./explore-opening-loader";
 import { SceneErrorBoundary } from "./scene-error-boundary";
 import { SceneFallback } from "./scene-fallback";
+import { SecondaryAssetScheduler } from "./secondary-asset-scheduler";
 import { SolarSystemScene } from "./solar-system-scene";
 
 interface SolarSystemCanvasProps {
@@ -35,15 +41,13 @@ export function SolarSystemCanvas({
   scenePlanets,
   sceneSun,
 }: SolarSystemCanvasProps) {
-  const motionPreference = usePreferencesStore(
-    (state) => state.motionPreference,
-  );
-  const qualityLevel = usePreferencesStore((state) => state.qualityLevel);
-  const reducedMotion = useReducedMotionPreference(motionPreference);
+  const reducedMotion = useReducedMotionPreference();
   const clearSelection = useExplorationStore((state) => state.clearSelection);
   const cameraMode = useExplorationStore((state) => state.cameraMode);
   const hoveredBodyId = useExplorationStore((state) => state.hoveredBodyId);
-  const quality = SCENE_QUALITY[qualityLevel];
+  const scaleMode = useExplorationStore((state) => state.scaleMode);
+  const bootstrap = useAssetLoadingSnapshot();
+  const profile = sceneProfileFor(scaleMode);
   const copy = uiStrings.pages.explore;
   const [webglAvailable, setWebglAvailable] = useState<boolean | null>(
     cachedWebGLAvailability,
@@ -69,16 +73,22 @@ export function SolarSystemCanvas({
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
+  useEffect(() => {
+    if (webglAvailable === false) markRendererUnavailable();
+  }, [webglAvailable]);
+
   return (
     <div
       className={`solar-canvas-shell${hoveredBodyId ? " solar-canvas-shell--interactive" : ""}`}
+      data-body-profile={profile.scale.bodyProfile}
+      data-bootstrap-ready={bootstrap.blockingReady}
+      data-degraded-assets={bootstrap.degradedOwners.length}
+      data-distance-profile={profile.scale.distanceProfile}
       data-camera-mode={cameraMode}
-      data-bloom={
-        quality.bloomStrength > 0 && !reducedMotion ? "enabled" : "disabled"
-      }
-      data-quality={qualityLevel}
       data-render-loop={continuousRendering ? "continuous" : "demand"}
-      data-texture-variant={quality.textureVariant}
+      data-scene-profile={profile.id}
+      data-secondary-stage={bootstrap.secondaryStageStarted}
+      data-visual-contract="high"
     >
       {webglAvailable === null ? (
         <div className="scene-loading" role="status">
@@ -94,15 +104,14 @@ export function SolarSystemCanvas({
               near: 0.000_000_1,
               position: [0, 48, 90],
             }}
-            dpr={quality.dpr}
+            dpr={[...HIGH_VISUAL_CONTRACT.dpr]}
             fallback={<SceneFallback />}
             frameloop={continuousRendering ? "always" : "demand"}
             gl={{
               alpha: false,
-              antialias: qualityLevel !== "low",
+              antialias: true,
               logarithmicDepthBuffer: true,
-              powerPreference:
-                qualityLevel === "low" ? "low-power" : "high-performance",
+              powerPreference: "high-performance",
             }}
             onPointerMissed={() => {
               if (useExplorationStore.getState().cameraMode !== "free") {
@@ -122,11 +131,8 @@ export function SolarSystemCanvas({
       ) : (
         <SceneFallback />
       )}
-      {reducedMotion ? (
-        <p className="motion-notice" role="status">
-          {copy.motionPaused}
-        </p>
-      ) : null}
+      <ExploreOpeningLoader />
+      <SecondaryAssetScheduler />
     </div>
   );
 }

@@ -34,6 +34,24 @@ describe("extended Solar System catalog and orbital preview", () => {
     );
   });
 
+  it("separates directly published JPL samples from accepted fallback previews", () => {
+    for (const id of ["ceres", "pallas", "halley", "encke"] as const) {
+      expect(EXTENDED_BODY_BY_ID[id].representation).toMatchObject({
+        provider: "NASA/JPL Solar System Dynamics",
+        sourceId: "jpl-sbdb-orbital-elements",
+        representationType: "representative-mean-elements",
+      });
+    }
+    expect(EXTENDED_BODY_BY_ID.vesta.representation).toMatchObject({
+      provider: "Helios accepted catalogue fallback",
+      sourceId: "helios-accepted-orbital-fallback",
+      representationType: "verified-fallback",
+    });
+    expect(EXTENDED_BODY_BY_ID.vesta.representation.fallbackReason).toMatch(
+      /fresh SBDB payload was unavailable/i,
+    );
+  });
+
   it("keeps scientific radii and distances on the shared 1:1 scale", () => {
     const ceres = EXTENDED_BODY_BY_ID.ceres;
     const position = extendedBodyPosition(

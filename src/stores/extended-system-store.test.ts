@@ -5,52 +5,79 @@ import {
   useExtendedSystemStore,
 } from "./extended-system-store";
 
-describe("extended system store", () => {
+function state() {
+  return useExtendedSystemStore.getState();
+}
+
+describe("extended system preferences", () => {
   beforeEach(() => {
     localStorage.clear();
     resetExtendedSystemStore();
   });
 
-  it("starts with progressive disclosure instead of every context layer", () => {
-    const state = useExtendedSystemStore.getState();
-    expect(state.asteroidBeltVisible).toBe(true);
-    expect(state.kuiperBeltVisible).toBe(true);
-    expect(state.cometsVisible).toBe(false);
-    expect(state.oortCloudVisible).toBe(false);
-    expect(state.dustVisible).toBe(false);
-    expect(state.heliosphereVisible).toBe(false);
+  it("retains only user-controlled representation cost preferences", () => {
+    state().setDensity("detailed");
+    state().setRepresentation("cinematic");
+    state().toggleDust();
+    expect(state().density).toBe("detailed");
+    expect(state().representation).toBe("cinematic");
+    expect(state().dustVisible).toBe(true);
+    for (const removed of [
+      "panelExpanded",
+      "cometsVisible",
+      "asteroidBeltVisible",
+      "kuiperBeltVisible",
+      "oortCloudVisible",
+      "heliosphereVisible",
+    ]) {
+      expect(removed in state()).toBe(false);
+    }
   });
 
-  it("reveals a requested layer idempotently", () => {
-    const state = useExtendedSystemStore.getState();
-    state.showLayer("cometsVisible");
-    state.showLayer("cometsVisible");
-    expect(useExtendedSystemStore.getState().cometsVisible).toBe(true);
-  });
-
-  it("migrates the clutter-heavy first release to safe defaults", async () => {
+  it("migrates old clutter toggles without carrying dead state forward", async () => {
     localStorage.setItem(
       "helios-extended-system",
       JSON.stringify({
         state: {
-          asteroidBeltVisible: true,
-          kuiperBeltVisible: true,
+          asteroidBeltVisible: false,
+          kuiperBeltVisible: false,
           cometsVisible: true,
           oortCloudVisible: true,
-          dustVisible: true,
           heliosphereVisible: true,
-          density: "standard",
+          panelExpanded: true,
+          dustVisible: true,
+          density: "sparse",
           representation: "physical",
         },
-        version: 1,
+        version: 2,
       }),
     );
-
     await useExtendedSystemStore.persist.rehydrate();
-    const state = useExtendedSystemStore.getState();
-    expect(state.cometsVisible).toBe(false);
-    expect(state.oortCloudVisible).toBe(false);
-    expect(state.dustVisible).toBe(false);
-    expect(state.heliosphereVisible).toBe(false);
+    expect(state()).toMatchObject({
+      density: "sparse",
+      representation: "physical",
+      dustVisible: true,
+    });
+    expect("asteroidBeltVisible" in state()).toBe(false);
+    expect("panelExpanded" in state()).toBe(false);
+  });
+  it("rejects corrupted density, representation and dust values", async () => {
+    localStorage.setItem(
+      "helios-extended-system",
+      JSON.stringify({
+        state: {
+          density: "infinite",
+          representation: "photoreal",
+          dustVisible: "yes",
+        },
+        version: 2,
+      }),
+    );
+    await useExtendedSystemStore.persist.rehydrate();
+    expect(state()).toMatchObject({
+      density: "standard",
+      representation: "physical",
+      dustVisible: false,
+    });
   });
 });

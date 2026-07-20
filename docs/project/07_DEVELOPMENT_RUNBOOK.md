@@ -96,7 +96,7 @@ Her alan için:
 - React re-render,
 - material ve geometry sayısı,
 - post-processing maliyeti,
-- low/medium/high kalite farkı,
+- tek High visual contract altında device-safe DPR, staged loading ve fallback davranışı,
 - tekrarlanan API istekleri.
 
 En yüksek etkili düzeltmelerde önce/sonra ölçümü kaydet.

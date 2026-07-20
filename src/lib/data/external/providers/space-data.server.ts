@@ -1,5 +1,6 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import { z } from "zod";
 
 import {
@@ -1113,6 +1114,25 @@ function parseGibsCapabilities(xml: string): readonly GibsLayer[] {
   });
 }
 
+const loadCurrentGibsLayers = unstable_cache(
+  async (): Promise<readonly GibsLayer[]> =>
+    parseGibsCapabilities(
+      await fetchExternalText({
+        // The raw capabilities document is intentionally fetched outside the
+        // Next fetch cache because it exceeds the per-item cache budget.
+        // unstable_cache stores only the compact normalized layer model.
+        cacheMode: "no-store",
+        path: "/wmts/epsg4326/best/1.0.0/WMTSCapabilities.xml",
+        policy: policies.gibs,
+      }),
+    ),
+  ["gibs-capabilities-normalized-v1"],
+  {
+    revalidate: policies.gibs.revalidateSeconds,
+    tags: [policies.gibs.cacheTag],
+  },
+);
+
 export async function loadGibsLayers(): Promise<
   ExternalResult<readonly GibsLayer[]>
 > {
@@ -1136,18 +1156,7 @@ export async function loadGibsLayers(): Promise<
     },
     empty: (data) => data.length !== gibsLayerDefinitions.length,
     currentStatus: "latest-available",
-    fetchCurrent: async () =>
-      parseGibsCapabilities(
-        await fetchExternalText({
-          // The capabilities document is currently larger than Next's 2 MB
-          // fetch-cache item limit. The enclosing page/result cache stores the
-          // small parsed layer model; asking the fetch cache to store the raw
-          // XML only creates a warning and never succeeds.
-          cacheMode: "no-store",
-          path: "/wmts/epsg4326/best/1.0.0/WMTSCapabilities.xml",
-          policy: policies.gibs,
-        }),
-      ),
+    fetchCurrent: loadCurrentGibsLayers,
     metadata: (data) =>
       metadata(
         "NASA EOSDIS GIBS",

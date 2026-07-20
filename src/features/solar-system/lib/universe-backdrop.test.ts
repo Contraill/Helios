@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { sceneProfileFor } from "./scene-profiles";
 import {
   createMilkyWayParticleData,
   universeLayerOpacities,
@@ -7,9 +8,15 @@ import {
 
 describe("distance-aware universe backdrop", () => {
   it("crossfades from local stars to a persistent Milky Way exterior", () => {
-    const local = universeLayerOpacities(90, "exploration");
-    const galactic = universeLayerOpacities(800, "exploration");
-    const outside = universeLayerOpacities(3_000, "exploration");
+    const local = universeLayerOpacities(90, sceneProfileFor("exploration"));
+    const galactic = universeLayerOpacities(
+      800,
+      sceneProfileFor("exploration"),
+    );
+    const outside = universeLayerOpacities(
+      3_000,
+      sceneProfileFor("exploration"),
+    );
 
     expect(local.localStars).toBe(1);
     expect(local.milkyWay).toBe(0);
@@ -19,9 +26,15 @@ describe("distance-aware universe backdrop", () => {
   });
 
   it("uses farther transition distances for the scientific scene", () => {
-    expect(universeLayerOpacities(800, "scientific").localStars).toBe(1);
-    expect(universeLayerOpacities(3_500, "scientific").milkyWay).toBe(1);
-    expect(universeLayerOpacities(5_800, "scientific").milkyWay).toBe(1);
+    expect(
+      universeLayerOpacities(800, sceneProfileFor("scientific")).localStars,
+    ).toBe(1);
+    expect(
+      universeLayerOpacities(3_500, sceneProfileFor("scientific")).milkyWay,
+    ).toBe(1);
+    expect(
+      universeLayerOpacities(5_800, sceneProfileFor("scientific")).milkyWay,
+    ).toBe(1);
   });
 
   it("generates deterministic finite galaxy particles", () => {

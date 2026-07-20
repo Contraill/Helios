@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("next/cache", () => ({
+  unstable_cache: <T extends (...args: never[]) => unknown>(callback: T) =>
+    callback,
+}));
+
 import { resetServerEnvCache } from "@/lib/env/server";
 
 import {

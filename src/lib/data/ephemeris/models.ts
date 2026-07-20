@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import {
+  celestialRepresentationSchema,
+  type CelestialRepresentation,
+} from "@/features/solar-system/lib/celestial-representation";
+import { utcMsToApproxJulianDateTdb } from "@/features/solar-system/lib/elliptic-orbit-evaluator";
+import type { PlanetId } from "@/lib/data/schemas/planet";
 import { planetIdSchema } from "@/lib/data/schemas/planet";
 
 export const EPHEMERIS_SOURCE_URL =
@@ -78,3 +84,73 @@ export const EPHEMERIS_METADATA: EphemerisBundle["metadata"] = Object.freeze({
   correction: "Geometric; no aberration correction",
   apiVersion: "1.2",
 });
+
+export function planetEphemerisRepresentation(
+  bundle: EphemerisBundle,
+  planetId: PlanetId,
+  timestampMs: number,
+): CelestialRepresentation {
+  const window = bundle.windows?.find(
+    (candidate) => candidate.planetId === planetId,
+  );
+  const insideWindow = window
+    ? timestampMs >= Date.parse(window.startAt) &&
+      timestampMs <= Date.parse(window.endAt)
+    : false;
+  const observedAtMs = Date.parse(bundle.observedAt);
+  const nearObservedState =
+    Math.abs(timestampMs - observedAtMs) <= 60 * 60 * 1_000;
+  const representationType =
+    bundle.status === "fallback"
+      ? "verified-fallback"
+      : insideWindow
+        ? "horizons-window"
+        : nearObservedState
+          ? "latest-available"
+          : "propagated-preview";
+  const recommendedRange = window
+    ? {
+        startIso: window.startAt,
+        endIso: window.endAt,
+        note: "Hermite interpolation uses source-provided Horizons vectors inside this window.",
+      }
+    : {
+        startIso: new Date(
+          observedAtMs - MAX_PROPAGATION_DAYS * 86_400_000,
+        ).toISOString(),
+        endIso: new Date(
+          observedAtMs + MAX_PROPAGATION_DAYS * 86_400_000,
+        ).toISOString(),
+        note: "Outside a Horizons sample window Helios shows a bounded osculating preview, not an accurate ephemeris.",
+      };
+  return celestialRepresentationSchema.parse({
+    provider: bundle.metadata.provider,
+    sourceId: "jpl-horizons-vectors",
+    sourceUrl: bundle.metadata.sourceUrl,
+    targetCode: bundle.vectors.find((vector) => vector.planetId === planetId)
+      ?.targetId,
+    referenceFrame: "ecliptic-j2000",
+    referencePlane: `${bundle.metadata.referencePlane}; ${bundle.metadata.referenceSystem}`,
+    epoch: {
+      julianDate: utcMsToApproxJulianDateTdb(observedAtMs),
+      timeScale: "TDB",
+      calendarLabel: bundle.observedAt,
+    },
+    recommendedRange,
+    representationType,
+    precisionNote:
+      representationType === "horizons-window"
+        ? "Source-provided Horizons vectors are interpolated inside the returned sample window."
+        : representationType === "latest-available"
+          ? "The source vector nearest the requested state is shown without claiming live telemetry."
+          : representationType === "verified-fallback"
+            ? "A bundled verified Horizons snapshot is retained because the provider response was unavailable."
+            : "A two-body osculating preview is propagated from the nearest source state and is not navigation-grade.",
+    observedAt: bundle.observedAt,
+    retrievedAt: bundle.retrievedAt,
+    fallbackReason:
+      bundle.status === "fallback"
+        ? "The live Horizons request was unavailable; the verified bundle snapshot remains active."
+        : undefined,
+  });
+}

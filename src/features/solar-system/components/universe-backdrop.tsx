@@ -9,6 +9,7 @@ import {
   createMilkyWayParticleData,
   universeLayerOpacities,
 } from "@/features/solar-system/lib/universe-backdrop";
+import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 
 import { StarField } from "./star-field";
@@ -38,10 +39,10 @@ export function UniverseBackdrop({
     () => createMilkyWayParticleData(Math.max(2_200, starCount * 5)),
     [starCount],
   );
-  const galaxyRadius = scaleMode === "scientific" ? 3_200 : 520;
+  const profile = sceneProfileFor(scaleMode);
 
   useFrame(({ camera }, delta) => {
-    const layers = universeLayerOpacities(camera.position.length(), scaleMode);
+    const layers = universeLayerOpacities(camera.position.length(), profile);
     if (galaxyPointsRef.current) {
       galaxyPointsRef.current.opacity = layers.milkyWay * 0.86;
     }
@@ -70,7 +71,7 @@ export function UniverseBackdrop({
       <group
         ref={galaxyRef}
         rotation-x={-0.22}
-        scale={galaxyRadius}
+        scale={profile.backdrop.galaxyRadius}
         userData={{ visualLayer: "milky-way-exterior" }}
       >
         <points frustumCulled={false}>
@@ -90,7 +91,7 @@ export function UniverseBackdrop({
             depthWrite={false}
             fog={false}
             opacity={0}
-            size={scaleMode === "scientific" ? 8 : 1.35}
+            size={profile.backdrop.galaxyPointSize}
             sizeAttenuation
             transparent
             vertexColors

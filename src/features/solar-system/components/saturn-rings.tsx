@@ -4,8 +4,8 @@ import { useLayoutEffect, useRef } from "react";
 import { DoubleSide } from "three";
 import type { RingGeometry } from "three";
 
-import { saturnRingTextureVariants } from "@/content/sources/planet-textures";
-import type { TextureVariantName } from "@/content/sources/planet-textures";
+import { saturnRingTextureSource } from "@/content/sources/planet-textures";
+import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
 import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
 
 export const SATURN_RING_INNER_RADIUS = 1.24;
@@ -14,27 +14,24 @@ export const SATURN_RING_OUTER_RADIUS = 2.27;
 interface SaturnRingsProps {
   radius: number;
   segments: number;
-  textureVariant: TextureVariantName;
 }
 
-export function SaturnRings({
-  radius,
-  segments,
-  textureVariant,
-}: SaturnRingsProps) {
+export function SaturnRings({ radius, segments }: SaturnRingsProps) {
   const geometryRef = useRef<RingGeometry>(null);
-  const texture = useSceneTexture(
-    saturnRingTextureVariants[textureVariant].path,
-  );
+  const texture = useSceneTexture(saturnRingTextureSource.path, {
+    onError: () => markMaterialApplied(saturnRingTextureSource.owner, true),
+  });
+
+  useLayoutEffect(() => {
+    if (texture) markMaterialApplied(saturnRingTextureSource.owner);
+  }, [texture]);
 
   useLayoutEffect(() => {
     const geometry = geometryRef.current;
     if (!geometry) return;
-
     const positions = geometry.attributes.position;
     const uvs = geometry.attributes.uv;
     const radialSpan = SATURN_RING_OUTER_RADIUS - SATURN_RING_INNER_RADIUS;
-
     for (let index = 0; index < positions.count; index += 1) {
       const x = positions.getX(index);
       const y = positions.getY(index);

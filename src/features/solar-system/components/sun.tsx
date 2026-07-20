@@ -6,13 +6,19 @@ import type { ThreeEvent } from "@react-three/fiber";
 import { AdditiveBlending, BackSide } from "three";
 import type { Group, Mesh } from "three";
 
-import { textureVariantFor } from "@/content/sources/planet-textures";
+import { planetTextureSources } from "@/content/sources/planet-textures";
+import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
+import { currentNavigatorView } from "@/features/solar-system/lib/celestial-navigation-state";
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
+import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
+import { sunSceneVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
 import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
+import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
 import { useExplorationStore } from "@/stores/exploration-store";
+import { useExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
 
 import { PlanetLabel } from "./planet-label";
 
@@ -49,11 +55,23 @@ export function Sun({
   const clearHoveredBody = useExplorationStore(
     (state) => state.clearHoveredBody,
   );
+  const navigator = useExploreSceneUiStore((state) => state.navigator);
   const active = selected || hovered;
+  const visibility = sunSceneVisibility({
+    navigatorView: currentNavigatorView(navigator),
+    selectedBodyId: selected ? "sun" : null,
+  });
+  const primary = visibility === "primary";
+  const profile = sceneProfileFor(scaleMode);
   const radius = sun.scales[scaleMode];
-  const surfaceTexture = useSceneTexture(
-    textureVariantFor("sun", quality.textureVariant).path,
-  );
+  const surfaceAsset = planetTextureSources.sun.asset;
+  const surfaceTexture = useSceneTexture(surfaceAsset.path, {
+    onError: () => markMaterialApplied(surfaceAsset.owner, true),
+  });
+
+  useLayoutEffect(() => {
+    if (surfaceTexture) markMaterialApplied(surfaceAsset.owner);
+  }, [surfaceAsset.owner, surfaceTexture]);
 
   useLayoutEffect(() => {
     const node = bodyRef.current;
@@ -104,21 +122,30 @@ export function Sun({
           args={[1, quality.planetSegments[0], quality.planetSegments[1]]}
         />
         <meshBasicMaterial
+          userData={{
+            acceptanceSurfaceBodyId: "sun",
+            texturePath: surfaceTexture?.name ?? null,
+          }}
           color={surfaceTexture ? "#fff8ec" : "#f5b85f"}
+          depthWrite={primary}
           map={surfaceTexture ?? undefined}
+          opacity={primary ? 1 : 0.34}
           toneMapped={false}
+          transparent={!primary}
         />
       </mesh>
-      <mesh
-        onClick={handleClick}
-        onPointerOut={handlePointerOut}
-        onPointerOver={handlePointerOver}
-        scale={radius * 1.12}
-      >
-        <sphereGeometry args={[1, 18, 14]} />
-        <meshBasicMaterial depthWrite={false} opacity={0} transparent />
-      </mesh>
-      {quality.textureVariant !== "low" ? (
+      {primary ? (
+        <mesh
+          onClick={handleClick}
+          onPointerOut={handlePointerOut}
+          onPointerOver={handlePointerOver}
+          scale={radius * 1.12}
+        >
+          <sphereGeometry args={[1, 18, 14]} />
+          <meshBasicMaterial depthWrite={false} opacity={0} transparent />
+        </mesh>
+      ) : null}
+      {primary ? (
         <group
           ref={prominenceRef}
           rotation={[0.42, 0.1, -0.3]}
@@ -140,7 +167,7 @@ export function Sun({
                   prominence.radius,
                   prominence.tube,
                   8,
-                  quality.textureVariant === "high" ? 72 : 36,
+                  72,
                   prominence.arc,
                 ]}
               />
@@ -148,7 +175,7 @@ export function Sun({
                 blending={AdditiveBlending}
                 color="#ffb15c"
                 depthWrite={false}
-                opacity={quality.textureVariant === "high" ? 0.58 : 0.34}
+                opacity={0.58}
                 toneMapped={false}
                 transparent
               />
@@ -156,7 +183,7 @@ export function Sun({
           ))}
         </group>
       ) : null}
-      {active ? (
+      {primary && active ? (
         <mesh raycast={() => undefined} scale={radius * 1.095}>
           <sphereGeometry args={[1, 40, 30]} />
           <meshBasicMaterial
@@ -168,21 +195,21 @@ export function Sun({
           />
         </mesh>
       ) : null}
-      {labelsVisible && active ? (
+      {primary && labelsVisible && active ? (
         <PlanetLabel
           active
           color="#f2b766"
           mode={scaleMode}
           offsetY={radius + 1.15}
           placement="north"
-          positionCaption={selected ? "Selected star" : ""}
+          positionCaption={selected ? exploreSceneCopy.labels.selectedStar : ""}
           selected={selected}
           text={sun.name}
         />
       ) : null}
       <mesh
         raycast={() => undefined}
-        scale={radius * (quality.bloomStrength > 0 ? 1.085 : 1.045)}
+        scale={radius * 1.085}
         userData={{ visualLayer: "solar-corona" }}
       >
         <sphereGeometry
@@ -196,7 +223,7 @@ export function Sun({
           blending={AdditiveBlending}
           color="#ffd18a"
           depthWrite={false}
-          opacity={quality.bloomStrength > 0 ? 0.16 : 0.07}
+          opacity={(primary ? 0.16 : 0.025) * profile.effects.coronaMultiplier}
           side={BackSide}
           toneMapped={false}
           transparent
@@ -205,7 +232,7 @@ export function Sun({
       <pointLight
         color="#fff8ed"
         decay={1.7}
-        distance={scaleMode === "scientific" ? 5_000 : 190}
+        distance={profile.camera.maximumDistance * 0.86}
         intensity={1_450}
       />
     </group>
