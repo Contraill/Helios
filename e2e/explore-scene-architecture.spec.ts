@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import type { HeliosSceneTestSnapshot } from "../src/features/solar-system/components/scene-test-probe";
 import { HORIZONS_SNAPSHOT } from "../src/lib/data/ephemeris/horizons-snapshot";
 
 const PRIMARY_BODIES = [
@@ -55,18 +56,30 @@ async function sceneSnapshot(page: Page) {
   return page.evaluate(() => window.__HELIOS_SCENE_TEST__ ?? null);
 }
 
-async function waitForSurfaceMaps(page: Page, count = 9) {
+type PrimaryBodyId = (typeof PRIMARY_BODIES)[number];
+type PrimarySurfaceSnapshot = Record<PrimaryBodyId, string | null>;
+
+function primarySurfaceSnapshot(
+  snapshot: HeliosSceneTestSnapshot | null,
+): PrimarySurfaceSnapshot {
+  return Object.fromEntries(
+    PRIMARY_BODIES.map((bodyId) => [
+      bodyId,
+      snapshot?.surfaces[bodyId] ?? null,
+    ]),
+  ) as PrimarySurfaceSnapshot;
+}
+
+async function waitForPrimarySurfaceMaps(page: Page) {
   await expect
     .poll(
       async () => {
-        const snapshot = await sceneSnapshot(page);
-        return snapshot
-          ? Object.values(snapshot.surfaces).filter(Boolean).length
-          : 0;
+        const primary = primarySurfaceSnapshot(await sceneSnapshot(page));
+        return PRIMARY_BODIES.every((bodyId) => Boolean(primary[bodyId]));
       },
       { timeout: 30_000 },
     )
-    .toBe(count);
+    .toBe(true);
 }
 
 async function openNavigatorCategory(page: Page, name: RegExp) {
@@ -140,16 +153,24 @@ test("bootstrap settles real primary materials, isolates one asset failure and k
   );
   await expect
     .poll(
-      async () =>
-        Object.keys((await sceneSnapshot(degradedPage))?.surfaces ?? {}).length,
+      async () => {
+        const primary = primarySurfaceSnapshot(
+          await sceneSnapshot(degradedPage),
+        );
+        return PRIMARY_BODIES.every((bodyId) =>
+          bodyId === "mars" ? bodyId in primary : Boolean(primary[bodyId]),
+        );
+      },
+      { timeout: 30_000 },
     )
-    .toBe(9);
-  const degradedSnapshot = await sceneSnapshot(degradedPage);
-  expect(degradedSnapshot?.surfaces.mars).toBeNull();
-  for (const body of PRIMARY_BODIES.filter((body) => body !== "mars")) {
-    expect(degradedSnapshot?.surfaces[body]).toBe(
-      `/textures/planets/${body}.webp`,
-    );
+    .toBe(true);
+  const degradedPrimary = primarySurfaceSnapshot(
+    await sceneSnapshot(degradedPage),
+  );
+  expect(Object.keys(degradedPrimary)).toEqual([...PRIMARY_BODIES]);
+  expect(degradedPrimary.mars).toBeNull();
+  for (const bodyId of PRIMARY_BODIES.filter((id) => id !== "mars")) {
+    expect(degradedPrimary[bodyId]).toBe(`/textures/planets/${bodyId}.webp`);
   }
   expect(audit.pageErrors).toEqual([]);
   expect(
@@ -229,14 +250,17 @@ test("Time owns draft, scrubber, transport, URL and controller continuity", asyn
 test("Explore and Scientific switch typed profiles without changing scene identity", async ({
   page,
 }, testInfo) => {
+  test.setTimeout(90_000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/explore?sceneTest=1&at=2024-01-15T12%3A30%3A00.000Z");
   await waitForLoadedScene(page);
-  await waitForSurfaceMaps(page);
+  await waitForPrimarySurfaceMaps(page);
   await openNavigatorCategory(page, /Sun & planets/i);
   await page.getByRole("button", { name: "Earth", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Earth" })).toBeVisible();
-  const explorationSurfaces = (await sceneSnapshot(page))?.surfaces;
+  const explorationPrimarySurfaces = primarySurfaceSnapshot(
+    await sceneSnapshot(page),
+  );
   await expect(page.locator(".solar-canvas-shell")).toHaveAttribute(
     "data-render-loop",
     "demand",
@@ -262,8 +286,10 @@ test("Explore and Scientific switch typed profiles without changing scene identi
   );
   await page.getByRole("tab", { name: "Selection" }).click();
   await expect(page.getByRole("heading", { name: "Earth" })).toBeVisible();
-  await waitForSurfaceMaps(page);
-  expect((await sceneSnapshot(page))?.surfaces).toEqual(explorationSurfaces);
+  await waitForPrimarySurfaceMaps(page);
+  expect(primarySurfaceSnapshot(await sceneSnapshot(page))).toEqual(
+    explorationPrimarySurfaces,
+  );
   expect(new URL(page.url()).searchParams.get("at")).toBe(
     "2024-01-15T12:30:00.000Z",
   );
@@ -422,7 +448,7 @@ test("renderer evidence covers orbit policy, selected extended bodies and Earth 
   const audit = watchRuntime(page);
   await page.goto("/explore?sceneTest=1");
   await waitForLoadedScene(page);
-  await waitForSurfaceMaps(page);
+  await waitForPrimarySurfaceMaps(page);
   await expect
     .poll(async () => (await sceneSnapshot(page))?.orbits.planet ?? 0)
     .toBe(8);
@@ -493,7 +519,7 @@ test("Earth night-side city lights render without daylight leakage", async ({
   const audit = watchRuntime(page);
   await page.goto("/explore?sceneTest=1");
   await waitForLoadedScene(page);
-  await waitForSurfaceMaps(page);
+  await waitForPrimarySurfaceMaps(page);
   await openNavigatorCategory(page, /Sun & planets/i);
   await page.getByRole("button", { name: "Earth", exact: true }).click();
   await expect

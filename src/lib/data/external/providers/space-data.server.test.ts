@@ -1,21 +1,25 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
 vi.mock("next/cache", () => ({
   unstable_cache: <T extends (...args: never[]) => unknown>(callback: T) =>
     callback,
 }));
 
-import { resetServerEnvCache } from "@/lib/env/server";
+type SpaceDataModule = typeof import("./space-data.server");
+type ResetServerEnvCache =
+  typeof import("@/lib/env/server").resetServerEnvCache;
 
-import {
-  loadCneosCad,
-  loadDonki,
-  loadEonet,
-  loadFireballs,
-  loadGibsLayers,
-  loadInsight,
-  loadMissionMedia,
-} from "./space-data.server";
+let resetServerEnvCache: ResetServerEnvCache;
+let spaceData: SpaceDataModule;
 
 function jsonResponse(value: unknown, status = 200) {
   return new Response(JSON.stringify(value), {
@@ -25,6 +29,20 @@ function jsonResponse(value: unknown, status = 200) {
 }
 
 describe("space-data provider normalization", () => {
+  beforeAll(async () => {
+    // Vitest intentionally reuses one worker/module graph for this repository.
+    // Reset before importing so the local next/cache mock cannot inherit a
+    // previously cached production wrapper from a page test.
+    vi.resetModules();
+    ({ resetServerEnvCache } = await import("@/lib/env/server"));
+    spaceData = await import("./space-data.server");
+  });
+
+  afterAll(() => {
+    vi.doUnmock("next/cache");
+    vi.resetModules();
+  });
+
   beforeEach(() => {
     process.env.NASA_API_KEY = "test-key";
     resetServerEnvCache();
@@ -85,7 +103,7 @@ describe("space-data provider normalization", () => {
       ),
     );
 
-    const result = await loadEonet();
+    const result = await spaceData.loadEonet();
     expect(result.status).toBe("near-live");
     expect(result.data).toHaveLength(2);
     expect(result.data?.[0]).toMatchObject({
@@ -117,7 +135,7 @@ describe("space-data provider normalization", () => {
       }),
     );
 
-    const result = await loadDonki();
+    const result = await spaceData.loadDonki();
     expect(result.status).toBe("partial");
     expect(result.data?.map(({ eventType }) => eventType)).toEqual(["FLR"]);
     expect(result.metadata.failedEndpoints).toEqual(["/DONKI/CME"]);
@@ -136,7 +154,7 @@ describe("space-data provider normalization", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await loadCneosCad();
+    const result = await spaceData.loadCneosCad();
     const requestedUrl = new URL(String(fetchMock.mock.calls[0]?.[0]));
     expect(requestedUrl.searchParams.get("diameter")).toBe("true");
     expect(requestedUrl.searchParams.get("fullname")).toBe("true");
@@ -160,7 +178,7 @@ describe("space-data provider normalization", () => {
       ),
     );
 
-    const result = await loadFireballs();
+    const result = await spaceData.loadFireballs();
     expect(result.data?.[0]).toMatchObject({
       radiatedEnergy10e10J: 2.5,
       estimatedImpactEnergyKt: 0.8,
@@ -194,7 +212,7 @@ describe("space-data provider normalization", () => {
       ),
     );
 
-    const result = await loadGibsLayers();
+    const result = await spaceData.loadGibsLayers();
     expect(result.status).toBe("latest-available");
     expect(result.data?.map(({ tileMatrixSet }) => tileMatrixSet)).toEqual([
       "250m",
@@ -232,7 +250,7 @@ describe("space-data provider normalization", () => {
       ),
     );
 
-    const result = await loadInsight();
+    const result = await spaceData.loadInsight();
     expect(result.data).toMatchObject({
       sol: 2,
       archiveMatch: "on-this-day",
@@ -256,7 +274,7 @@ describe("space-data provider normalization", () => {
     ] as const;
 
     for (const planetId of planetIds) {
-      const result = await loadMissionMedia(planetId);
+      const result = await spaceData.loadMissionMedia(planetId);
       expect(result.data).toHaveLength(1);
       expect(result.data?.[0]?.planetId).toBe(planetId);
     }

@@ -30,6 +30,21 @@ async function requestSecondaryTexture(path: string): Promise<void> {
   }
 }
 
+function scheduleBackgroundQueueUpdate(
+  queue: SecondaryTextureQueue,
+  paths: readonly string[],
+): () => void {
+  if (typeof window.requestIdleCallback === "function") {
+    const requestId = window.requestIdleCallback(() => queue.update(paths), {
+      timeout: 1_000,
+    });
+    return () => window.cancelIdleCallback(requestId);
+  }
+
+  const timeoutId = window.setTimeout(() => queue.update(paths), 50);
+  return () => window.clearTimeout(timeoutId);
+}
+
 export function SecondaryAssetScheduler() {
   const snapshot = useAssetLoadingSnapshot();
   const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
@@ -88,9 +103,26 @@ export function SecondaryAssetScheduler() {
       queue.update([]);
       return;
     }
+
     markSecondaryStageStarted();
-    queue.update(orderedVisibleAssets.map((asset) => asset.path));
-  }, [orderedVisibleAssets, snapshot.blockingReady]);
+    const paths = orderedVisibleAssets.map((asset) => asset.path);
+
+    // Selection and hover are interactive priority signals and should be
+    // applied immediately. The initial/background wave waits for an idle
+    // period so primary readiness and the first user action are not competing
+    // with four image decodes on the main thread.
+    if (selectedBodyId !== null || hoveredBodyId !== null) {
+      queue.update(paths);
+      return;
+    }
+
+    return scheduleBackgroundQueueUpdate(queue, paths);
+  }, [
+    hoveredBodyId,
+    orderedVisibleAssets,
+    selectedBodyId,
+    snapshot.blockingReady,
+  ]);
 
   return null;
 }

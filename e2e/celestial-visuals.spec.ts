@@ -55,13 +55,24 @@ test("secondary visual failure remains object-local and final surfaces replace f
   await openCatalogue(page, "moons");
 
   await expect
-    .poll(async () => {
-      const scene = await catalogueSnapshot(page);
-      return scene?.textureReadiness.find((entry) =>
-        entry.path.endsWith("moon-jupiter-europa.webp"),
-      )?.status;
-    })
-    .toBe("error");
+    .poll(
+      async () => {
+        const scene = await catalogueSnapshot(page);
+        return {
+          europaStatus: scene?.textureReadiness.find((entry) =>
+            entry.path.endsWith("moon-jupiter-europa.webp"),
+          )?.status,
+          ioSurface: scene?.surfaces["moon-jupiter-io"] ?? null,
+        };
+      },
+      { timeout: 30_000 },
+    )
+    .toEqual({
+      europaStatus: "error",
+      ioSurface: expect.stringContaining(
+        "/textures/celestial/moon-jupiter-io.webp",
+      ),
+    });
 
   const failed = await catalogueSnapshot(page);
   expect(failed?.catalogue.tileCount).toBe(22);

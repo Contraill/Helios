@@ -342,7 +342,6 @@ function SummaryHeader({
       {bodyId ? (
         <div className={gateStyles.objectVisibilityAction}>
           <button
-            aria-pressed={visible}
             onClick={() => (visible ? hideObject(bodyId) : showObject(bodyId))}
             type="button"
           >

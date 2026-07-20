@@ -128,20 +128,52 @@ test("extended categories and featured objects remain keyboard-selectable", asyn
 test("selection, rapid change and Escape keep the dock and camera synchronized", async ({
   page,
 }) => {
-  await page.goto("/explore");
-  await openNavigatorCategory(page, /Sun & planets/i);
-  await page.getByRole("button", { name: "Mars", exact: true }).click();
-  await page.getByRole("tab", { name: "Navigator" }).click();
-  await page.getByRole("button", { name: "Neptune", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Neptune", exact: true }),
-  ).toBeVisible();
-  await page.getByRole("tab", { name: "Navigator" }).click();
+  // Two parallel software-WebGL workers can spend most of the default budget
+  // reaching scene readiness; the measured selection steps remain sub-second.
+  test.setTimeout(60_000);
+
+  const runtimeErrors: string[] = [];
+  page.on("crash", () => runtimeErrors.push("page crashed"));
+  page.on("pageerror", (error) => runtimeErrors.push(error.message));
+
+  await test.step("navigate to Explore", async () => {
+    await page.goto("/explore");
+  });
+  await test.step("wait for opening scene readiness", async () => {
+    await expect(page.locator("html")).toHaveAttribute(
+      "data-explore-scene-ready",
+      "true",
+      { timeout: 45_000 },
+    );
+    await expect(page.getByTestId("explore-opening-loader")).toHaveCount(0);
+  });
+  await test.step("open the Sun and planets category", async () => {
+    await page.getByRole("tab", { name: "Navigator" }).click();
+    await page.getByRole("button", { name: /Sun & planets/i }).click();
+  });
+  await test.step("select Mars", async () => {
+    await page.getByRole("button", { name: "Mars", exact: true }).click();
+  });
+  await test.step("return to Navigator", async () => {
+    await page.getByRole("tab", { name: "Navigator" }).click();
+  });
+  await test.step("select Neptune", async () => {
+    await page.getByRole("button", { name: "Neptune", exact: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "Neptune", exact: true }),
+    ).toBeVisible();
+  });
   const neptune = page.getByRole("button", { name: "Neptune", exact: true });
-  await expect(neptune).toHaveAttribute("aria-pressed", "true");
-  await page.keyboard.press("Escape");
-  await expect(neptune).toBeFocused();
-  await expect(neptune).toHaveAttribute("aria-pressed", "false");
+  await test.step("restore Navigator focus context", async () => {
+    await page.getByRole("tab", { name: "Navigator" }).click();
+    await expect(neptune).toHaveAttribute("aria-pressed", "true");
+  });
+  await test.step("escape to overview and restore focus", async () => {
+    await page.keyboard.press("Escape");
+    await expect(neptune).toBeFocused();
+    await expect(neptune).toHaveAttribute("aria-pressed", "false");
+  });
+  expect(runtimeErrors).toEqual([]);
 });
 
 test.describe("mobile Explore dock", () => {

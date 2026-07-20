@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const auditedRoutes = [
   "/",
@@ -8,6 +8,14 @@ const auditedRoutes = [
   "/compare?a=earth&b=mars",
   "/data",
 ] as const;
+
+async function waitForExploreReady(page: Page): Promise<void> {
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-explore-scene-ready",
+    "true",
+    { timeout: 30_000 },
+  );
+}
 
 for (const route of auditedRoutes) {
   test(`${route} has no automated WCAG A/AA violations`, async ({ page }) => {
@@ -38,7 +46,7 @@ test("system reduced motion removes continuous scene motion", async ({
     page.getByRole("region", {
       name: "Static exploration-scale model of the Sun and the eight planets",
     }),
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".solar-canvas-shell")).toHaveAttribute(
     "data-render-loop",
     "demand",
@@ -65,11 +73,16 @@ test("a hidden Explore document switches the renderer to demand mode", async ({
 test("keyboard focus remains visible and Escape restores the triggering planet", async ({
   page,
 }) => {
+  test.setTimeout(60_000);
   await page.goto("/explore");
+  await waitForExploreReady(page);
   await page.getByRole("tab", { name: "Navigator" }).click();
   await page.getByRole("button", { name: /Sun & planets/i }).click();
   const earth = page.getByRole("button", { name: "Earth", exact: true });
   await earth.focus();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Shift+Tab");
+  await expect(earth).toBeFocused();
   const focusPresentation = await earth.evaluate((element) => {
     const style = getComputedStyle(element);
     return {
@@ -112,15 +125,20 @@ test.describe("200 percent layout equivalent", () => {
 test("repeated Explore route transitions leave one canvas and no page errors", async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.goto("/explore");
+  await waitForExploreReady(page);
   for (let visit = 0; visit < 3; visit += 1) {
     await page.getByRole("link", { name: "Helios", exact: true }).click();
-    await expect(page.locator("canvas")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
+    await expect(page.locator("canvas")).toHaveCount(0, { timeout: 30_000 });
     await page.getByRole("link", { name: "Explore", exact: true }).click();
-    await expect(page.locator("canvas")).toHaveCount(1);
+    await expect(page).toHaveURL(/\/explore$/, { timeout: 30_000 });
+    await waitForExploreReady(page);
+    await expect(page.locator("canvas")).toHaveCount(1, { timeout: 30_000 });
   }
 
   expect(pageErrors).toEqual([]);
@@ -133,15 +151,20 @@ test("browser history reuses Explore without accumulating live canvases", async 
   page.on("pageerror", (error) => pageErrors.push(error.message));
 
   await page.goto("/explore");
-  await expect(page.locator("canvas")).toHaveCount(1);
+  await waitForExploreReady(page);
+  await expect(page.locator("canvas")).toHaveCount(1, { timeout: 30_000 });
   await page.getByRole("link", { name: "Helios", exact: true }).click();
-  await expect(page.locator("canvas")).toHaveCount(0);
+  await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
+  await expect(page.locator("canvas")).toHaveCount(0, { timeout: 30_000 });
 
   for (let cycle = 0; cycle < 3; cycle += 1) {
     await page.goBack();
-    await expect(page.locator("canvas")).toHaveCount(1);
+    await expect(page).toHaveURL(/\/explore$/, { timeout: 30_000 });
+    await waitForExploreReady(page);
+    await expect(page.locator("canvas")).toHaveCount(1, { timeout: 30_000 });
     await page.goForward();
-    await expect(page.locator("canvas")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/$/, { timeout: 30_000 });
+    await expect(page.locator("canvas")).toHaveCount(0, { timeout: 30_000 });
   }
 
   expect(pageErrors).toEqual([]);

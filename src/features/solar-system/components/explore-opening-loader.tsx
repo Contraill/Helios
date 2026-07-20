@@ -31,10 +31,12 @@ export function ExploreOpeningLoader() {
 
   return (
     <div
+      aria-label="Solar System loading progress"
       aria-live="polite"
       aria-valuemax={snapshot.planetTotal}
       aria-valuemin={0}
       aria-valuenow={snapshot.planetReadyCount}
+      aria-valuetext={`${label}. ${snapshot.planetReadyCount} of ${snapshot.planetTotal} planets ready.`}
       className={gateStyles.openingLoader}
       data-testid="explore-opening-loader"
       role="progressbar"

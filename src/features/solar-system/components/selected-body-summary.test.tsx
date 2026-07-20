@@ -53,11 +53,13 @@ describe("SelectedBodySummary", () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: "Hide this object" }));
+    const hideAction = screen.getByRole("button", { name: "Hide this object" });
+    expect(hideAction).not.toHaveAttribute("aria-pressed");
+    fireEvent.click(hideAction);
     expect(screen.getByRole("status")).toHaveTextContent("Hidden individually");
-    expect(
-      screen.getByRole("button", { name: "Show this object" }),
-    ).toBeVisible();
+    const showAction = screen.getByRole("button", { name: "Show this object" });
+    expect(showAction).toBeVisible();
+    expect(showAction).not.toHaveAttribute("aria-pressed");
     expect(useExplorationStore.getState().selectedBodyId).toBe("ceres");
 
     fireEvent.click(screen.getByRole("button", { name: "Show this object" }));
