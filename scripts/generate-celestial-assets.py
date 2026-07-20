@@ -160,7 +160,7 @@ for body in BODIES:
     sha=hashlib.sha256(path.read_bytes()).hexdigest()
     size=path.stat().st_size
     public_path=f'/textures/celestial/{ident}.webp'
-    source_id='prompt3-source-'+ident
+    source_id='helios-visual-'+ident
     provider_license=USGS_LICENSE if provider.startswith('USGS') else NASA_LICENSE
     entry={
       'celestialBodyId':ident,'assetRole':'surface-albedo','sourceTitle':title,'publisherProvider':provider,

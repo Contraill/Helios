@@ -16,14 +16,14 @@ async function waitForScene(page: Page) {
   await expect
     .poll(
       async () =>
-        page.evaluate(() => window.__HELIOS_SCENE_ACCEPTANCE__?.frame ?? 0),
+        page.evaluate(() => window.__HELIOS_SCENE_TEST__?.frame ?? 0),
       { timeout: 30_000 },
     )
     .toBeGreaterThan(2);
 }
 
 async function snapshot(page: Page) {
-  return page.evaluate(() => window.__HELIOS_SCENE_ACCEPTANCE__ ?? null);
+  return page.evaluate(() => window.__HELIOS_SCENE_TEST__ ?? null);
 }
 
 function distance(
@@ -78,7 +78,7 @@ test("shared simulation time freezes moons and preserves phase/profile/orbit ide
   await page.route("**/api/ephemeris?**", (route) =>
     route.fulfill({ json: HORIZONS_SNAPSHOT, status: 200 }),
   );
-  await page.goto("/explore?acceptance=1&at=2026-07-19T00%3A00%3A00.000Z");
+  await page.goto("/explore?sceneTest=1&at=2026-07-19T00%3A00%3A00.000Z");
   await waitForScene(page);
 
   await openCategory(page, /Planetary moons/i);
@@ -165,7 +165,7 @@ test("comet tail follows the transformed anti-solar vector", async ({
   page,
 }, testInfo) => {
   test.setTimeout(120_000);
-  await page.goto("/explore?acceptance=1&at=2026-07-19T00%3A00%3A00.000Z");
+  await page.goto("/explore?sceneTest=1&at=2026-07-19T00%3A00%3A00.000Z");
   await waitForScene(page);
 
   await openCategory(page, /Comets/i);
@@ -194,7 +194,7 @@ test("extended orbit evidence keeps distinct node and periapsis orientations", a
   page,
 }, testInfo) => {
   test.setTimeout(120_000);
-  await page.goto("/explore?acceptance=1&at=2026-07-19T00%3A00%3A00.000Z");
+  await page.goto("/explore?sceneTest=1&at=2026-07-19T00%3A00%3A00.000Z");
   await waitForScene(page);
 
   await openCategory(page, /Main-belt worlds/i);

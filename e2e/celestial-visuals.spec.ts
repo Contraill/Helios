@@ -1,14 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 
 async function catalogueSnapshot(page: Page) {
-  return page.evaluate(() => window.__HELIOS_SCENE_ACCEPTANCE__ ?? null);
+  return page.evaluate(() => window.__HELIOS_SCENE_TEST__ ?? null);
 }
 
 async function openCatalogue(
   page: Page,
   mode: "moons" | "dwarf-systems" | "asteroids" | "dwarf-kuiper" | "comets",
 ) {
-  await page.goto(`/explore?acceptance=1&catalogue=${mode}`);
+  await page.goto(`/explore?sceneTest=1&catalogue=${mode}`);
   await expect
     .poll(async () => (await catalogueSnapshot(page))?.catalogue.enabled ?? false, {
       timeout: 30_000,
@@ -19,7 +19,7 @@ async function openCatalogue(
     .toBe(mode);
 }
 
-test("acceptance-only visual catalogue renders complete curated groups", async ({
+test("test-only visual catalogue renders complete curated groups", async ({
   page,
 }) => {
   test.setTimeout(120_000);

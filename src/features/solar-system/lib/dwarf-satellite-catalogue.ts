@@ -60,7 +60,7 @@ const satellite = (
   Object.freeze({
     ...input,
     representation: representation({
-      sourceId: input.sourceIds[0] ?? `prompt3-${input.id}`,
+      sourceId: input.sourceIds[0] ?? `helios-visual-${input.id}`,
       sourceUrl: input.sourceUrl,
       sourceTarget: input.sourceTarget,
       precisionNote: input.precisionNote,
@@ -68,8 +68,8 @@ const satellite = (
   });
 
 /**
- * Prompt 3 adds only the named dwarf-system satellites requested by the visual
- * gate. Mean separation and period support a truthful system-context animation.
+ * The catalogue includes only the named dwarf-system satellites represented by
+ * the visual layer. Mean separation and period support a truthful system-context animation.
  * Missing angular elements are `null`; the renderer never invents a random plane.
  */
 export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([

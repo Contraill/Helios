@@ -59,6 +59,21 @@ describe("ExploreSceneDock", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
+  it("minimizes and restores the desktop controls without losing state", () => {
+    setCssMode("desktop");
+    render(<ExploreSceneDock {...props} />);
+    expect(screen.getByText("Navigator content")).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole("button", { name: /Minimize Explore controls/i }),
+    );
+    expect(screen.queryByText("Navigator content")).not.toBeInTheDocument();
+    expect(useExploreSceneUiStore.getState().desktopDockCollapsed).toBe(true);
+    fireEvent.click(
+      screen.getByRole("button", { name: /Expand Explore controls/i }),
+    );
+    expect(screen.getByText("Navigator content")).toBeInTheDocument();
+  });
+
   it("uses the CSS contract to expose a modal bottom sheet and restores focus", () => {
     setCssMode("mobile");
     const showModal = vi.fn(function (this: HTMLDialogElement) {

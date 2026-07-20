@@ -16,12 +16,12 @@ import { CameraRig } from "./camera-rig";
 import { ExploreBloom } from "./explore-bloom";
 import { ExtendedSolarSystem } from "./extended-solar-system";
 import { PlanetSystem } from "./planet-system";
-import { SceneAcceptanceProbe } from "./scene-acceptance-probe";
+import { SceneTestProbe } from "./scene-test-probe";
 import { SceneReadinessReporter } from "./scene-readiness-reporter";
 import { Sun } from "./sun";
 import { TexturePreloader } from "./texture-preloader";
 import { UniverseBackdrop } from "./universe-backdrop";
-import { VisualAcceptanceCatalogue, type VisualCatalogueMode } from "./visual-acceptance-catalogue";
+import { VisualTestCatalogue, type VisualCatalogueMode } from "./visual-test-catalogue";
 
 interface SolarSystemSceneProps {
   reducedMotion: boolean;
@@ -58,7 +58,7 @@ export function SolarSystemScene({
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
-    if (query.get("acceptance") !== "1") return;
+    if (query.get("sceneTest") !== "1") return;
     const value = query.get("catalogue");
     const allowed: VisualCatalogueMode[] = [
       "all",
@@ -77,8 +77,8 @@ export function SolarSystemScene({
     return (
       <>
         <color attach="background" args={["#03050a"]} />
-        <SceneAcceptanceProbe />
-        <VisualAcceptanceCatalogue mode={catalogueMode} />
+        <SceneTestProbe />
+        <VisualTestCatalogue mode={catalogueMode} />
       </>
     );
   }
@@ -93,7 +93,7 @@ export function SolarSystemScene({
       <RendererProfileSettings exposure={profile.effects.exposure} />
       <SceneReadinessReporter />
       <CameraRig planetObjects={planetObjects} reducedMotion={reducedMotion} />
-      <SceneAcceptanceProbe />
+      <SceneTestProbe />
       <ambientLight color="#a8b0bf" intensity={0.22} />
       <UniverseBackdrop
         motionEnabled={simulationMotionEnabled}

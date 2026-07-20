@@ -131,9 +131,15 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const shellMode = useResponsiveShellMode(rootRef);
   const active = useExploreSceneUiStore((state) => state.activeDockPanel);
+  const collapsed = useExploreSceneUiStore(
+    (state) => state.desktopDockCollapsed,
+  );
   const mobileOpen = useExploreSceneUiStore((state) => state.mobileDockOpen);
   const openMobile = useExploreSceneUiStore((state) => state.openMobileDock);
   const closeMobile = useExploreSceneUiStore((state) => state.closeMobileDock);
+  const toggleDesktopDock = useExploreSceneUiStore(
+    (state) => state.toggleDesktopDock,
+  );
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
@@ -167,17 +173,37 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
         <aside
           aria-label={exploreSceneCopy.dock.label}
           className={gateStyles.desktopDock}
+          data-collapsed={collapsed ? "true" : "false"}
         >
-          <p className={gateStyles.scaleNotice}>{props.scaleNotice}</p>
-          <PanelTabs />
-          <section
-            aria-labelledby={`explore-tab-${active}`}
-            className={gateStyles.panelBody}
-            id={`explore-panel-${active}`}
-            role="tabpanel"
-          >
-            {panelContent(active, props)}
-          </section>
+          <header className={gateStyles.dockHeader}>
+            <p className={gateStyles.scaleNotice}>{props.scaleNotice}</p>
+            <button
+              aria-expanded={!collapsed}
+              aria-label={
+                collapsed
+                  ? exploreSceneCopy.dock.expand
+                  : exploreSceneCopy.dock.minimize
+              }
+              className={gateStyles.collapseButton}
+              onClick={toggleDesktopDock}
+              type="button"
+            >
+              <span aria-hidden="true">{collapsed ? "+" : "−"}</span>
+            </button>
+          </header>
+          {collapsed ? null : (
+            <>
+              <PanelTabs />
+              <section
+                aria-labelledby={`explore-tab-${active}`}
+                className={gateStyles.panelBody}
+                id={`explore-panel-${active}`}
+                role="tabpanel"
+              >
+                {panelContent(active, props)}
+              </section>
+            </>
+          )}
         </aside>
       ) : (
         <>

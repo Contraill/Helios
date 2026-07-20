@@ -8,6 +8,7 @@ import {
   disposeTextureCache,
   textureCacheSnapshot,
   textureDisposalCount,
+  textureMaterialKey,
   textureReadinessDetails,
   textureReadinessFor,
   useSceneTexture,
@@ -18,6 +19,12 @@ describe("scene texture cache", () => {
     vi.useRealTimers();
     vi.restoreAllMocks();
     disposeTextureCache();
+  });
+
+  it("changes the material key when a delayed texture becomes available", () => {
+    const texture = new Texture();
+    expect(textureMaterialKey(null)).toBe("texture:fallback");
+    expect(textureMaterialKey(texture)).toBe(`texture:${texture.uuid}`);
   });
 
   it("shares one network load and disposes only after the final delayed release", async () => {

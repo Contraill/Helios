@@ -135,8 +135,8 @@ function SurfaceLayer({ profile, texture }: SurfaceLayerProps) {
                 roughness={profile.surface.roughness}
                 transparent
                 userData={{
-                  acceptanceSurfaceBodyId: profile.id,
-                  acceptanceSurfaceRole: "fallback",
+                  testSurfaceBodyId: profile.id,
+                  testSurfaceRole: "fallback",
                 }}
               />
             </mesh>
@@ -154,8 +154,8 @@ function SurfaceLayer({ profile, texture }: SurfaceLayerProps) {
                 roughness={profile.surface.roughness}
                 transparent
                 userData={{
-                  acceptanceSurfaceBodyId: profile.id,
-                  acceptanceSurfaceRole: "final",
+                  testSurfaceBodyId: profile.id,
+                  testSurfaceRole: "final",
                 }}
               />
             </mesh>
@@ -178,7 +178,7 @@ function SurfaceLayer({ profile, texture }: SurfaceLayerProps) {
           opacity={texture ? 0 : 1}
           roughness={profile.surface.roughness}
           transparent
-          userData={{ acceptanceSurfaceBodyId: profile.id, acceptanceSurfaceRole: "fallback" }}
+          userData={{ testSurfaceBodyId: profile.id, testSurfaceRole: "fallback" }}
         />
       </mesh>
       <mesh {...common}>
@@ -195,7 +195,7 @@ function SurfaceLayer({ profile, texture }: SurfaceLayerProps) {
           opacity={texture ? 1 : 0}
           roughness={profile.surface.roughness}
           transparent
-          userData={{ acceptanceSurfaceBodyId: profile.id, acceptanceSurfaceRole: "final" }}
+          userData={{ testSurfaceBodyId: profile.id, testSurfaceRole: "final" }}
         />
       </mesh>
     </group>

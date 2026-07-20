@@ -38,8 +38,8 @@ function createLabelTexture(
   positionCaption: string,
   placement: ScientificLabelPlacement,
 ): CanvasTexture {
-  const logicalWidth = mode === "scientific" ? 640 : 512;
-  const logicalHeight = mode === "scientific" ? 224 : 128;
+  const logicalWidth = mode === "scientific" ? 560 : 512;
+  const logicalHeight = mode === "scientific" ? 176 : 128;
   const pixelRatio = mode === "scientific" ? 2 : 3;
   const canvas = document.createElement("canvas");
   canvas.width = logicalWidth * pixelRatio;
@@ -56,14 +56,14 @@ function createLabelTexture(
     const centerY = logicalHeight / 2;
     const offsets: Record<ScientificLabelPlacement, readonly [number, number]> =
       {
-        north: [0, -84],
-        northeast: [178, -66],
-        northwest: [-178, -66],
-        east: [198, 0],
-        southeast: [174, 70],
-        southwest: [-174, 70],
-        west: [-198, 0],
-        south: [0, 80],
+        north: [0, -62],
+        northeast: [150, -50],
+        northwest: [-150, -50],
+        east: [168, 0],
+        southeast: [148, 52],
+        southwest: [-148, 52],
+        west: [-168, 0],
+        south: [0, 60],
       };
     const [labelX, labelY] = offsets[placement];
     const textX = centerX + labelX;
@@ -79,22 +79,22 @@ function createLabelTexture(
     context.globalAlpha = 1;
 
     context.font =
-      '650 32px ui-sans-serif, system-ui, -apple-system, "Segoe UI"';
+      '650 25px ui-sans-serif, system-ui, -apple-system, "Segoe UI"';
     context.textAlign = "center";
     context.textBaseline = "middle";
     context.fillStyle = "rgba(242, 239, 230, 0.98)";
     context.fillText(text, textX, textY);
 
     context.fillStyle = color;
-    context.fillRect(textX - 24, textY + 22, 48, selected ? 3 : 2);
+    context.fillRect(textX - 20, textY + 18, 40, selected ? 3 : 2);
 
     if (positionCaption) {
       context.font =
-        '600 12px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
+        '600 10px ui-monospace, "SF Mono", Menlo, Consolas, monospace';
       context.fillStyle = selected
         ? "rgba(242, 239, 230, 0.9)"
         : "rgba(155, 163, 176, 0.92)";
-      context.fillText(positionCaption.toUpperCase(), textX, textY + 43);
+      context.fillText(positionCaption.toUpperCase(), textX, textY + 34);
     }
   } else {
     context.font =
@@ -166,12 +166,10 @@ export function PlanetLabel({
   const scientific = mode === "scientific";
   const scale: [number, number, number] = compact
     ? scientific
-      ? [0.14, 0.058, 1]
+      ? [0.082, 0.026, 1]
       : [0.14, 0.035, 1]
     : scientific
-      ? active
-        ? [0.22, 0.092, 1]
-        : [0.105, 0.044, 1]
+      ? [0.095, 0.03, 1]
       : [0.2, 0.05, 1];
 
   return (

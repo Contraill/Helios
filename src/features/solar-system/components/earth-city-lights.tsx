@@ -134,7 +134,7 @@ export function EarthCityLights({ segments }: EarthCityLightsProps) {
         transparent
         uniforms={uniforms}
         userData={{
-          acceptanceMaterial: "earth-city-lights",
+          testMaterial: "earth-city-lights",
           texturePath: source.path,
         }}
         vertexShader={vertexShader}

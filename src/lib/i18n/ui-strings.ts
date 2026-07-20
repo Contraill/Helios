@@ -88,14 +88,11 @@ export const uiStrings = {
       formatGravity: (value: string): string => `${value} m/s²`,
       formatEarthDays: (value: string): string => `${value} Earth days`,
       formatMinutes: (value: string): string => `${value} min`,
-      scientificMarkerCaption:
-        "Scientific profile · shared body representation",
-      scientificSelectedMarkerCaption: "Selected · scientific scale profile",
+      scientificMarkerCaption: "Scientific view locator",
+      scientificSelectedMarkerCaption: "Selected · shared physical scale",
       scaleNotices: {
-        exploration:
-          "Exploration scale · bodies enlarged and distance compressed",
-        scientific:
-          "Scientific profile · shared scene graph with physical-ratio body and distance scaling",
+        exploration: "Explore view · optimized for visibility",
+        scientific: "Scientific view · shared physical scale",
       },
       gravityLabel: "Gravity",
       yearLabel: "Orbital year",
@@ -121,7 +118,7 @@ export const uiStrings = {
           : `Moving toward ${name}.`;
       },
       controls: {
-        scale: "Scale profile",
+        scale: "View scale",
         scene: "Scene layers",
         orbits: "Orbit paths",
         labels: "Body labels",
@@ -135,9 +132,9 @@ export const uiStrings = {
         },
         scaleDescriptions: {
           exploration:
-            "Explore keeps the same bodies and materials while enlarging them and compressing distance for legibility.",
+            "Explore view preserves orbital order while enlarging bodies and compressing distance for clear navigation.",
           scientific:
-            "Scientific keeps the same scene graph, textures and materials while applying the shared physical-ratio scale profile.",
+            "Scientific view applies one shared linear scale to body radii and orbital distance. Screen-space labels locate bodies without enlarging them.",
         },
       },
     },

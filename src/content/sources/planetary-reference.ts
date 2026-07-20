@@ -122,8 +122,8 @@ const rawSources = [
     freshness: "reference",
     accessedAt: "2026-07-19",
     notes: {
-      en: "Pole and rotational-element authority; texture prime-meridian alignment remains explicitly unverified until Prompt 3 assets are sourced.",
-      tr: "Kutup ve dönüş elemanları otoritesi; texture başlangıç meridyeni hizası Prompt 3 varlıkları kaynaklandırılana kadar açıkça doğrulanmamıştır.",
+      en: "Pole and rotational-element authority; texture prime-meridian alignment remains explicitly unverified until secondary celestial assets are sourced.",
+      tr: "Kutup ve dönüş elemanları otoritesi; yeniden oluşturulan yüzeylerde texture başlangıç meridyeni hizası açıkça doğrulanmamıştır.",
     },
   },
   {

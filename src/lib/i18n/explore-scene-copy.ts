@@ -9,6 +9,8 @@ export const exploreSceneCopy = Object.freeze({
     mobileClose: "Close Explore controls",
     mobileEyebrow: "Explore controls",
     mobileSelectionLabel: "Info",
+    minimize: "Minimize Explore controls",
+    expand: "Expand Explore controls",
     panelLabels: {
       selection: "Selection",
       navigator: "Navigator",

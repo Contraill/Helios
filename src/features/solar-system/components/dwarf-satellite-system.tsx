@@ -34,7 +34,10 @@ function compressedOrbitDistance(
   parentRadius: number,
 ) {
   const physicalRatio = moon.semiMajorAxisKm / parentMeanRadiusKm;
-  return parentRadius * Math.min(9.5, Math.max(3, 1.9 + Math.log10(physicalRatio) * 1.72));
+  return (
+    parentRadius *
+    Math.min(9.5, Math.max(3, 1.9 + Math.log10(physicalRatio) * 1.72))
+  );
 }
 
 export function dwarfParentVisualOffset(

@@ -6,7 +6,7 @@ import process from "node:process";
 const root = process.cwd();
 const manifestPath = resolve(
   root,
-  "docs/explore/TEXTURE_RUNTIME_MANIFEST.json",
+  "scripts/data/texture-runtime-manifest.json",
 );
 const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
 const errors = [];

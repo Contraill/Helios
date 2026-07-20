@@ -6,11 +6,9 @@ The project combines a cinematic 3D experience with sourced planetary data, pers
 
 ## Current status
 
-Phases 6–8, Block B.5 / Phase 8.5 and Block C are implemented. Helios now includes eight distinct server-rendered planet references, normalized NASA/JPL data surfaces with explicit fallback metadata, the two-world comparison experience, and a sourced JPL Horizons Explore timeline.
+Helios includes eight editorial planet pages, normalized NASA/JPL data surfaces with explicit fallback metadata, a two-world comparison experience and a JPL Horizons-backed Explore timeline.
 
-Explore opens at the current UTC time in unpaused Real time mode, supports six playback speeds, a dynamic −500/+600 calendar-year range, cached Horizons windows with Hermite interpolation, long-range body-center/barycenter resolution, and one mouse/touch/keyboard-capable camera authority. The Phase 8.5 commit has been deployed; a post-deploy hydration mismatch discovered on `/explore` is covered by the current production-mode acceptance repair.
-
-The local Block C acceptance package adds traceable multi-resolution planetary surfaces, distinct atmospheres, Saturn's rings, a controlled and selectable Sun/corona treatment, quality-aware loading, production performance budgets and a WCAG-oriented final audit. The Sun and all eight planets share pointer, touch, keyboard, camera-focus and focus-restoration behaviour. It is prepared for user test and push; the live deployment remains unchanged until that push. Phase 11 has not started.
+Explore starts at the current UTC time, supports accelerated playback across a bounded historical and future range, and keeps camera, selection and simulation state under a single scene authority. Planetary surfaces, atmospheres, rings, city lights, featured moons, dwarf worlds, asteroids and comets share one asset and provenance system.
 
 ## Stack
 
@@ -90,15 +88,3 @@ pnpm dev
 - Frame loops mutate Three.js objects without writing React state every frame.
 - Quality levels control DPR, star density, geometry, orbit sampling, texture resolution, atmosphere cost, Saturn ring detail and high-tier-only bounded bloom.
 - Dynamic NASA/JPL data is normalized and validated on the server before it reaches the UI; source time, retrieval time and fallback status remain distinct.
-
-## Documentation
-
-- [`docs/project/00_START_HERE.md`](docs/project/00_START_HERE.md) — working protocol and document order
-- [`docs/project/05_DEVELOPMENT_ROADMAP.md`](docs/project/05_DEVELOPMENT_ROADMAP.md) — phase plan and acceptance criteria
-- [`docs/project/06_TESTING_QUALITY_RELEASE.md`](docs/project/06_TESTING_QUALITY_RELEASE.md) — quality and release standard
-- [`docs/decisions.md`](docs/decisions.md) — decision log
-- [`docs/phase-8-5-report.md`](docs/phase-8-5-report.md) — ephemeris, simulation-clock and live acceptance gate
-- [`docs/phase-9-report.md`](docs/phase-9-report.md) — visual depth, asset and attribution gate
-- [`docs/phase-10-report.md`](docs/phase-10-report.md) — measured performance and accessibility gate
-- [`docs/celestial-catalog-expansion-plan.md`](docs/celestial-catalog-expansion-plan.md) — clickable moons, dwarf planets, candidates, exoplanets and Kuiper Belt delivery contract
-- [`docs/block-b-opening-report.md`](docs/block-b-opening-report.md) — historical Block B opening slice

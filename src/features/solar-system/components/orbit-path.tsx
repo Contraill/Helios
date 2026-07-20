@@ -121,11 +121,11 @@ export function OrbitPath({
     next.frustumCulled = true;
     next.renderOrder = -1;
     next.raycast = () => undefined;
-    next.userData.acceptanceOrbitBodyId = bodyId;
-    next.userData.acceptanceOrbitClass = orbitClass;
-    next.userData.acceptanceGeometryUuid = geometry.uuid;
-    next.userData.acceptanceMaterialUuid = material.uuid;
-    next.userData.acceptanceBoundsRadius = boundsRadius;
+    next.userData.testOrbitBodyId = bodyId;
+    next.userData.testOrbitClass = orbitClass;
+    next.userData.testGeometryUuid = geometry.uuid;
+    next.userData.testMaterialUuid = material.uuid;
+    next.userData.testBoundsRadius = boundsRadius;
     return next;
   }, [bodyId, boundsRadius, geometry, material, orbitClass]);
 

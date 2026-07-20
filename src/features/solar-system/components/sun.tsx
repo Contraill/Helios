@@ -123,7 +123,7 @@ export function Sun({
         />
         <meshBasicMaterial
           userData={{
-            acceptanceSurfaceBodyId: "sun",
+            testSurfaceBodyId: "sun",
             texturePath: surfaceTexture?.name ?? null,
           }}
           color={surfaceTexture ? "#fff8ec" : "#f5b85f"}

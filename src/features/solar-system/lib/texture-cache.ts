@@ -165,6 +165,10 @@ export function acquireTexture(path: string): TextureLease {
   };
 }
 
+export function textureMaterialKey(texture: Texture | null): string {
+  return texture ? `texture:${texture.uuid}` : "texture:fallback";
+}
+
 export interface SceneTextureOptions {
   readonly onError?: (error: unknown, path: string) => void;
   readonly onReady?: (path: string, texture: Texture) => void;

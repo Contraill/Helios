@@ -75,7 +75,7 @@ function CatalogueCometTail({ bodyId }: { bodyId: VisualBodyId }) {
   );
 }
 
-export function VisualAcceptanceCatalogue({
+export function VisualTestCatalogue({
   mode,
 }: {
   mode: VisualCatalogueMode;
@@ -95,9 +95,9 @@ export function VisualAcceptanceCatalogue({
   return (
     <group
       userData={{
-        acceptanceCatalogue: true,
-        acceptanceCatalogueMode: mode,
-        acceptanceCatalogueTileCount: ids.length,
+        testCatalogue: true,
+        testCatalogueMode: mode,
+        testCatalogueTileCount: ids.length,
       }}
     >
       <ambientLight intensity={0.38} />
@@ -111,7 +111,7 @@ export function VisualAcceptanceCatalogue({
           <group
             key={bodyId}
             position={[x, y, 0]}
-            userData={{ acceptanceCatalogueBodyId: bodyId }}
+            userData={{ testCatalogueBodyId: bodyId }}
           >
             <CelestialVisualSurface bodyId={bodyId} radius={0.78} />
             <CatalogueCometTail bodyId={bodyId} />

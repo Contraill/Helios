@@ -11,7 +11,7 @@ import {
   textureReadinessDetails,
 } from "@/features/solar-system/lib/texture-cache";
 
-export interface HeliosSceneAcceptanceSnapshot {
+export interface HeliosSceneTestSnapshot {
   readonly catalogue: { readonly enabled: boolean; readonly mode: string | null; readonly tileCount: number; readonly bodyIds: readonly string[] };
   readonly cityLights: {
     readonly materialReady: boolean;
@@ -68,8 +68,8 @@ export interface HeliosSceneAcceptanceSnapshot {
 
 declare global {
   interface Window {
-    __HELIOS_ENABLE_SCENE_ACCEPTANCE__?: boolean;
-    __HELIOS_SCENE_ACCEPTANCE__?: HeliosSceneAcceptanceSnapshot;
+    __HELIOS_ENABLE_SCENE_TEST__?: boolean;
+    __HELIOS_SCENE_TEST__?: HeliosSceneTestSnapshot;
   }
 }
 
@@ -84,10 +84,10 @@ function texturePath(texture: Texture | null | undefined): string | null {
 }
 
 /**
- * Direct renderer instrumentation for acceptance tests. It reads mounted Three
+ * Direct renderer instrumentation for scene integration tests. It reads mounted Three
  * objects and materials; it does not predict scene state from UI policy.
  */
-function ActiveSceneAcceptanceProbe() {
+function ActiveSceneTestProbe() {
   const scene = useThree((state) => state.scene);
   const gl = useThree((state) => state.gl);
   const frame = useRef(0);
@@ -133,24 +133,24 @@ function ActiveSceneAcceptanceProbe() {
     const catalogue = { enabled: false, mode: null as string | null, tileCount: 0, bodyIds: [] as string[] };
 
     scene.traverse((object) => {
-      if (object.userData.acceptanceCatalogue === true) {
+      if (object.userData.testCatalogue === true) {
         catalogue.enabled = true;
-        catalogue.mode = String(object.userData.acceptanceCatalogueMode ?? "unknown");
-        catalogue.tileCount = Number(object.userData.acceptanceCatalogueTileCount ?? 0);
+        catalogue.mode = String(object.userData.testCatalogueMode ?? "unknown");
+        catalogue.tileCount = Number(object.userData.testCatalogueTileCount ?? 0);
       }
-      const catalogueBodyId = object.userData.acceptanceCatalogueBodyId as string | undefined;
+      const catalogueBodyId = object.userData.testCatalogueBodyId as string | undefined;
       if (catalogueBodyId) catalogue.bodyIds.push(catalogueBodyId);
 
-      const orbitClass = object.userData.acceptanceOrbitClass as
+      const orbitClass = object.userData.testOrbitClass as
         keyof typeof orbits | undefined;
-      const orbitBodyId = object.userData.acceptanceOrbitBodyId as
+      const orbitBodyId = object.userData.testOrbitBodyId as
         string | undefined;
       if (orbitClass && object.visible) orbits[orbitClass] += 1;
       if (orbitClass && orbitBodyId) {
         orbitResources[orbitBodyId] = {
-          boundsRadius: Number(object.userData.acceptanceBoundsRadius ?? 0),
-          geometryUuid: String(object.userData.acceptanceGeometryUuid ?? ""),
-          materialUuid: String(object.userData.acceptanceMaterialUuid ?? ""),
+          boundsRadius: Number(object.userData.testBoundsRadius ?? 0),
+          geometryUuid: String(object.userData.testGeometryUuid ?? ""),
+          materialUuid: String(object.userData.testMaterialUuid ?? ""),
           orbitClass,
           visible: object.visible,
         };
@@ -176,7 +176,7 @@ function ActiveSceneAcceptanceProbe() {
         };
       }
 
-      const cometBodyId = object.userData.acceptanceCometBodyId as
+      const cometBodyId = object.userData.testCometBodyId as
         string | undefined;
       if (cometBodyId) {
         const antiSolar = object.userData.antiSolarDirection as
@@ -199,14 +199,14 @@ function ActiveSceneAcceptanceProbe() {
       }
 
       for (const material of materialsFor(object)) {
-        const surfaceBodyId = material.userData.acceptanceSurfaceBodyId as
+        const surfaceBodyId = material.userData.testSurfaceBodyId as
           string | undefined;
         if (surfaceBodyId) {
           surfaces[surfaceBodyId] = texturePath(
             (material as Material & { map?: Texture | null }).map,
           );
         }
-        if (material.userData.acceptanceMaterial === "earth-city-lights") {
+        if (material.userData.testMaterial === "earth-city-lights") {
           cityMaterials.push(material as ShaderMaterial);
         }
       }
@@ -215,7 +215,7 @@ function ActiveSceneAcceptanceProbe() {
     const cityMaterial = cityMaterials[0];
     const cityTexture = cityMaterial?.uniforms.uNightMap?.value as
       Texture | null | undefined;
-    window.__HELIOS_SCENE_ACCEPTANCE__ = {
+    window.__HELIOS_SCENE_TEST__ = {
       bodyPositions,
       catalogue,
       cityLights: {
@@ -248,13 +248,13 @@ function ActiveSceneAcceptanceProbe() {
   return null;
 }
 
-export function SceneAcceptanceProbe() {
+export function SceneTestProbe() {
   const [enabled] = useState(
     () =>
       typeof window !== "undefined" &&
-      (new URLSearchParams(window.location.search).get("acceptance") === "1" ||
-        window.__HELIOS_ENABLE_SCENE_ACCEPTANCE__ === true),
+      (new URLSearchParams(window.location.search).get("sceneTest") === "1" ||
+        window.__HELIOS_ENABLE_SCENE_TEST__ === true),
   );
 
-  return enabled ? <ActiveSceneAcceptanceProbe /> : null;
+  return enabled ? <ActiveSceneTestProbe /> : null;
 }

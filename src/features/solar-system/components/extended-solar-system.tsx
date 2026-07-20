@@ -438,7 +438,7 @@ function ExtendedBodyObject({
           <group
             ref={tailRef}
             userData={{
-              acceptanceCometBodyId: body.id,
+              testCometBodyId: body.id,
               visualLayer: "physical-comet-tails",
             }}
           >

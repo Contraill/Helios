@@ -11,7 +11,7 @@ import {
   visualRegistryIds,
 } from "./celestial-visual-registry";
 
-describe("Prompt 3 visual registry", () => {
+describe("Celestial visual registry", () => {
   it("covers all featured moons, accepted extended bodies and dwarf-system satellites", () => {
     const expected = [
       ...FEATURED_MOON_IDS,
@@ -51,12 +51,12 @@ describe("Prompt 3 visual registry", () => {
   });
 
   it("keeps every runtime surface at or below the 2K hard ceiling", async () => {
-    const manifest = await import("../../../../docs/explore/VISUAL_ASSET_MANIFEST.json");
+    const manifest = await import("../../../../scripts/data/texture-runtime-manifest.json");
     for (const asset of manifest.default.assets) {
-      expect(asset.runtimeDimensions.width).toBeLessThanOrEqual(2048);
-      expect(asset.runtimeDimensions.height).toBeLessThanOrEqual(1024);
+      expect(asset.width).toBeLessThanOrEqual(2048);
+      expect(asset.height).toBeLessThanOrEqual(1024);
       expect(asset.sha256).toMatch(/^[0-9a-f]{64}$/);
-      expect(asset.licenseOrPublicUseStatus.length).toBeGreaterThan(20);
+      expect(asset.license.length).toBeGreaterThan(20);
     }
   });
 });

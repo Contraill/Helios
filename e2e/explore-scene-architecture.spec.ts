@@ -52,7 +52,7 @@ async function waitForLoadedScene(page: Page) {
 }
 
 async function sceneSnapshot(page: Page) {
-  return page.evaluate(() => window.__HELIOS_SCENE_ACCEPTANCE__ ?? null);
+  return page.evaluate(() => window.__HELIOS_SCENE_TEST__ ?? null);
 }
 
 async function waitForSurfaceMaps(page: Page, count = 9) {
@@ -116,7 +116,7 @@ test("bootstrap settles real primary materials, isolates one asset failure and k
   expect(requestOrder[0]).toBe("sun");
   expect(new Set(requestOrder)).toEqual(new Set(PRIMARY_BODIES));
   expect(
-    await normalPage.evaluate(() => window.__HELIOS_SCENE_ACCEPTANCE__),
+    await normalPage.evaluate(() => window.__HELIOS_SCENE_TEST__),
   ).toBeUndefined();
   await normalPage.screenshot({
     path: testInfo.outputPath("bootstrap-primary-ready.png"),
@@ -132,7 +132,7 @@ test("bootstrap settles real primary materials, isolates one asset failure and k
   await degradedPage.route("**/textures/planets/mars.webp", (route) =>
     route.abort("failed"),
   );
-  await degradedPage.goto("/explore?acceptance=1");
+  await degradedPage.goto("/explore?sceneTest=1");
   await waitForLoadedScene(degradedPage);
   await expect(degradedPage.locator(".solar-canvas-shell")).toHaveAttribute(
     "data-degraded-assets",
@@ -230,7 +230,7 @@ test("Explore and Scientific switch typed profiles without changing scene identi
   page,
 }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/explore?acceptance=1&at=2024-01-15T12%3A30%3A00.000Z");
+  await page.goto("/explore?sceneTest=1&at=2024-01-15T12%3A30%3A00.000Z");
   await waitForLoadedScene(page);
   await waitForSurfaceMaps(page);
   await openNavigatorCategory(page, /Sun & planets/i);
@@ -420,7 +420,7 @@ test("renderer evidence covers orbit policy, selected extended bodies and Earth 
 }, testInfo) => {
   test.setTimeout(90_000);
   const audit = watchRuntime(page);
-  await page.goto("/explore?acceptance=1");
+  await page.goto("/explore?sceneTest=1");
   await waitForLoadedScene(page);
   await waitForSurfaceMaps(page);
   await expect
@@ -491,7 +491,7 @@ test("Earth night-side city lights render without daylight leakage", async ({
 }, testInfo) => {
   test.setTimeout(90_000);
   const audit = watchRuntime(page);
-  await page.goto("/explore?acceptance=1");
+  await page.goto("/explore?sceneTest=1");
   await waitForLoadedScene(page);
   await waitForSurfaceMaps(page);
   await openNavigatorCategory(page, /Sun & planets/i);

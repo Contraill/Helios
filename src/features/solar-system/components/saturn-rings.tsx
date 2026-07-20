@@ -6,7 +6,10 @@ import type { RingGeometry } from "three";
 
 import { saturnRingTextureSource } from "@/content/sources/planet-textures";
 import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
-import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
+import {
+  textureMaterialKey,
+  useSceneTexture,
+} from "@/features/solar-system/lib/texture-cache";
 
 export const SATURN_RING_INNER_RADIUS = 1.24;
 export const SATURN_RING_OUTER_RADIUS = 2.27;
@@ -55,6 +58,7 @@ export function SaturnRings({ radius, segments }: SaturnRingsProps) {
         args={[SATURN_RING_INNER_RADIUS, SATURN_RING_OUTER_RADIUS, segments, 1]}
       />
       <meshStandardMaterial
+        key={textureMaterialKey(texture)}
         alphaTest={0.012}
         color={texture ? "#fffaf2" : "#bba986"}
         depthWrite={false}

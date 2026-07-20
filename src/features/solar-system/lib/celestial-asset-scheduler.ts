@@ -1,6 +1,4 @@
-import {
-  DWARF_SATELLITE_BY_ID,
-} from "@/features/solar-system/lib/dwarf-satellite-catalogue";
+import { DWARF_SATELLITE_BY_ID } from "@/features/solar-system/lib/dwarf-satellite-catalogue";
 import { MOON_BY_ID } from "@/features/solar-system/lib/moon-catalogue";
 import {
   visualRegistryIds,

@@ -19,9 +19,11 @@ export type ExploreDockPanel = "selection" | "navigator" | "view" | "time";
 
 interface ExploreSceneUiState {
   activeDockPanel: ExploreDockPanel;
+  desktopDockCollapsed: boolean;
   mobileDockOpen: boolean;
   navigator: NavigatorState;
   setActiveDockPanel: (panel: ExploreDockPanel) => void;
+  toggleDesktopDock: () => void;
   openMobileDock: (panel?: ExploreDockPanel) => void;
   closeMobileDock: () => void;
   openCategory: (
@@ -43,9 +45,12 @@ interface ExploreSceneUiState {
 
 export const useExploreSceneUiStore = create<ExploreSceneUiState>((set) => ({
   activeDockPanel: "navigator",
+  desktopDockCollapsed: false,
   mobileDockOpen: false,
   navigator: initialNavigatorState,
   setActiveDockPanel: (activeDockPanel) => set({ activeDockPanel }),
+  toggleDesktopDock: () =>
+    set((state) => ({ desktopDockCollapsed: !state.desktopDockCollapsed })),
   openMobileDock: (activeDockPanel) =>
     set((state) => ({
       activeDockPanel: activeDockPanel ?? state.activeDockPanel,
@@ -96,6 +101,7 @@ export function activeNavigatorView(): NavigatorView {
 export function resetExploreSceneUiStore(): void {
   useExploreSceneUiStore.setState({
     activeDockPanel: "navigator",
+    desktopDockCollapsed: false,
     mobileDockOpen: false,
     navigator: initialNavigatorState,
   });

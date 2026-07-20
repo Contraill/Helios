@@ -4,7 +4,10 @@ import { useLayoutEffect } from "react";
 
 import { earthCloudTextureSource } from "@/content/sources/planet-textures";
 import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
-import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
+import {
+  textureMaterialKey,
+  useSceneTexture,
+} from "@/features/solar-system/lib/texture-cache";
 
 interface EarthCloudLayerProps {
   segments: readonly [number, number];
@@ -29,6 +32,7 @@ export function EarthCloudLayer({ segments }: EarthCloudLayerProps) {
     >
       <sphereGeometry args={[1, segments[0], segments[1]]} />
       <meshStandardMaterial
+        key={textureMaterialKey(texture)}
         alphaTest={0.018}
         color="#f8fbff"
         depthWrite={false}

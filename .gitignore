@@ -1,5 +1,3 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
 # dependencies
 /node_modules
 /.pnp
@@ -10,44 +8,38 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# generated output
 /.next/
 /out/
+/build/
+/coverage/
+/playwright-report/
+/test-results/
+/.vercel/
+*.tsbuildinfo
+next-env.d.ts
 
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
+# local environment and logs
+.env*
+!.env.example
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.pem
+.DS_Store
 
-# env files (can opt-in for committing if needed)
-.env*
+# project notes and local delivery artifacts
+/docs/
+/evidence/
+/DELIVERY_MANIFEST.json
+/NEXT_EXPLORE_GATES.md
+/REMOVAL_LEDGER.md
+*.patch
+*.bundle
+*.zip
+*.zip.sha256
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# playwright
-/playwright-report/
-/test-results/
-
-# keep the env template in version control
-!.env.example
-
-# Project decisions and phase reports are intentionally version-controlled.
-# python cache
+# Python cache
 __pycache__/
 *.py[cod]

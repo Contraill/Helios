@@ -291,7 +291,7 @@ export function PlanetSystem({
             />
             <meshStandardMaterial
               userData={{
-                acceptanceSurfaceBodyId: planet.id,
+                testSurfaceBodyId: planet.id,
                 texturePath: surfaceTexture?.name ?? null,
               }}
               color={surfaceTexture ? visualProfile.surfaceTint : planet.color}
