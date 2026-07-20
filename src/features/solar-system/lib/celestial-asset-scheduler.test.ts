@@ -14,7 +14,9 @@ describe("secondary celestial asset scheduling", () => {
     });
     expect(visible.length).toBeLessThan(secondaryCelestialAssets.length);
     expect(visible.length).toBeLessThanOrEqual(12);
-    expect(visible.every((asset) => asset.category === "planetary-moons")).toBe(true);
+    expect(visible.every((asset) => asset.category === "planetary-moons")).toBe(
+      true,
+    );
   });
 
   it("promotes selection and the open parent system above category background work", () => {

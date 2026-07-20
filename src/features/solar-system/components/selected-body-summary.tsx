@@ -156,13 +156,30 @@ export function SelectedBodySummary({
         />
         <p>{selectedMetadata.summary.description}</p>
         <dl className={gateStyles.metrics}>
-          <div><dt>Mean radius</dt><dd>{moon.meanRadiusKm.toLocaleString("en-US")} km</dd></div>
-          <div><dt>Orbital period</dt><dd>{moon.orbitalPeriodDays.toLocaleString("en-US")} days</dd></div>
-          <div><dt>Representation</dt><dd>{representationLabel(type)}</dd></div>
-          <div><dt>Visual</dt><dd>{visual.surface.representation}</dd></div>
-          <div><dt>Provider</dt><dd>{moon.representation.provider}</dd></div>
+          <div>
+            <dt>Mean radius</dt>
+            <dd>{moon.meanRadiusKm.toLocaleString("en-US")} km</dd>
+          </div>
+          <div>
+            <dt>Orbital period</dt>
+            <dd>{moon.orbitalPeriodDays.toLocaleString("en-US")} days</dd>
+          </div>
+          <div>
+            <dt>Representation</dt>
+            <dd>{representationLabel(type)}</dd>
+          </div>
+          <div>
+            <dt>Visual</dt>
+            <dd>{visual.surface.representation}</dd>
+          </div>
+          <div>
+            <dt>Provider</dt>
+            <dd>{moon.representation.provider}</dd>
+          </div>
         </dl>
-        <p className={gateStyles.methodNote}>{moon.representation.precisionNote}</p>
+        <p className={gateStyles.methodNote}>
+          {moon.representation.precisionNote}
+        </p>
       </section>
     );
   }

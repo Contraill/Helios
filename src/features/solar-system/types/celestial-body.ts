@@ -97,7 +97,12 @@ export type SystemRegionId = (typeof SYSTEM_REGION_IDS)[number];
 
 /** A body or region that can own hover, selection and guided-camera focus. */
 export type CelestialBodyId =
-  "sun" | PlanetId | MoonId | ExtendedBodyId | DwarfSatelliteId | SystemRegionId;
+  | "sun"
+  | PlanetId
+  | MoonId
+  | ExtendedBodyId
+  | DwarfSatelliteId
+  | SystemRegionId;
 
 export function isMoonIdValue(value: string): value is MoonId {
   return (FEATURED_MOON_IDS as readonly string[]).includes(value);

@@ -10,7 +10,6 @@ import {
   RingGeometry,
   SphereGeometry,
   type Group,
-  type Mesh,
   type Texture,
 } from "three";
 
@@ -19,7 +18,10 @@ import {
   type CelestialVisualProfile,
   type VisualBodyId,
 } from "@/features/solar-system/lib/celestial-visual-registry";
-import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
+import {
+  textureMaterialKey,
+  useSceneTexture,
+} from "@/features/solar-system/lib/texture-cache";
 import { useReducedMotionPreference } from "@/hooks/use-reduced-motion-preference";
 
 const sphereGeometry = new SphereGeometry(1, 64, 32);
@@ -28,14 +30,15 @@ const geometryCache = new Map<VisualBodyId, BufferGeometry>();
 const ringCache = new Map<VisualBodyId, RingGeometry>();
 
 function deterministicVariation(seed: number, x: number, y: number, z: number) {
-  const value = Math.sin(
-    x * 127.1 + y * 311.7 + z * 74.7 + seed * 0.000_001,
-  );
+  const value = Math.sin(x * 127.1 + y * 311.7 + z * 74.7 + seed * 0.000_001);
   return value - Math.floor(value);
 }
 
 function bodyGeometry(profile: CelestialVisualProfile): BufferGeometry {
-  if (profile.geometry.kind === "sphere" || profile.geometry.kind === "ellipsoid") {
+  if (
+    profile.geometry.kind === "sphere" ||
+    profile.geometry.kind === "ellipsoid"
+  ) {
     return sphereGeometry;
   }
   const cached = geometryCache.get(profile.id);
@@ -46,7 +49,8 @@ function bodyGeometry(profile: CelestialVisualProfile): BufferGeometry {
     const x = position.getX(index);
     const y = position.getY(index);
     const z = position.getZ(index);
-    const variation = 0.86 + deterministicVariation(profile.geometry.seed, x, y, z) * 0.22;
+    const variation =
+      0.86 + deterministicVariation(profile.geometry.seed, x, y, z) * 0.22;
     position.setXYZ(index, x * variation, y * variation, z * variation);
   }
   position.needsUpdate = true;
@@ -101,7 +105,8 @@ function SurfaceLayer({ profile, texture }: SurfaceLayerProps) {
     const target = texture ? 1 : 0;
     progress.current = reducedMotion
       ? target
-      : progress.current + (target - progress.current) * Math.min(1, delta * 7.5);
+      : progress.current +
+        (target - progress.current) * Math.min(1, delta * 7.5);
     for (const material of fallbackMaterials.current) {
       if (material) material.opacity = 1 - progress.current;
     }
@@ -142,6 +147,7 @@ function SurfaceLayer({ profile, texture }: SurfaceLayerProps) {
             </mesh>
             <mesh geometry={geometry}>
               <meshStandardMaterial
+                key={textureMaterialKey(texture)}
                 ref={(material) => {
                   textureMaterials.current[index] = material;
                 }}
@@ -178,11 +184,15 @@ function SurfaceLayer({ profile, texture }: SurfaceLayerProps) {
           opacity={texture ? 0 : 1}
           roughness={profile.surface.roughness}
           transparent
-          userData={{ testSurfaceBodyId: profile.id, testSurfaceRole: "fallback" }}
+          userData={{
+            testSurfaceBodyId: profile.id,
+            testSurfaceRole: "fallback",
+          }}
         />
       </mesh>
       <mesh {...common}>
         <meshStandardMaterial
+          key={textureMaterialKey(texture)}
           ref={(material) => {
             textureMaterials.current[0] = material;
           }}
@@ -233,7 +243,11 @@ export function CelestialVisualSurface({
       <SurfaceLayer profile={profile} texture={texture} />
       {profile.atmosphere ? (
         <mesh scale={1 + profile.atmosphere.scale}>
-          <primitive attach="geometry" dispose={null} object={atmosphereGeometry} />
+          <primitive
+            attach="geometry"
+            dispose={null}
+            object={atmosphereGeometry}
+          />
           <meshBasicMaterial
             color={profile.atmosphere.color}
             depthWrite={false}

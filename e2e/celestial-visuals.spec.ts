@@ -10,9 +10,10 @@ async function openCatalogue(
 ) {
   await page.goto(`/explore?sceneTest=1&catalogue=${mode}`);
   await expect
-    .poll(async () => (await catalogueSnapshot(page))?.catalogue.enabled ?? false, {
-      timeout: 30_000,
-    })
+    .poll(
+      async () => (await catalogueSnapshot(page))?.catalogue.enabled ?? false,
+      { timeout: 30_000 },
+    )
     .toBe(true);
   await expect
     .poll(async () => (await catalogueSnapshot(page))?.catalogue.mode ?? null)
@@ -56,8 +57,8 @@ test("secondary visual failure remains object-local and final surfaces replace f
   await expect
     .poll(async () => {
       const scene = await catalogueSnapshot(page);
-      return scene?.textureReadiness.find(
-        (entry) => entry.path.endsWith("moon-jupiter-europa.webp"),
+      return scene?.textureReadiness.find((entry) =>
+        entry.path.endsWith("moon-jupiter-europa.webp"),
       )?.status;
     })
     .toBe("error");

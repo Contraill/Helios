@@ -348,10 +348,20 @@ test.describe("Phase 7 external-data surfaces", () => {
     ).toBeVisible();
     await expect(page.getByText(/orbital classification/i)).toHaveCount(0);
 
-    await page.getByLabel("Category").selectOption("seaLakeIce");
+    const categoryFilter = page.getByLabel("Category");
+    await categoryFilter.selectOption("seaLakeIce");
+    await expect(categoryFilter).toHaveValue("seaLakeIce");
+
+    const matchingEvents = page.locator('[data-eonet-category="seaLakeIce"]');
+    const emptyState = page.getByText(
+      "No events match this category in the current record.",
+    );
+    await expect(matchingEvents.or(emptyState).first()).toBeVisible();
     await expect(
-      page.getByText("No events match this category in the current record."),
-    ).toBeVisible();
+      page.locator(
+        '[data-eonet-category]:not([data-eonet-category="seaLakeIce"])',
+      ),
+    ).toHaveCount(0);
   });
 
   test("Mars labels InSight as historical and exposes Trek and mission provenance", async ({

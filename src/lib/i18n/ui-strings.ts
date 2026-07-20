@@ -91,7 +91,7 @@ export const uiStrings = {
       scientificMarkerCaption: "Scientific view locator",
       scientificSelectedMarkerCaption: "Selected · shared physical scale",
       scaleNotices: {
-        exploration: "Explore view · optimized for visibility",
+        exploration: "Explore view",
         scientific: "Scientific view · shared physical scale",
       },
       gravityLabel: "Gravity",

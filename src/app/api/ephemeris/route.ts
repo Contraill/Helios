@@ -1,42 +1,14 @@
 import { NextResponse } from "next/server";
 
 import {
-  createSimulationRange,
-  isWithinSimulationRange,
-  type SimulationRange,
-} from "@/features/solar-system/lib/simulation-range";
-import {
   HorizonsError,
   loadHorizonsEphemeris,
 } from "@/lib/data/ephemeris/horizons.server";
 import { fallbackBundleFor } from "@/lib/data/ephemeris/horizons-snapshot";
 
-const MAXIMUM_ANCHOR_SKEW_MS = 24 * 60 * 60 * 1_000;
+import { requestedDateFrom, requestRangeFrom } from "./request-parameters";
 
 export const dynamic = "force-dynamic";
-
-export function requestRangeFrom(
-  anchorValue: string | null,
-  realNowMs = Date.now(),
-): SimulationRange {
-  const requestedAnchor = anchorValue ? Date.parse(anchorValue) : Number.NaN;
-  const anchorUtcMs =
-    Number.isFinite(requestedAnchor) &&
-    Math.abs(requestedAnchor - realNowMs) <= MAXIMUM_ANCHOR_SKEW_MS
-      ? requestedAnchor
-      : realNowMs;
-  return createSimulationRange(anchorUtcMs);
-}
-
-export function requestedDateFrom(
-  value: string | null,
-  range = createSimulationRange(Date.now()),
-): Date | null {
-  if (!value) return null;
-  const timestamp = Date.parse(value);
-  if (!isWithinSimulationRange(timestamp, range)) return null;
-  return new Date(timestamp);
-}
 
 export async function GET(request: Request) {
   const url = new URL(request.url);

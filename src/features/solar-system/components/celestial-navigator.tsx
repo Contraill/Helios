@@ -11,9 +11,7 @@ import {
   createCelestialRegistry,
   entriesForCategory,
 } from "@/features/solar-system/lib/celestial-registry";
-import {
-  dwarfSatellitesFor,
-} from "@/features/solar-system/lib/dwarf-satellite-catalogue";
+import { dwarfSatellitesFor } from "@/features/solar-system/lib/dwarf-satellite-catalogue";
 import { currentNavigatorView } from "@/features/solar-system/lib/celestial-navigation-state";
 import type { ExplorePlanetSummary } from "@/features/solar-system/lib/explore-planets";
 import { featuredMoonsForPlanet } from "@/features/solar-system/lib/moon-catalogue";
@@ -354,12 +352,18 @@ export function CelestialNavigator({
         <ul className={gateStyles.bodyList}>
           {dwarfEntries.map((entry) => {
             const parentId = entry.id as DwarfSystemParentId;
-            const hasSystem = (DWARF_SYSTEM_PARENT_IDS as readonly string[]).includes(entry.id);
-            const moonCount = hasSystem ? dwarfSatellitesFor(parentId).length : 0;
+            const hasSystem = (
+              DWARF_SYSTEM_PARENT_IDS as readonly string[]
+            ).includes(entry.id);
+            const moonCount = hasSystem
+              ? dwarfSatellitesFor(parentId).length
+              : 0;
             return (
               <li className={gateStyles.planetRow} key={entry.id}>
                 <button
-                  aria-current={selectedBodyId === entry.id ? "true" : undefined}
+                  aria-current={
+                    selectedBodyId === entry.id ? "true" : undefined
+                  }
                   aria-pressed={selectedBodyId === entry.id}
                   data-focus-key={`dwarf-parent-${entry.id}`}
                   data-navigator-item
@@ -393,7 +397,9 @@ export function CelestialNavigator({
         <ul className={gateStyles.bodyList}>
           <li>
             <button
-              aria-current={selectedBodyId === view.parentBodyId ? "true" : undefined}
+              aria-current={
+                selectedBodyId === view.parentBodyId ? "true" : undefined
+              }
               aria-pressed={selectedBodyId === view.parentBodyId}
               data-focus-key={`body-${view.parentBodyId}`}
               data-navigator-item
@@ -401,7 +407,10 @@ export function CelestialNavigator({
               type="button"
             >
               <span aria-hidden="true">◎</span>
-              <strong>{registry.get(view.parentBodyId)?.displayName ?? view.parentBodyId}</strong>
+              <strong>
+                {registry.get(view.parentBodyId)?.displayName ??
+                  view.parentBodyId}
+              </strong>
             </button>
           </li>
           {dwarfSatellitesFor(view.parentBodyId).map((moon) => (

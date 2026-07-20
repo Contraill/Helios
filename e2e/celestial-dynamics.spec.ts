@@ -15,8 +15,7 @@ async function waitForScene(page: Page) {
   );
   await expect
     .poll(
-      async () =>
-        page.evaluate(() => window.__HELIOS_SCENE_TEST__?.frame ?? 0),
+      async () => page.evaluate(() => window.__HELIOS_SCENE_TEST__?.frame ?? 0),
       { timeout: 30_000 },
     )
     .toBeGreaterThan(2);

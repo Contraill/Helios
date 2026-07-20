@@ -21,7 +21,10 @@ import { SceneReadinessReporter } from "./scene-readiness-reporter";
 import { Sun } from "./sun";
 import { TexturePreloader } from "./texture-preloader";
 import { UniverseBackdrop } from "./universe-backdrop";
-import { VisualTestCatalogue, type VisualCatalogueMode } from "./visual-test-catalogue";
+import {
+  VisualTestCatalogue,
+  type VisualCatalogueMode,
+} from "./visual-test-catalogue";
 
 interface SolarSystemSceneProps {
   reducedMotion: boolean;
@@ -54,7 +57,8 @@ export function SolarSystemScene({
   const profile = sceneProfileFor(scaleMode);
   const simulationMotionEnabled = !isPaused && !reducedMotion;
   const visualMotionScale = 1 + Math.log10(timeScale);
-  const [catalogueMode, setCatalogueMode] = useState<VisualCatalogueMode | null>(null);
+  const [catalogueMode, setCatalogueMode] =
+    useState<VisualCatalogueMode | null>(null);
 
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -69,7 +73,7 @@ export function SolarSystemScene({
       "comets",
     ];
     if (value && allowed.includes(value as VisualCatalogueMode)) {
-      setCatalogueMode(value as VisualCatalogueMode);
+      queueMicrotask(() => setCatalogueMode(value as VisualCatalogueMode));
     }
   }, []);
 

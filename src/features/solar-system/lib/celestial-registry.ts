@@ -2,7 +2,10 @@ import {
   EXTENDED_BODIES,
   type ExtendedBody,
 } from "@/features/solar-system/lib/extended-system";
-import { DWARF_SATELLITES, type DwarfSatellite } from "@/features/solar-system/lib/dwarf-satellite-catalogue";
+import {
+  DWARF_SATELLITES,
+  type DwarfSatellite,
+} from "@/features/solar-system/lib/dwarf-satellite-catalogue";
 import type { ExplorePlanetSummary } from "@/features/solar-system/lib/explore-planets";
 import {
   FEATURED_MOONS,

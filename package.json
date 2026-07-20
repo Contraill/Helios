@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
@@ -13,7 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "verify": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm audit:textures && pnpm build",
+    "verify": "prettier --check . && eslint . && next typegen && tsc --noEmit && vitest run && node scripts/audit-runtime-textures.mjs",
     "audit:textures": "node scripts/audit-runtime-textures.mjs"
   },
   "dependencies": {

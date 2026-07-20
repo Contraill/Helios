@@ -73,7 +73,9 @@ export function prioritizedSecondaryAssets({
       asset,
       score:
         (asset.bodyId === promotedBodyId ? 10_000 : 0) +
-        (asset.parentBodyId === promotedBodyId ? 4_000 : 0) +
+        (promotedBodyId !== null && asset.parentBodyId === promotedBodyId
+          ? 4_000
+          : 0) +
         (asset.bodyId === promotedParent ? 3_000 : 0) +
         (asset.parentBodyId === promotedParent ? 2_500 : 0) +
         (asset.category === activeCategory ? 1_000 : 0) +

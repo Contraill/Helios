@@ -131,7 +131,7 @@ export function EarthObservatory({
         {events.length ? (
           <ul className={styles.eventList}>
             {events.slice(0, 8).map((event) => (
-              <li key={event.id}>
+              <li data-eonet-category={event.category} key={event.id}>
                 <span>{categoryLabels[event.category]}</span>
                 <strong>{event.title}</strong>
                 <time dateTime={event.observedAt}>

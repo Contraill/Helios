@@ -12,7 +12,12 @@ import {
 } from "@/features/solar-system/lib/texture-cache";
 
 export interface HeliosSceneTestSnapshot {
-  readonly catalogue: { readonly enabled: boolean; readonly mode: string | null; readonly tileCount: number; readonly bodyIds: readonly string[] };
+  readonly catalogue: {
+    readonly enabled: boolean;
+    readonly mode: string | null;
+    readonly tileCount: number;
+    readonly bodyIds: readonly string[];
+  };
   readonly cityLights: {
     readonly materialReady: boolean;
     readonly texturePath: string | null;
@@ -130,21 +135,28 @@ function ActiveSceneTestProbe() {
     const orbits = { planet: 0, moon: 0, extended: 0 };
     const surfaces: Record<string, string | null> = {};
     const cityMaterials: ShaderMaterial[] = [];
-    const catalogue = { enabled: false, mode: null as string | null, tileCount: 0, bodyIds: [] as string[] };
+    const catalogue = {
+      enabled: false,
+      mode: null as string | null,
+      tileCount: 0,
+      bodyIds: [] as string[],
+    };
 
     scene.traverse((object) => {
       if (object.userData.testCatalogue === true) {
         catalogue.enabled = true;
         catalogue.mode = String(object.userData.testCatalogueMode ?? "unknown");
-        catalogue.tileCount = Number(object.userData.testCatalogueTileCount ?? 0);
+        catalogue.tileCount = Number(
+          object.userData.testCatalogueTileCount ?? 0,
+        );
       }
-      const catalogueBodyId = object.userData.testCatalogueBodyId as string | undefined;
+      const catalogueBodyId = object.userData.testCatalogueBodyId as
+        string | undefined;
       if (catalogueBodyId) catalogue.bodyIds.push(catalogueBodyId);
 
       const orbitClass = object.userData.testOrbitClass as
         keyof typeof orbits | undefined;
-      const orbitBodyId = object.userData.testOrbitBodyId as
-        string | undefined;
+      const orbitBodyId = object.userData.testOrbitBodyId as string | undefined;
       if (orbitClass && object.visible) orbits[orbitClass] += 1;
       if (orbitClass && orbitBodyId) {
         orbitResources[orbitBodyId] = {
@@ -176,8 +188,7 @@ function ActiveSceneTestProbe() {
         };
       }
 
-      const cometBodyId = object.userData.testCometBodyId as
-        string | undefined;
+      const cometBodyId = object.userData.testCometBodyId as string | undefined;
       if (cometBodyId) {
         const antiSolar = object.userData.antiSolarDirection as
           readonly number[] | undefined;

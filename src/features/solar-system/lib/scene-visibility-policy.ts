@@ -1,4 +1,7 @@
-import { DWARF_SATELLITE_BY_ID, isDwarfSatelliteId } from "@/features/solar-system/lib/dwarf-satellite-catalogue";
+import {
+  DWARF_SATELLITE_BY_ID,
+  isDwarfSatelliteId,
+} from "@/features/solar-system/lib/dwarf-satellite-catalogue";
 import type { ExtendedBody } from "@/features/solar-system/lib/extended-system";
 import { extendedBodyNavigatorCategory } from "@/features/solar-system/lib/celestial-registry";
 import type { Moon } from "@/features/solar-system/lib/moon-catalogue";

@@ -41,7 +41,10 @@ import {
 } from "@/stores/simulation-store";
 
 import { CelestialVisualSurface } from "./celestial-visual-surface";
-import { DwarfSatelliteSystem, dwarfParentVisualOffset } from "./dwarf-satellite-system";
+import {
+  DwarfSatelliteSystem,
+  dwarfParentVisualOffset,
+} from "./dwarf-satellite-system";
 import { OrbitPath } from "./orbit-path";
 import { PlanetLabel } from "./planet-label";
 
@@ -371,7 +374,8 @@ function ExtendedBodyObject({
     simulationAtMs,
     profile.id,
   );
-  const tailLength = cometVisual?.dustLength ?? profile.extended.cometTailLength;
+  const tailLength =
+    cometVisual?.dustLength ?? profile.extended.cometTailLength;
   const ionTailLength = cometVisual?.ionLength ?? tailLength * 1.25;
 
   if (sceneVisibility === "hidden") return null;
@@ -457,7 +461,13 @@ function ExtendedBodyObject({
             </mesh>
             <mesh position={[0.12, -ionTailLength / 2, 0]}>
               <coneGeometry
-                args={[cometVisual?.ionWidth ?? 0.2, ionTailLength, 18, 1, true]}
+                args={[
+                  cometVisual?.ionWidth ?? 0.2,
+                  ionTailLength,
+                  18,
+                  1,
+                  true,
+                ]}
               />
               <meshBasicMaterial
                 blending={AdditiveBlending}

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { createSimulationRange } from "@/features/solar-system/lib/simulation-range";
 
-import { requestedDateFrom, requestRangeFrom } from "./route";
+import { requestedDateFrom, requestRangeFrom } from "./request-parameters";
 
 describe("ephemeris API date boundary", () => {
   const anchor = Date.parse("2026-07-18T12:30:00.000Z");

@@ -51,7 +51,6 @@ interface PlanetaryMoonSystemProps {
   scaleMode: ScaleMode;
 }
 
-
 function MoonObject({
   moon,
   parentPlanet,

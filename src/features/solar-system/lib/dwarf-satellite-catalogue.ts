@@ -42,7 +42,8 @@ function representation(input: {
     sourceUrl: input.sourceUrl,
     targetCode: input.sourceTarget,
     referenceFrame: "parent-equatorial-j2000",
-    referencePlane: "Parent-system visual reference plane; unresolved pole angles are not synthesized",
+    referencePlane:
+      "Parent-system visual reference plane; unresolved pole angles are not synthesized",
     epoch: J2000,
     representationType: "representative-mean-elements",
     precisionNote: input.precisionNote,
@@ -203,13 +204,14 @@ export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([
   }),
 ]);
 
-export const DWARF_SATELLITE_BY_ID: Readonly<Record<DwarfSatelliteId, DwarfSatellite>> =
-  Object.freeze(
-    Object.fromEntries(DWARF_SATELLITES.map((moon) => [moon.id, moon])) as Record<
-      DwarfSatelliteId,
-      DwarfSatellite
-    >,
-  );
+export const DWARF_SATELLITE_BY_ID: Readonly<
+  Record<DwarfSatelliteId, DwarfSatellite>
+> = Object.freeze(
+  Object.fromEntries(DWARF_SATELLITES.map((moon) => [moon.id, moon])) as Record<
+    DwarfSatelliteId,
+    DwarfSatellite
+  >,
+);
 
 export function dwarfSatellitesFor(parentId: DwarfSystemParentId) {
   return DWARF_SATELLITES.filter((moon) => moon.parentId === parentId);

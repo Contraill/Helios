@@ -47,7 +47,7 @@ describe("scene visibility policy", () => {
     ).toBe("anchor");
     expect(
       regionSceneVisibility("kuiper-belt", {
-        navigatorView: { kind: "category", category: "dwarf-kuiper" },
+        navigatorView: { kind: "dwarf-parents" },
         selectedBodyId: null,
       }),
     ).toBe("anchor");

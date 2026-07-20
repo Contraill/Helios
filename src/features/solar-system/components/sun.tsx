@@ -13,7 +13,10 @@ import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
 import { sunSceneVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
-import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
+import {
+  textureMaterialKey,
+  useSceneTexture,
+} from "@/features/solar-system/lib/texture-cache";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
@@ -122,6 +125,7 @@ export function Sun({
           args={[1, quality.planetSegments[0], quality.planetSegments[1]]}
         />
         <meshBasicMaterial
+          key={textureMaterialKey(surfaceTexture)}
           userData={{
             testSurfaceBodyId: "sun",
             texturePath: surfaceTexture?.name ?? null,

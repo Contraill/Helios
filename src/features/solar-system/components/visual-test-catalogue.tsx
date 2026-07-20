@@ -13,12 +13,7 @@ import {
 import { CelestialVisualSurface } from "./celestial-visual-surface";
 
 export type VisualCatalogueMode =
-  | "all"
-  | "moons"
-  | "dwarf-systems"
-  | "asteroids"
-  | "dwarf-kuiper"
-  | "comets";
+  "all" | "moons" | "dwarf-systems" | "asteroids" | "dwarf-kuiper" | "comets";
 
 const DWARF_SYSTEM_PARENT_IDS = new Set<VisualBodyId>([
   "pluto",
@@ -36,7 +31,9 @@ function idsFor(mode: VisualCatalogueMode): readonly VisualBodyId[] {
     const category = visualProfileFor(id).category;
     if (mode === "moons") return category === "featured-moon";
     if (mode === "dwarf-systems") {
-      return category === "dwarf-system-satellite" || DWARF_SYSTEM_PARENT_IDS.has(id);
+      return (
+        category === "dwarf-system-satellite" || DWARF_SYSTEM_PARENT_IDS.has(id)
+      );
     }
     if (mode === "asteroids") return category === "asteroid";
     if (mode === "dwarf-kuiper") return category === "dwarf-kuiper";
@@ -50,7 +47,9 @@ function CatalogueCometTail({ bodyId }: { bodyId: VisualBodyId }) {
   return (
     <group rotation-z={-Math.PI / 2} scale={0.18}>
       <mesh position={[0, -visual.dustLength / 2, 0]}>
-        <coneGeometry args={[visual.dustWidth, visual.dustLength, 18, 1, true]} />
+        <coneGeometry
+          args={[visual.dustWidth, visual.dustLength, 18, 1, true]}
+        />
         <meshBasicMaterial
           blending={AdditiveBlending}
           color={visual.dustColor}
@@ -75,11 +74,7 @@ function CatalogueCometTail({ bodyId }: { bodyId: VisualBodyId }) {
   );
 }
 
-export function VisualTestCatalogue({
-  mode,
-}: {
-  mode: VisualCatalogueMode;
-}) {
+export function VisualTestCatalogue({ mode }: { mode: VisualCatalogueMode }) {
   const camera = useThree((state) => state.camera);
   const ids = useMemo(() => idsFor(mode), [mode]);
   const columns = Math.min(8, Math.max(4, Math.ceil(Math.sqrt(ids.length))));

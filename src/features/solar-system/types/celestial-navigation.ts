@@ -1,4 +1,7 @@
-import type { DwarfSystemParentId, MoonParentPlanetId } from "@/features/solar-system/types/celestial-body";
+import type {
+  DwarfSystemParentId,
+  MoonParentPlanetId,
+} from "@/features/solar-system/types/celestial-body";
 
 export const CELESTIAL_NAVIGATOR_CATEGORIES = [
   "sun-planets",
@@ -15,7 +18,10 @@ export type CelestialNavigatorCategory =
 export type NavigatorView =
   | { readonly kind: "categories" }
   | {
-      readonly category: Exclude<CelestialNavigatorCategory, "planetary-moons" | "dwarf-kuiper">;
+      readonly category: Exclude<
+        CelestialNavigatorCategory,
+        "planetary-moons" | "dwarf-kuiper"
+      >;
       readonly kind: "category";
     }
   | { readonly kind: "moon-parents" }
@@ -24,7 +30,10 @@ export type NavigatorView =
       readonly kind: "moons";
       readonly parentPlanetId: MoonParentPlanetId;
     }
-  | { readonly kind: "dwarf-system"; readonly parentBodyId: DwarfSystemParentId };
+  | {
+      readonly kind: "dwarf-system";
+      readonly parentBodyId: DwarfSystemParentId;
+    };
 
 export interface NavigatorFrame {
   readonly returnFocusKey: string | null;

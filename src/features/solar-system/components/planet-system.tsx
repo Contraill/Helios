@@ -21,7 +21,10 @@ import {
   type ScenePlanet,
 } from "@/features/solar-system/lib/scene-planets";
 import { planetSceneVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
-import { useSceneTexture } from "@/features/solar-system/lib/texture-cache";
+import {
+  textureMaterialKey,
+  useSceneTexture,
+} from "@/features/solar-system/lib/texture-cache";
 import {
   SECONDS_PER_JULIAN_YEAR,
   type ScaleMode,
@@ -290,6 +293,7 @@ export function PlanetSystem({
               args={[1, quality.planetSegments[0], quality.planetSegments[1]]}
             />
             <meshStandardMaterial
+              key={textureMaterialKey(surfaceTexture)}
               userData={{
                 testSurfaceBodyId: planet.id,
                 texturePath: surfaceTexture?.name ?? null,

@@ -62,13 +62,21 @@ function satellitePosition(
   const angle =
     (moon.phaseAtEpochDeg * Math.PI) / 180 +
     (elapsedDays / moon.orbitalPeriodDays) * Math.PI * 2;
-  const distance = compressedOrbitDistance(moon, parentMeanRadiusKm, parentRadius);
+  const distance = compressedOrbitDistance(
+    moon,
+    parentMeanRadiusKm,
+    parentRadius,
+  );
   const eccentricity = moon.eccentricity ?? 0;
   const radial =
     (distance * (1 - eccentricity * eccentricity)) /
     (1 + eccentricity * Math.cos(angle));
   if (moon.id === "dwarf-satellite-charon") {
-    return [Math.cos(angle) * radial * 0.892, 0, Math.sin(angle) * radial * 0.892];
+    return [
+      Math.cos(angle) * radial * 0.892,
+      0,
+      Math.sin(angle) * radial * 0.892,
+    ];
   }
   return [Math.cos(angle) * radial, 0, Math.sin(angle) * radial];
 }
@@ -89,13 +97,20 @@ function SatelliteObject({
   const groupRef = useRef<Group>(null);
   const surfaceRef = useRef<Group>(null);
   const simulationAtMs = useSimulationStore((state) => state.simulationAtMs);
-  const selected = useExplorationStore((state) => state.selectedBodyId === moon.id);
+  const selected = useExplorationStore(
+    (state) => state.selectedBodyId === moon.id,
+  );
   const orbitsVisible = useExplorationStore((state) => state.orbitsVisible);
-  const hovered = useExplorationStore((state) => state.hoveredBodyId === moon.id);
+  const hovered = useExplorationStore(
+    (state) => state.hoveredBodyId === moon.id,
+  );
   const selectBody = useExplorationStore((state) => state.selectBody);
   const setHoveredBody = useExplorationStore((state) => state.setHoveredBody);
-  const clearHoveredBody = useExplorationStore((state) => state.clearHoveredBody);
-  const physicalRadius = parentRadius * (moon.meanRadiusKm / parentMeanRadiusKm);
+  const clearHoveredBody = useExplorationStore(
+    (state) => state.clearHoveredBody,
+  );
+  const physicalRadius =
+    parentRadius * (moon.meanRadiusKm / parentMeanRadiusKm);
   const visualRadius = Math.max(physicalRadius, parentRadius * 0.075);
   const interactionRadius = Math.max(visualRadius * 2.3, parentRadius * 0.2);
   const initialPosition = satellitePosition(
@@ -104,7 +119,11 @@ function SatelliteObject({
     parentMeanRadiusKm,
     parentRadius,
   );
-  const orbitDistance = compressedOrbitDistance(moon, parentMeanRadiusKm, parentRadius);
+  const orbitDistance = compressedOrbitDistance(
+    moon,
+    parentMeanRadiusKm,
+    parentRadius,
+  );
   const orbitPoints = useMemo(() => {
     const eccentricity = moon.eccentricity ?? 0;
     const factor = moon.id === "dwarf-satellite-charon" ? 0.892 : 1;
@@ -129,9 +148,10 @@ function SatelliteObject({
     node.userData.cameraFocusRadius = visualRadius;
     node.userData.representationType = moon.representation.representationType;
     node.userData.referenceFrame = moon.representation.referenceFrame;
-    planetObjects.current.set(moon.id, node);
+    const objectRegistry = planetObjects.current;
+    objectRegistry.set(moon.id, node);
     return () => {
-      planetObjects.current.delete(moon.id);
+      objectRegistry.delete(moon.id);
     };
   }, [moon, planetObjects, visualRadius]);
 
@@ -175,7 +195,9 @@ function SatelliteObject({
           points={orbitPoints}
           segments={96}
           semiMajorAxis={orbitDistance}
-          semiMinorAxis={orbitDistance * Math.sqrt(1 - (moon.eccentricity ?? 0) ** 2)}
+          semiMinorAxis={
+            orbitDistance * Math.sqrt(1 - (moon.eccentricity ?? 0) ** 2)
+          }
         />
       ) : null}
       <group

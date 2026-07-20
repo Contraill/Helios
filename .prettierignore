@@ -7,3 +7,6 @@ next-env.d.ts
 
 # Generated from the visual asset catalogue.
 src/features/solar-system/lib/celestial-visual-registry.ts
+
+# Generated package-manager lockfile.
+pnpm-lock.yaml

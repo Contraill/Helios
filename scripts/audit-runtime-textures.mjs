@@ -84,7 +84,11 @@ for (const asset of manifest.assets) {
   if (!asset.sha256 || !/^[0-9a-f]{64}$/.test(asset.sha256)) {
     errors.push(`missing or invalid SHA-256: ${asset.path}`);
   }
-  if (!asset.projection || !asset.northPoleConvention || typeof asset.primeMeridianVerified !== "boolean") {
+  if (
+    !asset.projection ||
+    !asset.northPoleConvention ||
+    typeof asset.primeMeridianVerified !== "boolean"
+  ) {
     errors.push(`incomplete orientation metadata: ${asset.path}`);
   }
   const physical = resolve(root, "public", asset.path.replace(/^\//, ""));
