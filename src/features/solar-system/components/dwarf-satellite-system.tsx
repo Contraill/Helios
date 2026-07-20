@@ -127,7 +127,9 @@ function SatelliteObject({
     node.userData.representationType = moon.representation.representationType;
     node.userData.referenceFrame = moon.representation.referenceFrame;
     planetObjects.current.set(moon.id, node);
-    return () => planetObjects.current.delete(moon.id);
+    return () => {
+      planetObjects.current.delete(moon.id);
+    };
   }, [moon, planetObjects, visualRadius]);
 
   useFrame(() => {

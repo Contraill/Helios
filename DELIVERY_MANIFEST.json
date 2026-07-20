@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "productionTime": "2026-07-19T20:33:03Z",
+  "productionTime": "2026-07-19T20:42:25Z",
   "exactBaseCommit": "91b7c71bfffa4f88b5a86042113b45a2e23ff122",
   "exactBaseTree": "2d0a3d85d0d16204d4d06af47859c3cab1b4f2f8",
   "cumulativeScope": [
@@ -19,7 +19,7 @@
     "archiveRoot": "helios-prompt3-applied-repository",
     "inventoryFileCountExcludingManifest": 414,
     "totalSnapshotFileCountIncludingManifest": 415,
-    "inventoryByteSizeExcludingManifest": 11045597,
+    "inventoryByteSizeExcludingManifest": 11045612,
     "dependencyAndBuildCachesIntentionallyExcluded": true,
     "excludedPathsAndPatterns": [
       ".git/",
@@ -1303,8 +1303,8 @@
     },
     {
       "relativePath": "src/features/solar-system/components/dwarf-satellite-system.tsx",
-      "byteSize": 8868,
-      "sha256": "2f0b5ee5c4409b409d80155010c56f825827c0a1c4a7eec015c533bd43fba20b"
+      "byteSize": 8883,
+      "sha256": "b72f1d7dc38e30a8381590ed522cc20d37898e32bdc1c1ad764b54c704c25471"
     },
     {
       "relativePath": "src/features/solar-system/components/earth-city-lights.tsx",
@@ -2130,6 +2130,15 @@
       "relativePath": "vitest.setup.ts",
       "byteSize": 159,
       "sha256": "8fed48a900c5e63764f4e525ddb3f6e0e46be4a98985c706331fd0e6a86e42fe"
+    }
+  ],
+  "postDeliveryHotfixes": [
+    {
+      "id": "react-effect-cleanup-void",
+      "path": "src/features/solar-system/components/dwarf-satellite-system.tsx",
+      "reason": "React 19 EffectCallback cleanup must return void; Map.delete returns boolean when used as an expression-bodied cleanup.",
+      "change": "Wrap planetObjects.current.delete(moon.id) in a block-bodied cleanup so the destructor returns void.",
+      "behavioralScope": "Registry cleanup only; no ephemeris, orbit, visual profile, asset, or UI behavior changed."
     }
   ]
 }
