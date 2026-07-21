@@ -29,6 +29,25 @@ describe("Explore preference retirement", () => {
     expect(() => migrateLegacyExplorePreferences(localStorage)).not.toThrow();
     expect(localStorage.getItem("helios-preferences")).toBeNull();
   });
+
+  it("retires extended-system storage idempotently", () => {
+    localStorage.setItem(
+      "helios-extended-system",
+      JSON.stringify({
+        state: {
+          dustVisible: true,
+          density: "sparse",
+          representation: "physical",
+        },
+        version: 4,
+      }),
+    );
+
+    expect(() => migrateLegacyExplorePreferences(localStorage)).not.toThrow();
+    expect(localStorage.getItem("helios-extended-system")).toBeNull();
+    expect(() => migrateLegacyExplorePreferences(localStorage)).not.toThrow();
+    expect(localStorage.getItem("helios-extended-system")).toBeNull();
+  });
 });
 
 it("migrates legacy orbit and label choices into versioned visibility state", async () => {

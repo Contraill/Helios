@@ -8,7 +8,6 @@ import {
   useExplorationStore,
 } from "@/stores/exploration-store";
 import { resetExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
-import { resetExtendedSystemStore } from "@/stores/extended-system-store";
 
 import { CelestialNavigator } from "./celestial-navigator";
 
@@ -65,7 +64,6 @@ describe("CelestialNavigator", () => {
   beforeEach(() => {
     resetExplorationStore();
     resetExploreSceneUiStore();
-    resetExtendedSystemStore();
   });
 
   it("keeps non-active category items out of the DOM and restores category focus on Back", () => {
@@ -116,5 +114,30 @@ describe("CelestialNavigator", () => {
     fireEvent.click(screen.getByRole("button", { name: /Regions & context/i }));
 
     expect(useExplorationStore.getState().selectedBodyId).toBe("ceres");
+  });
+
+  it("shows only the four Regions & context navigation targets", () => {
+    render(<CelestialNavigator planetSummaries={planets} sceneSun={sun} />);
+    fireEvent.click(screen.getByRole("button", { name: /Regions & context/i }));
+
+    expect(screen.getByRole("button", { name: "Asteroid belt" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Kuiper belt" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Oort cloud" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Heliosphere" })).toBeVisible();
+
+    for (const retiredCopy of [
+      "Zodiacal dust & meteor context",
+      "Belt density",
+      "Sparse",
+      "Standard",
+      "Detailed",
+      "Representation",
+      "Physical",
+      "Cinematic",
+    ]) {
+      expect(screen.queryByText(retiredCopy)).toBeNull();
+    }
+
+    expect(screen.getAllByRole("button")).toHaveLength(5);
   });
 });

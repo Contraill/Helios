@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 
 import { migrateLegacyExplorePreferences } from "@/features/solar-system/lib/experience-storage-migration";
 import { useExplorationStore } from "@/stores/exploration-store";
-import { useExtendedSystemStore } from "@/stores/extended-system-store";
 import { useSimulationStore } from "@/stores/simulation-store";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 
@@ -17,7 +16,6 @@ export function useHydrateExperienceSettings(): boolean {
     void Promise.allSettled([
       useExplorationStore.persist.rehydrate(),
       useSimulationStore.persist.rehydrate(),
-      useExtendedSystemStore.persist.rehydrate(),
       useSceneVisibilityStore.persist.rehydrate(),
     ]).then(() => {
       if (active) setHydrated(true);

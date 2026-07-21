@@ -23,6 +23,37 @@ function variance(values: readonly number[]): number {
 }
 
 describe("Gate 3A region visual policy", () => {
+  it("exposes one fixed Detailed and Cinematic region contract", () => {
+    expect(regionVisualProfileFor).toHaveLength(3);
+
+    for (const mode of ["exploration", "scientific"] as const) {
+      const scene = sceneProfileFor(mode);
+      const profiles = [
+        regionVisualProfileFor("asteroid-belt", mode, scene),
+        regionVisualProfileFor("kuiper-belt", mode, scene),
+        regionVisualProfileFor("oort-cloud", mode, scene),
+        regionVisualProfileFor("heliosphere", mode, scene),
+      ];
+
+      expect(
+        profiles.map((profile) => profile.distribution.pointCount),
+      ).toEqual([1_050, 820, 1_650, 480]);
+      expect(profiles[0]?.distribution.opacity).toBe(0.56);
+      expect(profiles[1]?.distribution.opacity).toBe(0.47);
+      expect(
+        profiles.every(
+          (profile) =>
+            Number.isFinite(profile.distribution.pointCount) &&
+            profile.distribution.pointCount >= 64 &&
+            profile.distribution.pointCount <= 2_000,
+        ),
+      ).toBe(true);
+      expect(regionVisualProfileFor("asteroid-belt", mode, scene)).toEqual(
+        profiles[0],
+      );
+    }
+  });
+
   it("creates deterministic but distinct asteroid and Kuiper distributions", () => {
     const scene = sceneProfileFor("exploration");
     const asteroidProfile = regionVisualProfileFor(
@@ -99,6 +130,7 @@ describe("Gate 3A region visual policy", () => {
       expect(
         distribution.strata.every((entry) => finitePositions(entry.positions)),
       ).toBe(true);
+      expect(profile.distribution.pointCount).toBe(1_650);
       expect(profile.distribution.radialExtent[1]).toBe(
         scene.extended.oort.renderRadius,
       );
@@ -141,6 +173,7 @@ describe("Gate 3A region visual policy", () => {
     for (const mode of ["exploration", "scientific"] as const) {
       const scene = sceneProfileFor(mode);
       const profile = regionVisualProfileFor("heliosphere", mode, scene);
+      expect(profile.distribution.pointCount).toBe(480);
       expect(profile.representation).toBe("schematic");
       expect(profile.distribution.radialExtent[1]).toBeGreaterThan(
         profile.distribution.radialExtent[0],

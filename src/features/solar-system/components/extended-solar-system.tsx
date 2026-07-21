@@ -47,7 +47,6 @@ import type { ScaleMode } from "@/features/solar-system/types/experience-setting
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
-import { useExtendedSystemStore } from "@/stores/extended-system-store";
 import {
   currentSimulationTimeMs,
   useSimulationStore,
@@ -81,27 +80,6 @@ function randomGenerator(seed: number) {
     result ^= result + Math.imul(result ^ (result >>> 7), result | 61);
     return ((result ^ (result >>> 14)) >>> 0) / 4_294_967_296;
   };
-}
-
-function shellParticlePositions(
-  count: number,
-  innerRadius: number,
-  outerRadius: number,
-  seed: number,
-) {
-  const random = randomGenerator(seed);
-  const positions = new Float32Array(count * 3);
-  for (let index = 0; index < count; index += 1) {
-    const cosine = random() * 2 - 1;
-    const azimuth = random() * Math.PI * 2;
-    const sine = Math.sqrt(1 - cosine ** 2);
-    const radius =
-      innerRadius + Math.pow(random(), 0.6) * (outerRadius - innerRadius);
-    positions[index * 3] = radius * sine * Math.cos(azimuth);
-    positions[index * 3 + 1] = radius * cosine;
-    positions[index * 3 + 2] = radius * sine * Math.sin(azimuth);
-  }
-  return positions;
 }
 
 function solarWindStreakPositions(
@@ -396,25 +374,14 @@ function BeltLayer({
   scaleMode: ScaleMode;
   visible: boolean;
 }) {
-  const density = useExtendedSystemStore((state) => state.density);
-  const representation = useExtendedSystemStore(
-    (state) => state.representation,
-  );
   const id: SystemRegionId =
     layer === "asteroid" ? "asteroid-belt" : "kuiper-belt";
   const selected = useExplorationStore((state) => state.selectedBodyId === id);
   const hovered = useExplorationStore((state) => state.hoveredBodyId === id);
   const sceneProfile = sceneProfileFor(scaleMode);
   const profile = useMemo(
-    () =>
-      regionVisualProfileFor(
-        id,
-        scaleMode,
-        sceneProfile,
-        density === "standard" ? "balanced" : density,
-        representation,
-      ),
-    [density, id, representation, scaleMode, sceneProfile],
+    () => regionVisualProfileFor(id, scaleMode, sceneProfile),
+    [id, scaleMode, sceneProfile],
   );
   const distribution = useMemo(
     () => buildRegionDistribution(profile, sceneProfile),
@@ -959,51 +926,6 @@ function OortCloud({
   );
 }
 
-function DustAndMeteorLayer({
-  scaleMode,
-}: Pick<ExtendedSolarSystemProps, "scaleMode">) {
-  const strategy = sceneProfileFor(scaleMode).scale.strategy;
-  const radius = strategy.distanceFromAu(2.8);
-  const dust = shellParticlePositions(520, radius * 0.15, radius, 0xd0572026);
-  return (
-    <group
-      rotation-x={0.12}
-      scale={[1, 0.075, 1]}
-      userData={{ visualLayer: "zodiacal-dust-and-meteor-streams" }}
-    >
-      <points frustumCulled={false} raycast={() => undefined}>
-        <bufferGeometry>
-          <bufferAttribute attach="attributes-position" args={[dust, 3]} />
-        </bufferGeometry>
-        <pointsMaterial
-          blending={AdditiveBlending}
-          color="#d4b27b"
-          depthWrite={false}
-          opacity={0.18}
-          size={0.04}
-          transparent
-        />
-      </points>
-      {[0.91, 1, 1.08].map((scale, index) => (
-        <mesh
-          key={scale}
-          raycast={DISABLED_RAYCAST}
-          rotation-x={Math.PI / 2 + index * 0.12}
-          scale={scale}
-        >
-          <torusGeometry args={[strategy.distanceFromAu(1), 0.012, 4, 128]} />
-          <meshBasicMaterial
-            color={["#6aa7d8", "#c5a469", "#9b78bd"][index]}
-            depthWrite={false}
-            opacity={0.13}
-            transparent
-          />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
 const HELIOSPHERE_VERTEX_SHADER = `
   varying vec3 vNormal;
   varying vec3 vWorldPosition;
@@ -1244,7 +1166,6 @@ export function ExtendedSolarSystem({
   quality,
   scaleMode,
 }: ExtendedSolarSystemProps) {
-  const dustVisible = useExtendedSystemStore((state) => state.dustVisible);
   const asteroidBeltVisible = useSceneVisibilityStore((state) =>
     effectiveBodyVisibility("asteroid-belt", state),
   );
@@ -1256,9 +1177,6 @@ export function ExtendedSolarSystem({
   );
   const heliosphereVisible = useSceneVisibilityStore((state) =>
     effectiveBodyVisibility("heliosphere", state),
-  );
-  const regionsVisible = useSceneVisibilityStore(
-    (state) => state.categories.regions,
   );
 
   return (
@@ -1297,9 +1215,6 @@ export function ExtendedSolarSystem({
           scaleMode={scaleMode}
           visible={oortVisible}
         />
-      </group>
-      <group visible={regionsVisible && dustVisible}>
-        <DustAndMeteorLayer scaleMode={scaleMode} />
       </group>
       <group visible={heliosphereVisible}>
         <Heliosphere

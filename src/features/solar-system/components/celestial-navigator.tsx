@@ -30,7 +30,6 @@ import type {
 import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
-import { useExtendedSystemStore } from "@/stores/extended-system-store";
 
 import gateStyles from "./explore-scene-gate.module.css";
 
@@ -127,16 +126,6 @@ export function CelestialNavigator({
   const consumeFocusRequest = useExploreSceneUiStore(
     (state) => state.consumeNavigatorFocusRequest,
   );
-  const density = useExtendedSystemStore((state) => state.density);
-  const representation = useExtendedSystemStore(
-    (state) => state.representation,
-  );
-  const dustVisible = useExtendedSystemStore((state) => state.dustVisible);
-  const setDensity = useExtendedSystemStore((state) => state.setDensity);
-  const setRepresentation = useExtendedSystemStore(
-    (state) => state.setRepresentation,
-  );
-  const toggleDust = useExtendedSystemStore((state) => state.toggleDust);
   const view = currentNavigatorView(navigator);
   const registry = useMemo(
     () => createCelestialRegistry(planetSummaries, sceneSun),
@@ -452,71 +441,23 @@ export function CelestialNavigator({
       ) : null}
 
       {view.kind === "category" && view.category === "regions-context" ? (
-        <>
-          <ul className={gateStyles.bodyList}>
-            {categoryEntries.map((entry) => (
-              <li key={entry.id}>
-                <button
-                  aria-current={
-                    selectedBodyId === entry.id ? "true" : undefined
-                  }
-                  aria-pressed={selectedBodyId === entry.id}
-                  data-focus-key={`body-${entry.id}`}
-                  data-navigator-item
-                  onClick={() => selectBodyAndOpenSummary(entry.id)}
-                  type="button"
-                >
-                  <span aria-hidden="true">◎</span>
-                  <strong>{entry.displayName}</strong>
-                </button>
-              </li>
-            ))}
-          </ul>
-          <div className={gateStyles.contextControls}>
-            <fieldset>
-              <legend>{exploreSceneCopy.navigator.context.beltDensity}</legend>
-              {(["sparse", "standard", "detailed"] as const).map((value) => (
-                <button
-                  aria-pressed={density === value}
-                  data-navigator-item
-                  key={value}
-                  onClick={() => setDensity(value)}
-                  type="button"
-                >
-                  {exploreSceneCopy.navigator.context.densityLabels[value]}
-                </button>
-              ))}
-            </fieldset>
-            <fieldset>
-              <legend>
-                {exploreSceneCopy.navigator.context.representation}
-              </legend>
-              {(["physical", "cinematic"] as const).map((value) => (
-                <button
-                  aria-pressed={representation === value}
-                  data-navigator-item
-                  key={value}
-                  onClick={() => setRepresentation(value)}
-                  type="button"
-                >
-                  {
-                    exploreSceneCopy.navigator.context.representationLabels[
-                      value
-                    ]
-                  }
-                </button>
-              ))}
-            </fieldset>
-            <button
-              aria-pressed={dustVisible}
-              data-navigator-item
-              onClick={toggleDust}
-              type="button"
-            >
-              {exploreSceneCopy.navigator.dustContext}
-            </button>
-          </div>
-        </>
+        <ul className={gateStyles.bodyList}>
+          {categoryEntries.map((entry) => (
+            <li key={entry.id}>
+              <button
+                aria-current={selectedBodyId === entry.id ? "true" : undefined}
+                aria-pressed={selectedBodyId === entry.id}
+                data-focus-key={`body-${entry.id}`}
+                data-navigator-item
+                onClick={() => selectBodyAndOpenSummary(entry.id)}
+                type="button"
+              >
+                <span aria-hidden="true">◎</span>
+                <strong>{entry.displayName}</strong>
+              </button>
+            </li>
+          ))}
+        </ul>
       ) : null}
     </nav>
   );

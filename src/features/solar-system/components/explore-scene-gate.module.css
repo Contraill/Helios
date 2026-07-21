@@ -310,40 +310,6 @@
   font-size: 0.72rem;
 }
 
-.contextControls {
-  display: grid;
-  gap: 0.45rem;
-  padding-top: 0.4rem;
-  border-top: 1px solid rgb(255 255 255 / 0.08);
-}
-
-.contextControls fieldset {
-  min-width: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin: 0;
-  padding: 0.55rem;
-  border: 1px solid rgb(255 255 255 / 0.08);
-  border-radius: 0.75rem;
-}
-
-.contextControls legend {
-  padding-inline: 0.25rem;
-  color: rgb(194 207 227 / 0.68);
-  font-size: 0.68rem;
-  text-transform: uppercase;
-}
-
-.contextControls button {
-  padding-inline: 0.75rem;
-}
-
-.contextControls button[aria-pressed="true"] {
-  border-color: rgb(167 202 245 / 0.48);
-  background: rgb(111 158 218 / 0.17);
-}
-
 .summary p,
 .emptySummary p {
   margin: 0;

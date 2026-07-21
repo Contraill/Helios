@@ -106,26 +106,10 @@ function sceneDistance(profile: SceneProfile, au: number): number {
   return finitePositive(profile.scale.strategy.distanceFromAu(au), 0.01);
 }
 
-function countFor(
-  base: number,
-  density: "sparse" | "balanced" | "detailed",
-  representation: "physical" | "cinematic",
-): number {
-  const densityMultiplier =
-    density === "sparse" ? 0.58 : density === "detailed" ? 1.38 : 1;
-  const representationMultiplier = representation === "cinematic" ? 1.12 : 1;
-  return Math.max(
-    64,
-    Math.round(base * densityMultiplier * representationMultiplier),
-  );
-}
-
 export function regionVisualProfileFor(
   bodyId: RegionId,
   mode: ScaleMode,
   profile: SceneProfile,
-  density: "sparse" | "balanced" | "detailed" = "balanced",
-  representation: "physical" | "cinematic" = "physical",
 ): RegionVisualProfile {
   const scientific = mode === "scientific";
   if (bodyId === "asteroid-belt") {
@@ -137,11 +121,11 @@ export function regionVisualProfileFor(
       kind: "main-belt",
       representation: "context-layer",
       distribution: {
-        pointCount: countFor(1_050, density, representation),
+        pointCount: 1_050,
         radialExtent: [inner, outer],
         verticalExtent: Math.max(0.18, extent * (scientific ? 0.018 : 0.055)),
         inclinationRangeDeg: [0.2, scientific ? 19 : 24],
-        opacity: representation === "cinematic" ? 0.62 : 0.56,
+        opacity: 0.56,
         hoveredOpacity: 0.66,
         selectedOpacity: 0.72,
         pointSize: scientific ? 0.055 : 0.072,
@@ -184,11 +168,11 @@ export function regionVisualProfileFor(
       kind: "trans-neptunian-belt",
       representation: "context-layer",
       distribution: {
-        pointCount: countFor(820, density, representation),
+        pointCount: 820,
         radialExtent: [inner, outer],
         verticalExtent: Math.max(0.42, extent * (scientific ? 0.14 : 0.2)),
         inclinationRangeDeg: [1, scientific ? 36 : 42],
-        opacity: representation === "cinematic" ? 0.52 : 0.47,
+        opacity: 0.47,
         hoveredOpacity: 0.56,
         selectedOpacity: 0.61,
         pointSize: scientific ? 0.052 : 0.064,
@@ -234,7 +218,7 @@ export function regionVisualProfileFor(
       kind: "distant-shell",
       representation: "inferred",
       distribution: {
-        pointCount: countFor(1_650, density, representation),
+        pointCount: 1_650,
         radialExtent: [inner, outer],
         verticalExtent: extent,
         inclinationRangeDeg: [0, 180],
@@ -280,7 +264,7 @@ export function regionVisualProfileFor(
     kind: "solar-boundary",
     representation: "schematic",
     distribution: {
-      pointCount: countFor(480, density, representation),
+      pointCount: 480,
       radialExtent: [termination, heliopause],
       verticalExtent: extent * 0.78,
       inclinationRangeDeg: [0, 180],

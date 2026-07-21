@@ -15,69 +15,75 @@ describe("extended system preferences", () => {
     resetExtendedSystemStore();
   });
 
-  it("retains only user-controlled representation cost preferences", () => {
-    state().setDensity("detailed");
-    state().setRepresentation("cinematic");
-    state().toggleDust();
-    expect(state().density).toBe("detailed");
-    expect(state().representation).toBe("cinematic");
-    expect(state().dustVisible).toBe(true);
-    for (const removed of [
-      "panelExpanded",
-      "cometsVisible",
-      "asteroidBeltVisible",
-      "kuiperBeltVisible",
-      "oortCloudVisible",
-      "heliosphereVisible",
-    ]) {
-      expect(removed in state()).toBe(false);
-    }
+  it("starts with only the dust preference and its toggle action", () => {
+    expect(Object.keys(state()).sort()).toEqual(["dustVisible", "toggleDust"]);
+    expect(state().dustVisible).toBe(false);
   });
 
-  it("migrates old clutter toggles without carrying dead state forward", async () => {
-    localStorage.setItem(
-      "helios-extended-system",
-      JSON.stringify({
-        state: {
-          asteroidBeltVisible: false,
-          kuiperBeltVisible: false,
-          cometsVisible: true,
-          oortCloudVisible: true,
-          heliosphereVisible: true,
-          panelExpanded: true,
-          dustVisible: true,
-          density: "sparse",
-          representation: "physical",
-        },
-        version: 2,
-      }),
-    );
-    await useExtendedSystemStore.persist.rehydrate();
-    expect(state()).toMatchObject({
-      density: "sparse",
-      representation: "physical",
-      dustVisible: true,
-    });
-    expect("asteroidBeltVisible" in state()).toBe(false);
-    expect("panelExpanded" in state()).toBe(false);
+  it("toggles zodiacal dust context", () => {
+    state().toggleDust();
+    expect(state().dustVisible).toBe(true);
+    state().toggleDust();
+    expect(state().dustVisible).toBe(false);
   });
-  it("rejects corrupted density, representation and dust values", async () => {
+
+  for (const version of [2, 3]) {
+    it(`migrates version ${version} without retaining retired options`, async () => {
+      localStorage.setItem(
+        "helios-extended-system",
+        JSON.stringify({
+          state: {
+            asteroidBeltVisible: false,
+            kuiperBeltVisible: false,
+            cometsVisible: true,
+            oortCloudVisible: true,
+            heliosphereVisible: true,
+            panelExpanded: true,
+            dustVisible: true,
+            density: "sparse",
+            representation: "physical",
+          },
+          version,
+        }),
+      );
+      await useExtendedSystemStore.persist.rehydrate();
+
+      expect(state().dustVisible).toBe(true);
+      for (const removed of [
+        "density",
+        "representation",
+        "setDensity",
+        "setRepresentation",
+        "panelExpanded",
+        "cometsVisible",
+        "asteroidBeltVisible",
+        "kuiperBeltVisible",
+        "oortCloudVisible",
+        "heliosphereVisible",
+      ]) {
+        expect(removed in state()).toBe(false);
+      }
+    });
+  }
+
+  it("falls back to hidden dust for corrupted persisted values", async () => {
     localStorage.setItem(
       "helios-extended-system",
       JSON.stringify({
         state: {
-          density: "infinite",
-          representation: "photoreal",
           dustVisible: "yes",
+          density: "detailed",
+          representation: "cinematic",
         },
-        version: 2,
+        version: 3,
       }),
     );
     await useExtendedSystemStore.persist.rehydrate();
-    expect(state()).toMatchObject({
-      density: "standard",
-      representation: "physical",
-      dustVisible: false,
-    });
+
+    expect(state().dustVisible).toBe(false);
+    expect("density" in state()).toBe(false);
+    expect("representation" in state()).toBe(false);
+    expect("setDensity" in state()).toBe(false);
+    expect("setRepresentation" in state()).toBe(false);
   });
 });

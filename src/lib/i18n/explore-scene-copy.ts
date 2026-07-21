@@ -45,7 +45,7 @@ export const exploreSceneCopy = Object.freeze({
       },
       "regions-context": {
         label: "Regions & context",
-        description: "Belts, dust, heliosphere and schematic outer context.",
+        description: "Belts, heliosphere and schematic outer context.",
       },
     } satisfies Readonly<
       Record<CelestialNavigatorCategory, { label: string; description: string }>
@@ -53,21 +53,7 @@ export const exploreSceneCopy = Object.freeze({
     featuredMoons: "Featured major moons",
     openMoons: (planet: string) => `Open featured moons of ${planet}`,
     moonShortcut: "Moons",
-    dustContext: "Zodiacal dust & meteor context",
     featuredMoonCount: (count: number) => `${count} featured major moons`,
-    context: {
-      beltDensity: "Belt density",
-      representation: "Representation",
-      densityLabels: {
-        sparse: "Sparse",
-        standard: "Standard",
-        detailed: "Detailed",
-      },
-      representationLabels: {
-        physical: "Physical",
-        cinematic: "Cinematic",
-      },
-    },
   },
   registry: {
     parentPlanetNames: {

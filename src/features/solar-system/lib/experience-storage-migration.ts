@@ -6,6 +6,7 @@ import {
 
 const LEGACY_PREFERENCES_KEY = "helios-preferences";
 const EXPLORATION_KEY = "helios-exploration";
+const RETIRED_EXTENDED_SYSTEM_KEY = "helios-extended-system";
 export const EXPLORE_STORAGE_MIGRATION_VERSION = 4;
 
 function parsedEnvelope(
@@ -38,6 +39,8 @@ function booleanField(
  * Malformed envelopes are removed so Zustand deterministically falls back.
  */
 export function migrateLegacyExplorePreferences(storage: Storage): void {
+  storage.removeItem(RETIRED_EXTENDED_SYSTEM_KEY);
+
   if (storage.getItem(LEGACY_PREFERENCES_KEY) !== null) {
     storage.removeItem(LEGACY_PREFERENCES_KEY);
   }
