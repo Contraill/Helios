@@ -1,4 +1,5 @@
 import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
+import type { RegionCameraPresentation } from "@/features/solar-system/lib/region-visual-policy";
 
 export type CameraTargetKind = "body" | "system" | "region";
 
@@ -10,4 +11,5 @@ export interface CameraTargetMetadata {
   readonly collisionRadius: number;
   readonly focusRadius: number;
   readonly systemExtent?: number;
+  readonly regionPresentation?: RegionCameraPresentation;
 }

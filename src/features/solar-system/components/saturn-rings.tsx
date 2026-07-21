@@ -15,7 +15,6 @@ import {
   useSceneTexture,
 } from "@/features/solar-system/lib/texture-cache";
 
-
 interface SaturnRingsProps {
   radius: number;
   segments: number;

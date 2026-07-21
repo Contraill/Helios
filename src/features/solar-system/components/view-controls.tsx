@@ -77,7 +77,9 @@ export function ViewControls() {
           </div>
         </fieldset>
 
-        <fieldset className={`${gateStyles.viewSection} ${gateStyles.visibilityFieldset}`}>
+        <fieldset
+          className={`${gateStyles.viewSection} ${gateStyles.visibilityFieldset}`}
+        >
           <legend>Visibility</legend>
           <div className={gateStyles.visibilityGrid}>
             {SCENE_VISIBILITY_CATEGORIES.map((category) => (
@@ -118,7 +120,9 @@ export function ViewControls() {
           </span>
         </fieldset>
 
-        <fieldset className={`${gateStyles.viewSection} ${gateStyles.cameraFieldset}`}>
+        <fieldset
+          className={`${gateStyles.viewSection} ${gateStyles.cameraFieldset}`}
+        >
           <legend>{copy.camera}</legend>
           <div className={gateStyles.cameraGrid}>
             <button

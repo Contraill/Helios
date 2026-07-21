@@ -65,8 +65,7 @@ export const useExplorationStore = create<ExplorationState>()(
     (set) => ({
       ...initialExplorationState,
       selectSun: () => set((state) => transitionTo(state, "sun")),
-      selectPlanet: (planetId) =>
-        set((state) => transitionTo(state, planetId)),
+      selectPlanet: (planetId) => set((state) => transitionTo(state, planetId)),
       selectBody: (bodyId) => set((state) => transitionTo(state, bodyId)),
       clearSelection: () => set((state) => transitionTo(state, null)),
       resetView: () => set((state) => transitionTo(state, null)),

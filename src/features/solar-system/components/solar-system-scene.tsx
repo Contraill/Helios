@@ -91,10 +91,6 @@ export function SolarSystemScene({
   return (
     <>
       <color attach="background" args={["#03050a"]} />
-      <fog
-        attach="fog"
-        args={["#03050a", profile.effects.hazeNear, profile.effects.hazeFar]}
-      />
       <RendererProfileSettings exposure={profile.effects.exposure} />
       <SceneReadinessReporter />
       <CameraRig planetObjects={planetObjects} reducedMotion={reducedMotion} />

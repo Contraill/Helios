@@ -44,7 +44,14 @@ export function cameraFocusPolicy({
   const systemExtent = positiveFinite(metadata.systemExtent ?? 0, focusRadius);
   const framingRadius =
     metadata.targetKind === "region"
-      ? Math.max(focusRadius, systemExtent)
+      ? Math.max(
+          focusRadius,
+          systemExtent,
+          positiveFinite(
+            metadata.regionPresentation?.framingExtent ?? 0,
+            focusRadius,
+          ),
+        )
       : metadata.targetKind === "system"
         ? Math.max(focusRadius, systemExtent)
         : focusRadius;

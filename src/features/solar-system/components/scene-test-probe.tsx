@@ -2,10 +2,11 @@
 
 import { useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Vector3 } from "three";
+import { PerspectiveCamera, Vector3 } from "three";
 import type { Material, Mesh, Object3D, ShaderMaterial, Texture } from "three";
 
 import { cameraRuntimeSnapshot } from "@/features/solar-system/lib/camera-runtime";
+import { regionFocusAnchorOffset } from "@/features/solar-system/lib/region-visual-policy";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 import {
   currentSimulationTimeMs,
@@ -31,6 +32,14 @@ export interface HeliosSceneTestSnapshot {
     readonly texturePath: string | null;
     readonly textureReady: boolean;
     readonly uniformsReady: boolean;
+  };
+  readonly backdrop: {
+    readonly distanceAttenuation: number;
+    readonly distanceDimmingEnabled: boolean;
+    readonly localStarsMounted: boolean;
+    readonly localStarsOpacity: number;
+    readonly milkyWayMounted: boolean;
+    readonly milkyWayOpacity: number;
   };
   readonly frame: number;
   readonly gpu: {
@@ -73,6 +82,43 @@ export interface HeliosSceneTestSnapshot {
     >
   >;
   readonly orbits: Readonly<Record<"planet" | "moon" | "extended", number>>;
+  readonly regions: Readonly<
+    Record<
+      string,
+      {
+        readonly selected: boolean;
+        readonly visualState: string;
+        readonly visualKind: string;
+        readonly representation: string;
+        readonly pointCount: number;
+        readonly visibleOpacity: number;
+        readonly ambientOpacity: number;
+        readonly selectedOpacity: number;
+        readonly radialExtent: readonly [number, number];
+        readonly verticalExtent: number;
+        readonly projectedCenter: readonly [number, number];
+        readonly projectedBounds: readonly [number, number, number, number];
+        readonly projectedCoverage: number;
+        readonly viewportVisible: boolean;
+        readonly cameraFramingExtent: number;
+        readonly cameraPreferredDirection: readonly [number, number, number];
+        readonly focusAnchorProjected: readonly [number, number];
+        readonly sunProjected: readonly [number, number];
+        readonly sunProjectedCoverage: number;
+        readonly macroEnvelopeMounted: boolean;
+        readonly macroEnvelopeOpacity: number;
+        readonly macroEnvelopeCoverage: number;
+        readonly minimumViewportCoverage: number;
+        readonly maximumViewportCoverage: number;
+        readonly drawCalls: number;
+        readonly materialCount: number;
+        readonly distributionSignature: string;
+        readonly boundaryCount: number;
+        readonly boundaryRepresentation: string | null;
+        readonly layers: readonly string[];
+      }
+    >
+  >;
   readonly screenTargets: Readonly<
     Record<
       string,
@@ -138,6 +184,9 @@ function ActiveSceneTestProbe() {
   const frame = useRef(0);
   const worldPosition = useRef(new Vector3());
   const projectedPosition = useRef(new Vector3());
+  const regionCenter = useRef(new Vector3());
+  const regionFocusAnchor = useRef(new Vector3());
+  const sunWorldPosition = useRef(new Vector3());
 
   useFrame(() => {
     frame.current += 1;
@@ -192,8 +241,57 @@ function ActiveSceneTestProbe() {
       { visible: boolean; x: number; y: number }
     > = {};
     const canvasBounds = gl.domElement.getBoundingClientRect();
+    const regionRoots: Object3D[] = [];
+    const regionLayers = new Map<string, string[]>();
+    const backdrop = {
+      distanceAttenuation: scene.fog ? 1 : 0,
+      distanceDimmingEnabled: scene.fog !== null,
+      localStarsMounted: false,
+      localStarsOpacity: 0,
+      milkyWayMounted: false,
+      milkyWayOpacity: 0,
+    };
+    let sunProjected: [number, number] = [0.5, 0.5];
+    let sunProjectedCoverage = 0;
+    let sunRenderRadius = 0;
 
     scene.traverse((object) => {
+      const backdropLayer = object.userData.testBackdropLayer as
+        string | undefined;
+      if (backdropLayer === "local-stars" || backdropLayer === "milky-way") {
+        const opacity = materialsFor(object).reduce(
+          (maximum, material) =>
+            Math.max(maximum, Number(material.opacity ?? 0)),
+          0,
+        );
+        if (backdropLayer === "local-stars") {
+          backdrop.localStarsMounted = true;
+          backdrop.localStarsOpacity = Math.max(
+            backdrop.localStarsOpacity,
+            opacity,
+          );
+        } else {
+          backdrop.milkyWayMounted = true;
+          backdrop.milkyWayOpacity = Math.max(
+            backdrop.milkyWayOpacity,
+            opacity,
+          );
+        }
+      }
+
+      const regionId = object.userData.testRegionId as string | undefined;
+      if (regionId) regionRoots.push(object);
+      const regionLayer = object.userData.testRegionLayer as string | undefined;
+      if (regionLayer) {
+        let owner: Object3D | null = object;
+        while (owner && !owner.userData.testRegionId) owner = owner.parent;
+        const ownerId = owner?.userData.testRegionId as string | undefined;
+        if (ownerId) {
+          const layers = regionLayers.get(ownerId) ?? [];
+          if (!layers.includes(regionLayer)) layers.push(regionLayer);
+          regionLayers.set(ownerId, layers);
+        }
+      }
       if (object.userData.testCatalogue === true) {
         catalogue.enabled = true;
         catalogue.mode = String(object.userData.testCatalogueMode ?? "unknown");
@@ -248,6 +346,18 @@ function ActiveSceneTestProbe() {
             canvasBounds.top +
             ((1 - projectedPosition.current.y) / 2) * canvasBounds.height,
         };
+        if (rootBodyId === "sun") {
+          object.getWorldPosition(sunWorldPosition.current);
+          sunProjected = [
+            (projectedPosition.current.x + 1) / 2,
+            (1 - projectedPosition.current.y) / 2,
+          ];
+          const cameraTarget = object.userData.cameraTarget as
+            { renderRadius?: number } | undefined;
+          sunRenderRadius = Number(
+            cameraTarget?.renderRadius ?? object.userData.renderRadius ?? 0,
+          );
+        }
       }
       const interactiveBodyId = object.userData.testInteractiveBodyId as
         string | undefined;
@@ -312,12 +422,154 @@ function ActiveSceneTestProbe() {
       }
     });
 
+    const regions: Record<string, HeliosSceneTestSnapshot["regions"][string]> =
+      {};
+    const perspectiveFov =
+      camera instanceof PerspectiveCamera ? camera.fov : 46;
+    const halfVerticalFov = Math.max(0.04, (perspectiveFov * Math.PI) / 360);
+    const viewportAspect = Math.max(
+      0.1,
+      canvasBounds.width / Math.max(canvasBounds.height, 1),
+    );
+    const sunDistance = Math.max(
+      0.001,
+      camera.position.distanceTo(sunWorldPosition.current),
+    );
+    sunProjectedCoverage =
+      sunRenderRadius /
+      Math.max(0.001, sunDistance * Math.tan(halfVerticalFov));
+
+    for (const root of regionRoots) {
+      const id = String(root.userData.testRegionId);
+      root.getWorldPosition(regionCenter.current);
+      const focusAnchor = root.userData.testRegionFocusAnchor as
+        | {
+            radialFraction?: number;
+            azimuthDeg?: number;
+            heightFraction?: number;
+          }
+        | undefined;
+      const framingExtent = Number(
+        root.userData.testRegionCameraFramingExtent ?? 0,
+      );
+      const anchorOffset = regionFocusAnchorOffset({
+        framingExtent,
+        preferredDirection: [1, 0, 0],
+        focusAnchor: {
+          radialFraction: Number(focusAnchor?.radialFraction ?? 0),
+          azimuthDeg: Number(focusAnchor?.azimuthDeg ?? 0),
+          heightFraction: Number(focusAnchor?.heightFraction ?? 0),
+        },
+        minimumViewportCoverage: 0,
+        maximumViewportCoverage: 1,
+      });
+      regionFocusAnchor.current.copy(regionCenter.current);
+      regionFocusAnchor.current.x += anchorOffset[0];
+      regionFocusAnchor.current.y += anchorOffset[1];
+      regionFocusAnchor.current.z += anchorOffset[2];
+      const distance = Math.max(
+        0.001,
+        camera.position.distanceTo(regionFocusAnchor.current),
+      );
+      projectedPosition.current.copy(regionCenter.current).project(camera);
+      const centerX = projectedPosition.current.x;
+      const centerY = projectedPosition.current.y;
+      projectedPosition.current.copy(regionFocusAnchor.current).project(camera);
+      const focusAnchorProjected: [number, number] = [
+        (projectedPosition.current.x + 1) / 2,
+        (1 - projectedPosition.current.y) / 2,
+      ];
+      const verticalCoverage =
+        framingExtent / Math.max(0.001, distance * Math.tan(halfVerticalFov));
+      const horizontalCoverage = verticalCoverage / viewportAspect;
+      const coverage = Math.max(verticalCoverage, horizontalCoverage);
+      const minX = centerX - horizontalCoverage;
+      const maxX = centerX + horizontalCoverage;
+      const minY = centerY - verticalCoverage;
+      const maxY = centerY + verticalCoverage;
+      const radial = root.userData.testRegionRadialExtent as
+        readonly number[] | undefined;
+      const direction = root.userData.testRegionCameraPreferredDirection as
+        readonly number[] | undefined;
+      const macroEnvelopeExtent = Number(
+        root.userData.testRegionMacroEnvelopeCoverageExtent ?? 0,
+      );
+      const macroEnvelopeCoverage =
+        macroEnvelopeExtent > 0
+          ? macroEnvelopeExtent /
+            Math.max(0.001, distance * Math.tan(halfVerticalFov))
+          : 0;
+      regions[id] = {
+        selected: root.userData.testRegionVisualState === "selected",
+        visualState: String(root.userData.testRegionVisualState ?? "ambient"),
+        visualKind: String(root.userData.testRegionKind ?? "unknown"),
+        representation: String(
+          root.userData.testRegionRepresentation ?? "context-layer",
+        ),
+        pointCount: Number(root.userData.testRegionPointCount ?? 0),
+        visibleOpacity: Number(root.userData.testRegionVisibleOpacity ?? 0),
+        ambientOpacity: Number(root.userData.testRegionAmbientOpacity ?? 0),
+        selectedOpacity: Number(root.userData.testRegionSelectedOpacity ?? 0),
+        radialExtent: [Number(radial?.[0] ?? 0), Number(radial?.[1] ?? 0)],
+        verticalExtent: Number(root.userData.testRegionVerticalExtent ?? 0),
+        projectedCenter: [(centerX + 1) / 2, (1 - centerY) / 2],
+        projectedBounds: [
+          (minX + 1) / 2,
+          (1 - maxY) / 2,
+          (maxX + 1) / 2,
+          (1 - minY) / 2,
+        ],
+        projectedCoverage: coverage,
+        viewportVisible:
+          projectedPosition.current.z >= -1 &&
+          projectedPosition.current.z <= 1 &&
+          maxX >= -1 &&
+          minX <= 1 &&
+          maxY >= -1 &&
+          minY <= 1,
+        cameraFramingExtent: framingExtent,
+        cameraPreferredDirection: [
+          Number(direction?.[0] ?? 0),
+          Number(direction?.[1] ?? 0),
+          Number(direction?.[2] ?? 0),
+        ],
+        focusAnchorProjected,
+        sunProjected,
+        sunProjectedCoverage,
+        macroEnvelopeMounted: Boolean(
+          root.userData.testRegionMacroEnvelopeMounted,
+        ),
+        macroEnvelopeOpacity: Number(
+          root.userData.testRegionMacroEnvelopeOpacity ?? 0,
+        ),
+        macroEnvelopeCoverage,
+        minimumViewportCoverage: Number(
+          root.userData.testRegionMinimumCoverage ?? 0,
+        ),
+        maximumViewportCoverage: Number(
+          root.userData.testRegionMaximumCoverage ?? 1,
+        ),
+        drawCalls: Number(root.userData.testRegionDrawCalls ?? 0),
+        materialCount: Number(root.userData.testRegionMaterialCount ?? 0),
+        distributionSignature: String(
+          root.userData.testRegionDistributionSignature ?? "",
+        ),
+        boundaryCount: Number(root.userData.testRegionBoundaryCount ?? 0),
+        boundaryRepresentation:
+          typeof root.userData.testRegionBoundaryRepresentation === "string"
+            ? root.userData.testRegionBoundaryRepresentation
+            : null,
+        layers: regionLayers.get(id) ?? [],
+      };
+    }
+
     const cityMaterial = cityMaterials[0];
     const simulationState = useSimulationStore.getState();
     const cityTexture = cityMaterial?.uniforms.uNightMap?.value as
       Texture | null | undefined;
     window.__HELIOS_SCENE_TEST__ = {
       camera: cameraRuntimeSnapshot(),
+      backdrop,
       bodyPositions,
       catalogue,
       cityLights: {
@@ -340,6 +592,7 @@ function ActiveSceneTestProbe() {
       },
       orbitResources,
       orbits,
+      regions,
       screenTargets,
       sceneContract: {
         mountedBodyIds: [...mountedBodyIds].sort(),

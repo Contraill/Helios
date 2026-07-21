@@ -134,7 +134,6 @@ export function Sun({
     clearHoveredBody("sun");
   };
 
-
   const pointerInteraction = useCelestialPointerInteraction({
     bodyId: "sun",
     enabled: visible,

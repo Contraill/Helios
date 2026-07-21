@@ -17,6 +17,8 @@ import {
 } from "@/features/solar-system/lib/celestial-representation";
 import { visualProfileFor } from "@/features/solar-system/lib/celestial-visual-registry";
 import { createCelestialRegistry } from "@/features/solar-system/lib/celestial-registry";
+import { regionVisualProfileFor } from "@/features/solar-system/lib/region-visual-policy";
+import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import {
   effectiveBodyVisibility,
   effectiveBodyVisibilityReason,
@@ -27,7 +29,10 @@ import {
   isMoonId,
 } from "@/features/solar-system/lib/moon-catalogue";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
-import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
+import {
+  isSystemRegionIdValue,
+  type CelestialBodyId,
+} from "@/features/solar-system/types/celestial-body";
 import { planetEphemerisRepresentation } from "@/lib/data/ephemeris/models";
 import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
 import { useEphemerisStore } from "@/stores/ephemeris-store";
@@ -49,6 +54,7 @@ export function SelectedBodySummary({
   sceneSun,
 }: SelectedBodySummaryProps) {
   const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
+  const scaleMode = useExplorationStore((state) => state.scaleMode);
   const clearSelection = useExplorationStore((state) => state.clearSelection);
   const ephemerisBundle = useEphemerisStore((state) => state.bundle);
   const simulationAtMs = useSimulationStore((state) => state.simulationAtMs);
@@ -285,20 +291,46 @@ export function SelectedBodySummary({
     );
   }
 
-  return (
-    <section className={gateStyles.summary} aria-live="polite">
-      <SummaryHeader
-        closeLabel={exploreSceneCopy.summary.closeOverview}
-        eyebrow={exploreSceneCopy.summary.regionType}
-        name={selectedMetadata.displayName}
-        onClose={close}
-      />
-      <p>{selectedMetadata.summary.description}</p>
-      <p className={gateStyles.methodNote}>
-        {selectedMetadata.summary.representationLabel}
-      </p>
-    </section>
-  );
+  if (isSystemRegionIdValue(selectedBodyId)) {
+    const regionProfile = regionVisualProfileFor(
+      selectedBodyId,
+      scaleMode,
+      sceneProfileFor(scaleMode),
+    );
+    const heliosphereSelected = selectedBodyId === "heliosphere";
+    return (
+      <section className={gateStyles.summary} aria-live="polite">
+        <SummaryHeader
+          closeLabel={exploreSceneCopy.summary.closeOverview}
+          eyebrow={
+            heliosphereSelected
+              ? "Heliosphere boundary"
+              : exploreSceneCopy.summary.regionType
+          }
+          name={selectedMetadata.displayName}
+          onClose={close}
+        />
+        <p>{selectedMetadata.summary.description}</p>
+        <dl className={gateStyles.metrics}>
+          <div>
+            <dt>Representation</dt>
+            <dd>{regionProfile.representation.replaceAll("-", " ")}</dd>
+          </div>
+          <div>
+            <dt>Visual model</dt>
+            <dd>{regionProfile.kind.replaceAll("-", " ")}</dd>
+          </div>
+        </dl>
+        <p className={gateStyles.methodNote}>
+          {heliosphereSelected
+            ? "Schematic context layer · termination shock and heliopause are visual guides, not a measured final shape."
+            : selectedMetadata.summary.representationLabel}
+        </p>
+      </section>
+    );
+  }
+
+  return null;
 }
 
 function SummaryHeader({

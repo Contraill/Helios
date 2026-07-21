@@ -259,6 +259,16 @@ test("Gate 2 unifies camera, selection and gesture ownership", async ({
     exact: true,
   });
   await activate(neptuneButton);
+  await expect
+    .poll(async () => (await snapshot(page)).camera?.selectedBodyId, {
+      timeout: 45_000,
+    })
+    .toBe("neptune");
+  await expect
+    .poll(async () => (await snapshot(page)).camera?.transitionVersion ?? 0, {
+      timeout: 45_000,
+    })
+    .toBeGreaterThan(marsVersion);
   await waitForCameraMode(page, "focus");
   const neptune = await snapshot(page);
   expect(neptune.camera?.selectedBodyId).toBe("neptune");

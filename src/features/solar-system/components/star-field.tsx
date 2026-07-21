@@ -37,9 +37,11 @@ export function StarField({
 
   useFrame(({ camera }, delta) => {
     if (materialRef.current) {
-      materialRef.current.opacity =
-        universeLayerOpacities(camera.position.length(), profile).localStars *
-        0.72;
+      const localStars = universeLayerOpacities(
+        camera.position.length(),
+        profile,
+      ).localStars;
+      materialRef.current.opacity = Math.max(0.28, localStars) * 0.72;
     }
     if (motionEnabled && pointsRef.current) {
       pointsRef.current.rotation.y += delta * 0.002 * timeScale;
@@ -51,6 +53,7 @@ export function StarField({
       ref={pointsRef}
       frustumCulled={false}
       scale={profile.backdrop.starFieldScale}
+      userData={{ testBackdropLayer: "local-stars" }}
     >
       <bufferGeometry>
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />

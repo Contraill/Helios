@@ -74,14 +74,20 @@ export function useCelestialPointerInteraction({
         safelyCapture(event);
       },
       onPointerMove(event: ThreeEvent<PointerEvent>) {
-        if (!enabled || !celestialPointerController.owns(event.pointerId, bodyId)) {
+        if (
+          !enabled ||
+          !celestialPointerController.owns(event.pointerId, bodyId)
+        ) {
           return;
         }
         event.stopPropagation();
         celestialPointerController.move(sampleFor(bodyId, event));
       },
       onPointerUp(event: ThreeEvent<PointerEvent>) {
-        if (!enabled || !celestialPointerController.owns(event.pointerId, bodyId)) {
+        if (
+          !enabled ||
+          !celestialPointerController.owns(event.pointerId, bodyId)
+        ) {
           return;
         }
         event.stopPropagation();

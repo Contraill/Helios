@@ -269,7 +269,6 @@ export function PlanetSystem({
     clearHoveredPlanet(planet.id);
   };
 
-
   const pointerInteraction = useCelestialPointerInteraction({
     bodyId: planet.id,
     enabled: visible,

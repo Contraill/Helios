@@ -34,9 +34,7 @@ describe("celestial pointer interaction", () => {
     const controller = new CelestialPointerInteractionController();
     controller.begin(sample());
 
-    expect(
-      controller.finish(sample({ bodyId: "mars" })),
-    ).toBeNull();
+    expect(controller.finish(sample({ bodyId: "mars" }))).toBeNull();
     expect(controller.owns(1, "earth")).toBe(true);
     expect(controller.finish(sample())).toBe("earth");
   });

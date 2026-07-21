@@ -2,13 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import {
-  MOUSE,
-  PerspectiveCamera,
-  Spherical,
-  TOUCH,
-  Vector3,
-} from "three";
+import { MOUSE, PerspectiveCamera, Spherical, TOUCH, Vector3 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
 import {
@@ -21,6 +15,7 @@ import {
   updateCameraRuntimeSnapshot,
 } from "@/features/solar-system/lib/camera-runtime";
 import { markCelestialCameraGesture } from "@/features/solar-system/lib/pointer-interaction";
+import { regionFocusAnchorOffset } from "@/features/solar-system/lib/region-visual-policy";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { useExplorationStore } from "@/stores/exploration-store";
@@ -86,6 +81,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
   const trackedBodyId = useRef<string | null>(null);
   const isDragging = useRef(false);
   const lastMinimumDistance = useRef(profile.camera.minimumDistance);
+  const previousStableMode = useRef<"overview" | "focus" | "free">("overview");
 
   useEffect(() => {
     invalidate();
@@ -155,7 +151,11 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
     gl.domElement.addEventListener("pointermove", handlePointerMove, true);
     gl.domElement.addEventListener("pointerup", handlePointerEnd, true);
     gl.domElement.addEventListener("pointercancel", handlePointerEnd, true);
-    gl.domElement.addEventListener("lostpointercapture", handlePointerEnd, true);
+    gl.domElement.addEventListener(
+      "lostpointercapture",
+      handlePointerEnd,
+      true,
+    );
     orbitControls.addEventListener("start", handleStart);
     orbitControls.addEventListener("end", handleEnd);
 
@@ -163,7 +163,11 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       gl.domElement.removeEventListener("pointerdown", handlePointerDown, true);
       gl.domElement.removeEventListener("pointermove", handlePointerMove, true);
       gl.domElement.removeEventListener("pointerup", handlePointerEnd, true);
-      gl.domElement.removeEventListener("pointercancel", handlePointerEnd, true);
+      gl.domElement.removeEventListener(
+        "pointercancel",
+        handlePointerEnd,
+        true,
+      );
       gl.domElement.removeEventListener(
         "lostpointercapture",
         handlePointerEnd,
@@ -211,10 +215,28 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       if (selectedObject && metadata && policy) {
         selectedObject.getWorldPosition(worldPosition.current);
         desiredTarget.current.copy(worldPosition.current);
+        const targetOffset = metadata.regionPresentation
+          ? regionFocusAnchorOffset(metadata.regionPresentation)
+          : null;
+        if (targetOffset) {
+          desiredTarget.current.add(
+            targetDelta.current.set(
+              targetOffset[0],
+              targetOffset[1],
+              targetOffset[2],
+            ),
+          );
+        }
         previousWorldPosition.current.copy(worldPosition.current);
         const sameTarget = trackedBodyId.current === liveSelectedBodyId;
-        if (sameTarget || cameraMode === "free") {
-          relativeOffset.current.subVectors(camera.position, currentTarget.current);
+        const guidedRegionTransition =
+          Boolean(metadata.regionPresentation) &&
+          previousStableMode.current === "free";
+        if ((sameTarget || cameraMode === "free") && !guidedRegionTransition) {
+          relativeOffset.current.subVectors(
+            camera.position,
+            currentTarget.current,
+          );
           if (relativeOffset.current.lengthSq() < 1e-12) {
             relativeOffset.current.set(1, 0.45, 1);
           }
@@ -226,26 +248,36 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
             ),
           );
           desiredPosition.current
-            .copy(worldPosition.current)
+            .copy(desiredTarget.current)
             .add(relativeOffset.current);
         } else {
-          const offset = illuminatedFocusCameraOffset(
-            [
-              worldPosition.current.x,
-              worldPosition.current.y,
-              worldPosition.current.z,
-            ],
-            policy.framingRadius,
-            Math.max(aspect, 0.1),
-            scaleMode,
-          );
-          canonicalOffset.current.set(...offset);
+          const preferredDirection =
+            metadata.regionPresentation?.preferredDirection;
+          if (preferredDirection) {
+            canonicalOffset.current.set(
+              preferredDirection[0],
+              preferredDirection[1],
+              preferredDirection[2],
+            );
+          } else {
+            const offset = illuminatedFocusCameraOffset(
+              [
+                worldPosition.current.x,
+                worldPosition.current.y,
+                worldPosition.current.z,
+              ],
+              policy.framingRadius,
+              Math.max(aspect, 0.1),
+              scaleMode,
+            );
+            canonicalOffset.current.set(...offset);
+          }
           if (canonicalOffset.current.lengthSq() < 1e-12) {
             canonicalOffset.current.set(1, 0.45, 1);
           }
           canonicalOffset.current.setLength(policy.desiredDistance);
           desiredPosition.current
-            .copy(worldPosition.current)
+            .copy(desiredTarget.current)
             .add(canonicalOffset.current);
         }
         orbitControls.minDistance = policy.minimumDistance;
@@ -336,6 +368,13 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       currentTarget.current.copy(orbitControls.target);
     }
 
+    if (
+      liveMode === "overview" ||
+      liveMode === "focus" ||
+      liveMode === "free"
+    ) {
+      previousStableMode.current = liveMode;
+    }
     relativeOffset.current.subVectors(camera.position, currentTarget.current);
     spherical.current.setFromVector3(relativeOffset.current);
     updateCameraRuntimeSnapshot({
