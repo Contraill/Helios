@@ -441,9 +441,9 @@ test.describe("loaded responsive scene ownership", () => {
   }
 });
 
-test("renderer evidence covers orbit policy, selected extended bodies and Earth night-light rejection views", async ({
+test("renderer evidence covers orbit policy and selected extended bodies", async ({
   page,
-}, testInfo) => {
+}) => {
   test.setTimeout(90_000);
   const audit = watchRuntime(page);
   await page.goto("/explore?sceneTest=1");
@@ -465,9 +465,29 @@ test("renderer evidence covers orbit policy, selected extended bodies and Earth 
     .poll(async () => (await sceneSnapshot(page))?.orbits.extended ?? 0)
     .toBeGreaterThan(0);
 
-  await page.getByRole("tab", { name: "Navigator" }).click();
-  await page.getByRole("button", { name: /Back/i }).click();
-  await page.getByRole("button", { name: /Sun & planets/i }).click();
+  const snapshot = await sceneSnapshot(page);
+  expect(snapshot?.gpu.programs ?? 0).toBeGreaterThan(0);
+  expect(
+    audit.consoleErrors.filter((message) => /shader|webgl/i.test(message)),
+  ).toEqual([]);
+  expect(audit.pageErrors).toEqual([]);
+  await page.evaluate(() => {
+    const canvasElement = document.querySelector("canvas");
+    const context =
+      canvasElement?.getContext("webgl2") ?? canvasElement?.getContext("webgl");
+    context?.getExtension("WEBGL_lose_context")?.loseContext();
+  });
+});
+
+test("Earth city lights produce day-side and terminator evidence", async ({
+  page,
+}, testInfo) => {
+  test.setTimeout(90_000);
+  const audit = watchRuntime(page);
+  await page.goto("/explore?sceneTest=1");
+  await waitForLoadedScene(page);
+  await waitForPrimarySurfaceMaps(page);
+  await openNavigatorCategory(page, /Sun & planets/i);
   await page.getByRole("button", { name: "Earth", exact: true }).click();
   await expect
     .poll(async () => (await sceneSnapshot(page))?.cityLights ?? null)
