@@ -5,14 +5,16 @@ import { DoubleSide } from "three";
 import type { RingGeometry } from "three";
 
 import { saturnRingTextureSource } from "@/content/sources/planet-textures";
+import {
+  SATURN_RING_INNER_RADIUS,
+  SATURN_RING_OUTER_RADIUS,
+} from "@/features/solar-system/lib/planetary-rings";
 import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
 import {
   textureMaterialKey,
   useSceneTexture,
 } from "@/features/solar-system/lib/texture-cache";
 
-export const SATURN_RING_INNER_RADIUS = 1.24;
-export const SATURN_RING_OUTER_RADIUS = 2.27;
 
 interface SaturnRingsProps {
   radius: number;

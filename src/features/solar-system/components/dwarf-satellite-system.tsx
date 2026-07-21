@@ -2,6 +2,8 @@
 
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import { useCelestialPointerInteraction } from "@/features/solar-system/hooks/use-celestial-pointer-interaction";
+import { setCameraTargetMetadata } from "@/features/solar-system/lib/camera-runtime";
 import type { ThreeEvent } from "@react-three/fiber";
 import type { Group } from "three";
 
@@ -169,6 +171,13 @@ function SatelliteObject({
     node.userData.bodyId = moon.id;
     node.userData.parentBodyId = moon.parentId;
     node.userData.cameraFocusRadius = visualRadius;
+    setCameraTargetMetadata(node, {
+      bodyId: moon.id,
+      targetKind: "body",
+      renderRadius: visualRadius,
+      collisionRadius: visualRadius,
+      focusRadius: visualRadius,
+    });
     node.userData.representationType = moon.representation.representationType;
     node.userData.referenceFrame = moon.representation.referenceFrame;
     const objectRegistry = planetObjects.current;
@@ -203,11 +212,12 @@ function SatelliteObject({
     event.stopPropagation();
     clearHoveredBody(moon.id);
   };
-  const click = (event: ThreeEvent<MouseEvent>) => {
-    if (!visible) return;
-    event.stopPropagation();
-    selectBody(moon.id);
-  };
+
+  const pointerInteraction = useCelestialPointerInteraction({
+    bodyId: moon.id,
+    enabled: visible,
+    onSelect: selectBody,
+  });
 
   return (
     <>
@@ -244,7 +254,7 @@ function SatelliteObject({
         />
         <mesh
           raycast={visible ? undefined : DISABLED_RAYCAST}
-          onClick={click}
+          {...pointerInteraction}
           onPointerOut={out}
           onPointerOver={over}
           scale={interactionRadius}

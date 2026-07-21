@@ -6,10 +6,6 @@ import styles from "@/app/explore/explore.module.css";
 import { createCelestialRegistry } from "@/features/solar-system/lib/celestial-registry";
 import { currentNavigatorView } from "@/features/solar-system/lib/celestial-navigation-state";
 import type { ExplorePlanetSummary } from "@/features/solar-system/lib/explore-planets";
-import {
-  isMoonId,
-  MOON_BY_ID,
-} from "@/features/solar-system/lib/moon-catalogue";
 import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
 import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
@@ -44,9 +40,7 @@ export function ExploreExperience({
   const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
   const cameraMode = useExplorationStore((state) => state.cameraMode);
   const scaleMode = useExplorationStore((state) => state.scaleMode);
-  const clearSelection = useExplorationStore((state) => state.clearSelection);
-  const exitFreeCamera = useExplorationStore((state) => state.exitFreeCamera);
-  const selectPlanet = useExplorationStore((state) => state.selectPlanet);
+  const resetView = useExplorationStore((state) => state.resetView);
   const navigator = useExploreSceneUiStore((state) => state.navigator);
   const goBack = useExploreSceneUiStore((state) => state.goBack);
   const mobileDockOpen = useExploreSceneUiStore(
@@ -77,11 +71,11 @@ export function ExploreExperience({
 
   const closeSelection = useCallback(
     (bodyId: CelestialBodyId) => {
-      clearSelection();
+      resetView();
       setActiveDockPanel("navigator");
       focusNavigatorButton(bodyId);
     },
-    [clearSelection, focusNavigatorButton, setActiveDockPanel],
+    [focusNavigatorButton, resetView, setActiveDockPanel],
   );
 
   useEffect(() => {
@@ -92,21 +86,14 @@ export function ExploreExperience({
         closeMobileDock();
         return;
       }
-      if (cameraMode === "free") {
-        event.preventDefault();
-        exitFreeCamera();
-        return;
-      }
-      if (selectedBodyId && isMoonId(selectedBodyId)) {
-        event.preventDefault();
-        const parent = MOON_BY_ID[selectedBodyId].parentPlanetId;
-        selectPlanet(parent);
-        setActiveDockPanel("selection");
-        return;
-      }
       if (selectedBodyId) {
         event.preventDefault();
         closeSelection(selectedBodyId);
+        return;
+      }
+      if (cameraMode !== "overview") {
+        event.preventDefault();
+        resetView();
         return;
       }
       if (currentView.kind !== "categories") {
@@ -122,11 +109,10 @@ export function ExploreExperience({
     closeMobileDock,
     closeSelection,
     currentView.kind,
-    exitFreeCamera,
     goBack,
     mobileDockOpen,
-    selectPlanet,
     selectedBodyId,
+    resetView,
     setActiveDockPanel,
   ]);
 

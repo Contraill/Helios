@@ -2,6 +2,8 @@
 
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import { useCelestialPointerInteraction } from "@/features/solar-system/hooks/use-celestial-pointer-interaction";
+import { setCameraTargetMetadata } from "@/features/solar-system/lib/camera-runtime";
 import type { ThreeEvent } from "@react-three/fiber";
 import { AdditiveBlending, BackSide, Quaternion, Vector3 } from "three";
 import type { Group, PointsMaterial } from "three";
@@ -133,11 +135,13 @@ function RegionRegistry({
   id,
   planetObjects,
   renderRadius,
+  systemExtent,
 }: {
   cameraFocusRadius: number;
   id: SystemRegionId;
   planetObjects: PlanetObjectRegistry;
   renderRadius: number;
+  systemExtent?: number;
 }) {
   const ref = useRef<Group>(null);
   useLayoutEffect(() => {
@@ -146,11 +150,19 @@ function RegionRegistry({
     const registry = planetObjects.current;
     node.userData.renderRadius = renderRadius;
     node.userData.cameraFocusRadius = cameraFocusRadius;
+    setCameraTargetMetadata(node, {
+      bodyId: id,
+      targetKind: "region",
+      renderRadius,
+      collisionRadius: Math.max(0.01, cameraFocusRadius * 0.12),
+      focusRadius: cameraFocusRadius,
+      systemExtent: systemExtent ?? cameraFocusRadius,
+    });
     registry.set(id, node);
     return () => {
       registry.delete(id);
     };
-  }, [cameraFocusRadius, id, planetObjects, renderRadius]);
+  }, [cameraFocusRadius, id, planetObjects, renderRadius, systemExtent]);
   return <group ref={ref} userData={{ bodyId: id, testBodyRoot: true }} />;
 }
 
@@ -170,7 +182,6 @@ function BeltLayer({
     (state) => state.representation,
   );
   const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
-  const selectBody = useExplorationStore((state) => state.selectBody);
   const baseCount =
     density === "sparse" ? 320 : density === "detailed" ? 1_800 : 850;
   const count = Math.round(
@@ -193,7 +204,6 @@ function BeltLayer({
   const focusRadius = strategy.distanceFromAu(layer === "asteroid" ? 3.3 : 57);
   const cameraFocusRadius = profile.extended.beltCameraFocusRadius[layer];
   const selected = selectedBodyId === id;
-
   return (
     <group userData={{ visualLayer: id }}>
       <RegionRegistry
@@ -204,13 +214,8 @@ function BeltLayer({
       />
       <points
         frustumCulled={false}
-        raycast={visible ? undefined : DISABLED_RAYCAST}
+        raycast={DISABLED_RAYCAST}
         userData={{ testInteractiveBodyId: id }}
-        onClick={(event) => {
-          if (!visible) return;
-          event.stopPropagation();
-          selectBody(id);
-        }}
       >
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[positions, 3]} />
@@ -319,6 +324,16 @@ function ExtendedBodyObject({
     node.userData.extendedBodyId = body.id;
     node.userData.representationType = body.representation.representationType;
     node.userData.referenceFrame = body.representation.referenceFrame;
+    setCameraTargetMetadata(node, {
+      bodyId: body.id,
+      targetKind: dwarfSystemParent ? "system" : "body",
+      renderRadius: radius,
+      collisionRadius: radius,
+      focusRadius: isComet
+        ? Math.max(radius * 3.8, interactionRadius)
+        : interactionRadius,
+      systemExtent: dwarfSystemParent ? interactionRadius * 3.5 : undefined,
+    });
     registry.set(body.id, node);
     return () => {
       registry.delete(body.id);
@@ -328,7 +343,10 @@ function ExtendedBodyObject({
     body.representation.referenceFrame,
     body.representation.representationType,
     interactionRadius,
+    isComet,
+    dwarfSystemParent,
     planetObjects,
+    radius,
   ]);
 
   useFrame((_, delta) => {
@@ -375,11 +393,12 @@ function ExtendedBodyObject({
     event.stopPropagation();
     clearHoveredBody(body.id);
   };
-  const click = (event: ThreeEvent<MouseEvent>) => {
-    if (!visible) return;
-    event.stopPropagation();
-    selectBody(body.id);
-  };
+
+  const pointerInteraction = useCelestialPointerInteraction({
+    bodyId: body.id,
+    enabled: visible,
+    onSelect: selectBody,
+  });
 
   const initialPosition = extendedBodyPosition(
     body,
@@ -501,7 +520,7 @@ function ExtendedBodyObject({
 
           <mesh
             raycast={visible ? undefined : DISABLED_RAYCAST}
-            onClick={click}
+            {...pointerInteraction}
             onPointerOut={pointerOut}
             onPointerOver={pointerOver}
             scale={interactionRadius}
@@ -582,8 +601,6 @@ function OortCloud({
   const selected = useExplorationStore(
     (state) => state.selectedBodyId === "oort-cloud",
   );
-  const selectBody = useExplorationStore((state) => state.selectBody);
-
   useFrame(({ camera }) => {
     const revealStart = profile.extended.oort.revealStart;
     const reveal = Math.min(
@@ -609,6 +626,7 @@ function OortCloud({
         id="oort-cloud"
         planetObjects={planetObjects}
         renderRadius={profile.extended.oort.renderRadius}
+        systemExtent={profile.extended.oort.renderRadius}
       />
       {[
         {
@@ -627,15 +645,10 @@ function OortCloud({
         <points
           frustumCulled={false}
           key={cloud.layer}
-          raycast={visible ? undefined : DISABLED_RAYCAST}
+          raycast={DISABLED_RAYCAST}
           userData={{
             testInteractiveBodyId: "oort-cloud",
             visualLayer: cloud.layer,
-          }}
-          onClick={(event) => {
-            if (!visible) return;
-            event.stopPropagation();
-            selectBody("oort-cloud");
           }}
         >
           <bufferGeometry>
@@ -686,7 +699,12 @@ function DustAndMeteorLayer({
         />
       </points>
       {[0.91, 1, 1.08].map((scale, index) => (
-        <mesh key={scale} rotation-x={Math.PI / 2 + index * 0.12} scale={scale}>
+        <mesh
+          key={scale}
+          raycast={DISABLED_RAYCAST}
+          rotation-x={Math.PI / 2 + index * 0.12}
+          scale={scale}
+        >
           <torusGeometry args={[strategy.distanceFromAu(1), 0.012, 4, 128]} />
           <meshBasicMaterial
             color={["#6aa7d8", "#c5a469", "#9b78bd"][index]}
@@ -716,7 +734,6 @@ function Heliosphere({
       sceneProfileFor(scaleMode).scale.strategy.distanceFromAu(121);
     return shellParticlePositions(620, 1.5, stageHeliopause, 0x501a2eed);
   }, [scaleMode]);
-  const selectBody = useExplorationStore((state) => state.selectBody);
   const earthDistance = strategy.distanceFromAu(1);
   const missionMarkers = [
     { name: "Parker Solar Probe", distanceAu: 0.08, angle: 0.48 },
@@ -737,13 +754,8 @@ function Heliosphere({
       ].map((shell) => (
         <mesh
           key={shell.radius}
-          raycast={visible ? undefined : DISABLED_RAYCAST}
+          raycast={DISABLED_RAYCAST}
           userData={{ testInteractiveBodyId: "heliosphere" }}
-          onClick={(event) => {
-            if (!visible) return;
-            event.stopPropagation();
-            selectBody("heliosphere");
-          }}
           scale={shell.radius}
         >
           <sphereGeometry args={[1, 48, 32]} />
@@ -775,6 +787,7 @@ function Heliosphere({
       </points>
       <mesh
         position={[earthDistance / 2, 0, 0]}
+        raycast={DISABLED_RAYCAST}
         rotation-z={Math.PI / 2}
         userData={{ visualLayer: "donki-cme-sun-earth-context" }}
       >

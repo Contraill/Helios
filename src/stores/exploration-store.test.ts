@@ -31,7 +31,7 @@ describe("exploration store", () => {
     expect(state().selectedPlanetId).toBe("mars");
     expect(state().cameraMode).toBe("transition");
 
-    state().settleCamera("mars", "focus");
+    state().settleCamera("mars", state().cameraTransitionVersion, "focus");
     expect(state().cameraMode).toBe("focus");
 
     state().clearSelection();
@@ -45,7 +45,7 @@ describe("exploration store", () => {
     expect(state().selectedPlanetId).toBeNull();
     expect(state().cameraMode).toBe("transition");
 
-    state().settleCamera("sun", "focus");
+    state().settleCamera("sun", state().cameraTransitionVersion, "focus");
     expect(state().cameraMode).toBe("focus");
 
     state().clearSelection();
@@ -54,7 +54,7 @@ describe("exploration store", () => {
 
   it("hands camera authority to free controls and returns safely", () => {
     state().selectPlanet("earth");
-    state().settleCamera("earth", "focus");
+    state().settleCamera("earth", state().cameraTransitionVersion, "focus");
     state().enterFreeCamera();
     expect(state().cameraMode).toBe("free");
     expect(state().selectedPlanetId).toBe("earth");
@@ -73,11 +73,11 @@ describe("exploration store", () => {
     state().selectPlanet("mars");
     state().selectPlanet("venus");
 
-    state().settleCamera("mars", "focus");
+    state().settleCamera("mars", state().cameraTransitionVersion, "focus");
     expect(state().selectedPlanetId).toBe("venus");
     expect(state().cameraMode).toBe("transition");
 
-    state().settleCamera("venus", "focus");
+    state().settleCamera("venus", state().cameraTransitionVersion, "focus");
     expect(state().cameraMode).toBe("focus");
   });
 

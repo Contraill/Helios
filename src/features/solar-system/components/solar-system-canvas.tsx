@@ -8,6 +8,7 @@ import {
   useAssetLoadingSnapshot,
 } from "@/features/solar-system/lib/asset-loading-lifecycle";
 import { HIGH_VISUAL_CONTRACT } from "@/features/solar-system/lib/quality";
+import { consumeCelestialCameraGesture } from "@/features/solar-system/lib/pointer-interaction";
 import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
@@ -113,7 +114,9 @@ export function SolarSystemCanvas({
               logarithmicDepthBuffer: true,
               powerPreference: "high-performance",
             }}
-            onPointerMissed={() => {
+            onPointerMissed={(event) => {
+              if (event.button !== 0) return;
+              if (consumeCelestialCameraGesture()) return;
               if (useExplorationStore.getState().cameraMode !== "free") {
                 clearSelection();
               }

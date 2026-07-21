@@ -97,3 +97,20 @@ export const PLANETARY_RING_PROFILES: Readonly<
     ]),
   }),
 });
+
+export const SATURN_RING_INNER_RADIUS = 1.24;
+export const SATURN_RING_OUTER_RADIUS = 2.27;
+
+export function planetaryRingOuterRadius(planetId: string): number {
+  if (planetId === "saturn") return SATURN_RING_OUTER_RADIUS;
+  if (planetId in PLANETARY_RING_PROFILES) {
+    const profile =
+      PLANETARY_RING_PROFILES[planetId as ProceduralRingPlanetId];
+    return Math.max(
+      1,
+      ...profile.bands.map((entry) => entry.outerRadius),
+      ...profile.arcs.map((entry) => entry.outerRadius),
+    );
+  }
+  return 1;
+}

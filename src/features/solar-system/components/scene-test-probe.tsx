@@ -5,6 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Vector3 } from "three";
 import type { Material, Mesh, Object3D, ShaderMaterial, Texture } from "three";
 
+import { cameraRuntimeSnapshot } from "@/features/solar-system/lib/camera-runtime";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 import {
   currentSimulationTimeMs,
@@ -18,6 +19,7 @@ import {
 } from "@/features/solar-system/lib/texture-cache";
 
 export interface HeliosSceneTestSnapshot {
+  readonly camera: ReturnType<typeof cameraRuntimeSnapshot>;
   readonly catalogue: {
     readonly enabled: boolean;
     readonly mode: string | null;
@@ -71,6 +73,16 @@ export interface HeliosSceneTestSnapshot {
     >
   >;
   readonly orbits: Readonly<Record<"planet" | "moon" | "extended", number>>;
+  readonly screenTargets: Readonly<
+    Record<
+      string,
+      {
+        readonly visible: boolean;
+        readonly x: number;
+        readonly y: number;
+      }
+    >
+  >;
   readonly sceneContract: {
     readonly mountedBodyIds: readonly string[];
     readonly visibleBodyIds: readonly string[];
@@ -122,8 +134,10 @@ function isEffectivelyVisible(object: Object3D): boolean {
 function ActiveSceneTestProbe() {
   const scene = useThree((state) => state.scene);
   const gl = useThree((state) => state.gl);
+  const camera = useThree((state) => state.camera);
   const frame = useRef(0);
   const worldPosition = useRef(new Vector3());
+  const projectedPosition = useRef(new Vector3());
 
   useFrame(() => {
     frame.current += 1;
@@ -173,6 +187,11 @@ function ActiveSceneTestProbe() {
     const interactiveBodyIds = new Set<string>();
     const visibleOrbitBodyIds = new Set<string>();
     const visibleLabelBodyIds = new Set<string>();
+    const screenTargets: Record<
+      string,
+      { visible: boolean; x: number; y: number }
+    > = {};
+    const canvasBounds = gl.domElement.getBoundingClientRect();
 
     scene.traverse((object) => {
       if (object.userData.testCatalogue === true) {
@@ -210,6 +229,25 @@ function ActiveSceneTestProbe() {
       if (rootBodyId) {
         mountedBodyIds.add(rootBodyId);
         if (objectVisible) visibleBodyIds.add(rootBodyId);
+        object.getWorldPosition(projectedPosition.current);
+        projectedPosition.current.project(camera);
+        const visible =
+          objectVisible &&
+          projectedPosition.current.z >= -1 &&
+          projectedPosition.current.z <= 1 &&
+          projectedPosition.current.x >= -1 &&
+          projectedPosition.current.x <= 1 &&
+          projectedPosition.current.y >= -1 &&
+          projectedPosition.current.y <= 1;
+        screenTargets[rootBodyId] = {
+          visible,
+          x:
+            canvasBounds.left +
+            ((projectedPosition.current.x + 1) / 2) * canvasBounds.width,
+          y:
+            canvasBounds.top +
+            ((1 - projectedPosition.current.y) / 2) * canvasBounds.height,
+        };
       }
       const interactiveBodyId = object.userData.testInteractiveBodyId as
         string | undefined;
@@ -279,6 +317,7 @@ function ActiveSceneTestProbe() {
     const cityTexture = cityMaterial?.uniforms.uNightMap?.value as
       Texture | null | undefined;
     window.__HELIOS_SCENE_TEST__ = {
+      camera: cameraRuntimeSnapshot(),
       bodyPositions,
       catalogue,
       cityLights: {
@@ -301,6 +340,7 @@ function ActiveSceneTestProbe() {
       },
       orbitResources,
       orbits,
+      screenTargets,
       sceneContract: {
         mountedBodyIds: [...mountedBodyIds].sort(),
         visibleBodyIds: [...visibleBodyIds].sort(),

@@ -9,8 +9,11 @@ import type { Group, Mesh } from "three";
 import { planetTextureSources } from "@/content/sources/planet-textures";
 import { planetEphemerisRepresentation } from "@/lib/data/ephemeris/models";
 import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
+import { useCelestialPointerInteraction } from "@/features/solar-system/hooks/use-celestial-pointer-interaction";
+import { setCameraTargetMetadata } from "@/features/solar-system/lib/camera-runtime";
 import { parentEquatorialQuaternion } from "@/features/solar-system/lib/body-equatorial-orientation";
 import { PLANET_VISUAL_PROFILES } from "@/features/solar-system/lib/planet-visual-profiles";
+import { planetaryRingOuterRadius } from "@/features/solar-system/lib/planetary-rings";
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import { rotationAngleAt } from "@/features/solar-system/lib/orbital-motion";
 import {
@@ -99,7 +102,7 @@ export function PlanetSystem({
   const hovered = useExplorationStore(
     (state) => state.hoveredBodyId === planet.id,
   );
-  const selectPlanet = useExplorationStore((state) => state.selectPlanet);
+  const selectBody = useExplorationStore((state) => state.selectBody);
   const setHoveredPlanet = useExplorationStore(
     (state) => state.setHoveredPlanet,
   );
@@ -188,6 +191,14 @@ export function PlanetSystem({
     node.userData.bodyId = planet.id;
     node.userData.planetId = planet.id;
     node.userData.renderRadius = scale.radius;
+    const ringOuterRadius = planetaryRingOuterRadius(planet.id);
+    setCameraTargetMetadata(node, {
+      bodyId: planet.id,
+      targetKind: "body",
+      renderRadius: scale.radius,
+      collisionRadius: scale.radius,
+      focusRadius: scale.radius * ringOuterRadius,
+    });
     node.userData.representationType = representation.representationType;
     node.userData.referenceFrame = representation.referenceFrame;
     registry.set(planet.id, node);
@@ -258,11 +269,12 @@ export function PlanetSystem({
     clearHoveredPlanet(planet.id);
   };
 
-  const handleClick = (event: ThreeEvent<MouseEvent>) => {
-    if (!visible) return;
-    event.stopPropagation();
-    selectPlanet(planet.id);
-  };
+
+  const pointerInteraction = useCelestialPointerInteraction({
+    bodyId: planet.id,
+    enabled: visible,
+    onSelect: selectBody,
+  });
 
   return (
     <>
@@ -363,7 +375,7 @@ export function PlanetSystem({
 
             <mesh
               raycast={visible ? undefined : DISABLED_RAYCAST}
-              onClick={handleClick}
+              {...pointerInteraction}
               onPointerOut={handlePointerOut}
               onPointerOver={handlePointerOver}
               scale={interactionRadius}

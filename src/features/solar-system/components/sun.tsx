@@ -8,6 +8,8 @@ import type { Group, Mesh } from "three";
 
 import { planetTextureSources } from "@/content/sources/planet-textures";
 import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
+import { useCelestialPointerInteraction } from "@/features/solar-system/hooks/use-celestial-pointer-interaction";
+import { setCameraTargetMetadata } from "@/features/solar-system/lib/camera-runtime";
 import {
   labelPriorityForBody,
   shouldMountLabel,
@@ -58,7 +60,7 @@ export function Sun({
     (state) => state.selectedBodyId === "sun",
   );
   const hovered = useExplorationStore((state) => state.hoveredBodyId === "sun");
-  const selectSun = useExplorationStore((state) => state.selectSun);
+  const selectBody = useExplorationStore((state) => state.selectBody);
   const setHoveredBody = useExplorationStore((state) => state.setHoveredBody);
   const clearHoveredBody = useExplorationStore(
     (state) => state.clearHoveredBody,
@@ -92,6 +94,13 @@ export function Sun({
 
     node.userData.bodyId = sun.id;
     node.userData.renderRadius = radius;
+    setCameraTargetMetadata(node, {
+      bodyId: "sun",
+      targetKind: "body",
+      renderRadius: radius,
+      collisionRadius: radius,
+      focusRadius: radius * 1.08,
+    });
     const registry = planetObjects.current;
     registry.set(sun.id, node);
 
@@ -125,11 +134,12 @@ export function Sun({
     clearHoveredBody("sun");
   };
 
-  const handleClick = (event: ThreeEvent<MouseEvent>) => {
-    if (!visible) return;
-    event.stopPropagation();
-    selectSun();
-  };
+
+  const pointerInteraction = useCelestialPointerInteraction({
+    bodyId: "sun",
+    enabled: visible,
+    onSelect: selectBody,
+  });
 
   return (
     <group
@@ -157,7 +167,7 @@ export function Sun({
       </mesh>
       <mesh
         raycast={visible ? undefined : DISABLED_RAYCAST}
-        onClick={handleClick}
+        {...pointerInteraction}
         onPointerOut={handlePointerOut}
         onPointerOver={handlePointerOver}
         scale={radius * 1.12}

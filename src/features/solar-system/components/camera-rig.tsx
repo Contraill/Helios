@@ -2,9 +2,25 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Vector3 } from "three";
+import {
+  MOUSE,
+  PerspectiveCamera,
+  Spherical,
+  TOUCH,
+  Vector3,
+} from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
+import {
+  cameraFocusPolicy,
+  clampCameraDistance,
+} from "@/features/solar-system/lib/camera-focus-policy";
+import {
+  cameraTargetMetadataFor,
+  clearCameraRuntimeSnapshot,
+  updateCameraRuntimeSnapshot,
+} from "@/features/solar-system/lib/camera-runtime";
+import { markCelestialCameraGesture } from "@/features/solar-system/lib/pointer-interaction";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { useExplorationStore } from "@/stores/exploration-store";
@@ -21,13 +37,27 @@ interface CameraRigProps {
   reducedMotion: boolean;
 }
 
+interface PointerOrigin {
+  readonly button: number;
+  readonly pointerType: string;
+  readonly x: number;
+  readonly y: number;
+  moved: boolean;
+}
+
+const CAMERA_DRAG_THRESHOLD = 6;
+
 export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
   const camera = useThree((state) => state.camera);
   const gl = useThree((state) => state.gl);
+  const invalidate = useThree((state) => state.invalidate);
   const width = useThree((state) => state.size.width);
   const height = useThree((state) => state.size.height);
   const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
   const cameraMode = useExplorationStore((state) => state.cameraMode);
+  const transitionVersion = useExplorationStore(
+    (state) => state.cameraTransitionVersion,
+  );
   const scaleMode = useExplorationStore((state) => state.scaleMode);
   const profile = sceneProfileFor(scaleMode);
   const settleCamera = useExplorationStore((state) => state.settleCamera);
@@ -41,206 +71,294 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       ),
     [height, scaleMode, width],
   );
+  const controls = useRef<OrbitControls | null>(null);
   const currentTarget = useRef(new Vector3());
   const desiredTarget = useRef(new Vector3());
   const desiredPosition = useRef(new Vector3(...overviewPosition));
   const worldPosition = useRef(new Vector3());
-  const focusOffset = useRef(new Vector3());
-  const focusAnchorKey = useRef("");
-  const controls = useRef<OrbitControls | null>(null);
-  const previousCameraMode = useRef(cameraMode);
+  const previousWorldPosition = useRef(new Vector3());
+  const targetDelta = useRef(new Vector3());
+  const relativeOffset = useRef(new Vector3());
+  const canonicalOffset = useRef(new Vector3());
+  const spherical = useRef(new Spherical());
+  const activeTransitionVersion = useRef(-1);
+  const activeTransitionBodyId = useRef<string | null>(null);
+  const trackedBodyId = useRef<string | null>(null);
+  const isDragging = useRef(false);
+  const lastMinimumDistance = useRef(profile.camera.minimumDistance);
+
+  useEffect(() => {
+    invalidate();
+  }, [cameraMode, invalidate, selectedBodyId, transitionVersion]);
 
   useEffect(() => {
     const orbitControls = new OrbitControls(camera, gl.domElement);
-    orbitControls.enabled = false;
-    // Camera input must stop when the pointer stops. OrbitControls damping is
-    // pleasant for a passive model viewer, but here it made a high-distance
-    // wheel/pinch gesture continue after release and looked like autonomous
-    // camera travel.
     orbitControls.enableDamping = false;
     orbitControls.enablePan = true;
     orbitControls.screenSpacePanning = true;
-    orbitControls.minDistance = profile.camera.minimumDistance;
-    // The experience ends at an exterior Milky Way view. There is no
-    // extragalactic/deep-field zoom stage beyond this boundary.
-    orbitControls.maxDistance = profile.camera.maximumDistance;
+    orbitControls.mouseButtons.LEFT = MOUSE.ROTATE;
+    orbitControls.mouseButtons.MIDDLE = MOUSE.DOLLY;
+    orbitControls.mouseButtons.RIGHT = MOUSE.PAN;
+    orbitControls.touches.ONE = TOUCH.ROTATE;
+    orbitControls.touches.TWO = TOUCH.DOLLY_PAN;
     orbitControls.keyPanSpeed = 18;
     controls.current = orbitControls;
+    const handleControlChange = () => invalidate();
+    orbitControls.addEventListener("change", handleControlChange);
 
-    const pointerOrigins = new Map<number, { x: number; y: number }>();
+    const pointerOrigins = new Map<number, PointerOrigin>();
+    const activeTouches = new Set<number>();
 
-    const activateDirectControl = () => {
-      if (useExplorationStore.getState().cameraMode === "free") return;
-      orbitControls.target.copy(currentTarget.current);
-      orbitControls.enabled = true;
-      useExplorationStore.getState().enterFreeCamera();
-      previousCameraMode.current = "free";
-    };
     const handlePointerDown = (event: PointerEvent) => {
-      if (event.pointerType === "mouse" && event.button !== 0) return;
       pointerOrigins.set(event.pointerId, {
+        button: event.button,
+        pointerType: event.pointerType,
         x: event.clientX,
         y: event.clientY,
+        moved: false,
       });
-      // Let OrbitControls observe this pointer-down. Camera authority is only
-      // handed over after a real drag threshold, so tapping a body still means
-      // selection rather than a free-camera flicker.
-      orbitControls.target.copy(currentTarget.current);
-      orbitControls.enabled = true;
+      if (event.pointerType === "touch") activeTouches.add(event.pointerId);
     };
     const handlePointerMove = (event: PointerEvent) => {
       const origin = pointerOrigins.get(event.pointerId);
       if (!origin) return;
-      if (Math.hypot(event.clientX - origin.x, event.clientY - origin.y) >= 5) {
-        activateDirectControl();
+      if (
+        Math.hypot(event.clientX - origin.x, event.clientY - origin.y) <
+        CAMERA_DRAG_THRESHOLD
+      ) {
+        return;
+      }
+      origin.moved = true;
+      isDragging.current = true;
+      const isPan =
+        (origin.pointerType === "mouse" && origin.button === 2) ||
+        (origin.pointerType === "touch" && activeTouches.size > 1);
+      if (isPan && useExplorationStore.getState().cameraMode === "focus") {
+        useExplorationStore.getState().enterFreeCamera();
       }
     };
     const handlePointerEnd = (event: PointerEvent) => {
+      const origin = pointerOrigins.get(event.pointerId);
+      if (origin?.moved) markCelestialCameraGesture();
       pointerOrigins.delete(event.pointerId);
-      if (useExplorationStore.getState().cameraMode !== "free") {
-        orbitControls.enabled = false;
-      }
+      activeTouches.delete(event.pointerId);
+      if (pointerOrigins.size === 0) isDragging.current = false;
     };
-    const handleWheel = () => activateDirectControl();
+    const handleStart = () => {
+      isDragging.current = true;
+    };
+    const handleEnd = () => {
+      isDragging.current = false;
+    };
 
     gl.domElement.addEventListener("pointerdown", handlePointerDown, true);
     gl.domElement.addEventListener("pointermove", handlePointerMove, true);
     gl.domElement.addEventListener("pointerup", handlePointerEnd, true);
     gl.domElement.addEventListener("pointercancel", handlePointerEnd, true);
-    gl.domElement.addEventListener("wheel", handleWheel, true);
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (
-        useExplorationStore.getState().cameraMode !== "free" ||
-        !["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)
-      ) {
-        return;
-      }
-      const target = event.target;
-      if (
-        target instanceof HTMLElement &&
-        (target.isContentEditable ||
-          target.closest("input, textarea, select, button, a"))
-      ) {
-        return;
-      }
-
-      event.preventDefault();
-      const distance = camera.position.distanceTo(orbitControls.target);
-      const amount = Math.max(0.2, distance * 0.025);
-      const direction =
-        event.key === "ArrowLeft" || event.key === "ArrowRight"
-          ? new Vector3().setFromMatrixColumn(camera.matrix, 0)
-          : new Vector3().setFromMatrixColumn(camera.matrix, 1);
-      const sign =
-        event.key === "ArrowLeft" || event.key === "ArrowDown" ? -1 : 1;
-      direction.multiplyScalar(amount * sign);
-      camera.position.add(direction);
-      orbitControls.target.add(direction);
-      orbitControls.update();
-    };
-    window.addEventListener("keydown", handleKeyDown);
+    gl.domElement.addEventListener("lostpointercapture", handlePointerEnd, true);
+    orbitControls.addEventListener("start", handleStart);
+    orbitControls.addEventListener("end", handleEnd);
 
     return () => {
       gl.domElement.removeEventListener("pointerdown", handlePointerDown, true);
       gl.domElement.removeEventListener("pointermove", handlePointerMove, true);
       gl.domElement.removeEventListener("pointerup", handlePointerEnd, true);
+      gl.domElement.removeEventListener("pointercancel", handlePointerEnd, true);
       gl.domElement.removeEventListener(
-        "pointercancel",
+        "lostpointercapture",
         handlePointerEnd,
         true,
       );
-      gl.domElement.removeEventListener("wheel", handleWheel, true);
-      window.removeEventListener("keydown", handleKeyDown);
+      orbitControls.removeEventListener("start", handleStart);
+      orbitControls.removeEventListener("end", handleEnd);
+      orbitControls.removeEventListener("change", handleControlChange);
       orbitControls.dispose();
       controls.current = null;
+      clearCameraRuntimeSnapshot();
     };
-  }, [
-    camera,
-    gl.domElement,
-    profile.camera.maximumDistance,
-    profile.camera.minimumDistance,
-  ]);
+  }, [camera, gl.domElement, invalidate]);
 
   useFrame((_, delta) => {
-    const aspect = width / Math.max(height, 1);
-    const selectedObject = selectedBodyId
-      ? planetObjects.current.get(selectedBodyId)
+    const orbitControls = controls.current;
+    if (!orbitControls) return;
+
+    const liveState = useExplorationStore.getState();
+    const liveMode = liveState.cameraMode;
+    const liveSelectedBodyId = liveState.selectedBodyId;
+    const liveVersion = liveState.cameraTransitionVersion;
+    const selectedObject = liveSelectedBodyId
+      ? planetObjects.current.get(liveSelectedBodyId)
       : undefined;
+    const metadata = cameraTargetMetadataFor(selectedObject);
+    const aspect = width / Math.max(height, 1);
+    const fov =
+      camera instanceof PerspectiveCamera && Number.isFinite(camera.fov)
+        ? camera.fov
+        : 46;
+    const policy = metadata
+      ? cameraFocusPolicy({ aspect, fovDegrees: fov, metadata, profile })
+      : null;
 
-    if (selectedBodyId && selectedObject) {
-      selectedObject.getWorldPosition(worldPosition.current);
-      desiredTarget.current.copy(worldPosition.current);
-
-      const radius = Number(
-        selectedObject.userData.cameraFocusRadius ??
-          selectedObject.userData.renderRadius ??
-          1,
-      );
-      if (controls.current) {
-        controls.current.minDistance = Math.max(
-          radius * 1.35,
-          profile.camera.minimumDistance * 0.000_000_5,
-        );
-      }
-      const anchorKey = `${selectedBodyId}:${scaleMode}:${width}:${height}`;
-      if (focusAnchorKey.current !== anchorKey) {
-        const offset = illuminatedFocusCameraOffset(
-          [
-            worldPosition.current.x,
-            worldPosition.current.y,
-            worldPosition.current.z,
-          ],
-          radius,
-          Math.max(aspect, 0.1),
-          scaleMode,
-        );
-        focusOffset.current.set(...offset);
-        focusAnchorKey.current = anchorKey;
-      }
-      desiredPosition.current
-        .copy(worldPosition.current)
-        .add(focusOffset.current);
-    } else {
-      if (controls.current) {
-        controls.current.minDistance = profile.camera.minimumDistance;
-      }
-      focusAnchorKey.current = "";
-      desiredTarget.current.set(0, 0, 0);
-      desiredPosition.current.set(...overviewPosition);
-    }
-
-    const liveCameraMode = useExplorationStore.getState().cameraMode;
-    if (liveCameraMode === "free" && controls.current) {
-      controls.current.enabled = true;
-      if (previousCameraMode.current !== "free") {
-        controls.current.target.copy(currentTarget.current);
-      }
-      controls.current.update();
-      currentTarget.current.copy(controls.current.target);
-      previousCameraMode.current = "free";
-      return;
-    }
-    if (controls.current) controls.current.enabled = false;
-    previousCameraMode.current = liveCameraMode;
-
-    const alpha = transitionAlpha(delta, reducedMotion);
-    camera.position.lerp(desiredPosition.current, alpha);
-    currentTarget.current.lerp(desiredTarget.current, alpha);
-    camera.lookAt(currentTarget.current);
+    orbitControls.maxDistance = profile.camera.maximumDistance;
 
     if (
-      liveCameraMode === "transition" &&
-      cameraPoseHasSettled(
-        camera.position.distanceToSquared(desiredPosition.current),
-        currentTarget.current.distanceToSquared(desiredTarget.current),
-      )
+      liveMode === "transition" &&
+      activeTransitionVersion.current !== liveVersion
     ) {
-      settleCamera(
-        selectedBodyId,
-        selectedBodyId === null ? "overview" : "focus",
-      );
+      activeTransitionVersion.current = liveVersion;
+      activeTransitionBodyId.current = liveSelectedBodyId;
+
+      if (selectedObject && metadata && policy) {
+        selectedObject.getWorldPosition(worldPosition.current);
+        desiredTarget.current.copy(worldPosition.current);
+        previousWorldPosition.current.copy(worldPosition.current);
+        const sameTarget = trackedBodyId.current === liveSelectedBodyId;
+        if (sameTarget || cameraMode === "free") {
+          relativeOffset.current.subVectors(camera.position, currentTarget.current);
+          if (relativeOffset.current.lengthSq() < 1e-12) {
+            relativeOffset.current.set(1, 0.45, 1);
+          }
+          relativeOffset.current.setLength(
+            clampCameraDistance(
+              relativeOffset.current.length(),
+              policy.minimumDistance,
+              policy.maximumDistance,
+            ),
+          );
+          desiredPosition.current
+            .copy(worldPosition.current)
+            .add(relativeOffset.current);
+        } else {
+          const offset = illuminatedFocusCameraOffset(
+            [
+              worldPosition.current.x,
+              worldPosition.current.y,
+              worldPosition.current.z,
+            ],
+            policy.framingRadius,
+            Math.max(aspect, 0.1),
+            scaleMode,
+          );
+          canonicalOffset.current.set(...offset);
+          if (canonicalOffset.current.lengthSq() < 1e-12) {
+            canonicalOffset.current.set(1, 0.45, 1);
+          }
+          canonicalOffset.current.setLength(policy.desiredDistance);
+          desiredPosition.current
+            .copy(worldPosition.current)
+            .add(canonicalOffset.current);
+        }
+        orbitControls.minDistance = policy.minimumDistance;
+        lastMinimumDistance.current = policy.minimumDistance;
+      } else {
+        desiredTarget.current.set(0, 0, 0);
+        desiredPosition.current.set(...overviewPosition);
+        previousWorldPosition.current.set(0, 0, 0);
+        orbitControls.minDistance = profile.camera.minimumDistance;
+        lastMinimumDistance.current = profile.camera.minimumDistance;
+      }
     }
+
+    if (
+      liveMode === "transition" &&
+      selectedObject &&
+      activeTransitionBodyId.current === liveSelectedBodyId
+    ) {
+      selectedObject.getWorldPosition(worldPosition.current);
+      targetDelta.current.subVectors(
+        worldPosition.current,
+        previousWorldPosition.current,
+      );
+      desiredTarget.current.add(targetDelta.current);
+      desiredPosition.current.add(targetDelta.current);
+      previousWorldPosition.current.copy(worldPosition.current);
+    }
+
+    if (liveMode === "transition") {
+      orbitControls.enabled = false;
+      const alpha = transitionAlpha(delta, reducedMotion);
+      camera.position.lerp(desiredPosition.current, alpha);
+      currentTarget.current.lerp(desiredTarget.current, alpha);
+      camera.lookAt(currentTarget.current);
+      if (
+        cameraPoseHasSettled(
+          camera.position.distanceToSquared(desiredPosition.current),
+          currentTarget.current.distanceToSquared(desiredTarget.current),
+        )
+      ) {
+        trackedBodyId.current = liveSelectedBodyId;
+        orbitControls.target.copy(currentTarget.current);
+        settleCamera(
+          liveSelectedBodyId,
+          liveVersion,
+          liveSelectedBodyId === null ? "overview" : "focus",
+        );
+      }
+    } else if (liveMode === "focus" && selectedObject && metadata && policy) {
+      selectedObject.getWorldPosition(worldPosition.current);
+      if (trackedBodyId.current !== liveSelectedBodyId) {
+        previousWorldPosition.current.copy(worldPosition.current);
+        trackedBodyId.current = liveSelectedBodyId;
+      }
+      targetDelta.current.subVectors(
+        worldPosition.current,
+        previousWorldPosition.current,
+      );
+      orbitControls.target.add(targetDelta.current);
+      camera.position.add(targetDelta.current);
+      previousWorldPosition.current.copy(worldPosition.current);
+      currentTarget.current.copy(orbitControls.target);
+      orbitControls.minDistance = policy.minimumDistance;
+      lastMinimumDistance.current = policy.minimumDistance;
+      relativeOffset.current.subVectors(camera.position, orbitControls.target);
+      const clamped = clampCameraDistance(
+        relativeOffset.current.length(),
+        policy.minimumDistance,
+        policy.maximumDistance,
+      );
+      if (Math.abs(clamped - relativeOffset.current.length()) > 1e-6) {
+        if (relativeOffset.current.lengthSq() < 1e-12) {
+          relativeOffset.current.set(1, 0.45, 1);
+        }
+        relativeOffset.current.setLength(clamped);
+        camera.position.copy(orbitControls.target).add(relativeOffset.current);
+      }
+      orbitControls.enabled = true;
+      orbitControls.update();
+    } else {
+      if (liveMode === "overview") trackedBodyId.current = null;
+      orbitControls.minDistance =
+        liveMode === "overview"
+          ? profile.camera.minimumDistance
+          : lastMinimumDistance.current;
+      orbitControls.enabled = true;
+      orbitControls.update();
+      currentTarget.current.copy(orbitControls.target);
+    }
+
+    relativeOffset.current.subVectors(camera.position, currentTarget.current);
+    spherical.current.setFromVector3(relativeOffset.current);
+    updateCameraRuntimeSnapshot({
+      mode: liveMode,
+      selectedBodyId: liveSelectedBodyId,
+      targetBodyId:
+        liveMode === "focus" || liveMode === "transition"
+          ? liveSelectedBodyId
+          : null,
+      transitionVersion: liveVersion,
+      position: [camera.position.x, camera.position.y, camera.position.z],
+      target: [
+        currentTarget.current.x,
+        currentTarget.current.y,
+        currentTarget.current.z,
+      ],
+      distanceToTarget: relativeOffset.current.length(),
+      minimumDistance: orbitControls.minDistance,
+      azimuth: spherical.current.theta,
+      polar: spherical.current.phi,
+      controlsEnabled: orbitControls.enabled,
+      isDragging: isDragging.current,
+    });
   });
 
   return null;

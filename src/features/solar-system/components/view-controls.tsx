@@ -31,8 +31,8 @@ export function ViewControls() {
   const cameraMode = useExplorationStore((state) => state.cameraMode);
   const setScaleMode = useExplorationStore((state) => state.setScaleMode);
   const enterFreeCamera = useExplorationStore((state) => state.enterFreeCamera);
-  const exitFreeCamera = useExplorationStore((state) => state.exitFreeCamera);
-  const clearSelection = useExplorationStore((state) => state.clearSelection);
+  const guideCamera = useExplorationStore((state) => state.guideCamera);
+  const resetView = useExplorationStore((state) => state.resetView);
   const categories = useSceneVisibilityStore((state) => state.categories);
   const orbitsVisible = useSceneVisibilityStore((state) => state.orbitsVisible);
   const labelsVisible = useSceneVisibilityStore((state) => state.labelsVisible);
@@ -61,7 +61,7 @@ export function ViewControls() {
       </div>
 
       <div className={styles.controlGrid}>
-        <fieldset>
+        <fieldset className={gateStyles.viewSection}>
           <legend>{copy.scale}</legend>
           <div className={styles.segmentedControls}>
             {profiles.map((profile) => (
@@ -77,7 +77,7 @@ export function ViewControls() {
           </div>
         </fieldset>
 
-        <fieldset className={gateStyles.visibilityFieldset}>
+        <fieldset className={`${gateStyles.viewSection} ${gateStyles.visibilityFieldset}`}>
           <legend>Visibility</legend>
           <div className={gateStyles.visibilityGrid}>
             {SCENE_VISIBILITY_CATEGORIES.map((category) => (
@@ -118,9 +118,9 @@ export function ViewControls() {
           </span>
         </fieldset>
 
-        <fieldset>
+        <fieldset className={`${gateStyles.viewSection} ${gateStyles.cameraFieldset}`}>
           <legend>{copy.camera}</legend>
-          <div className={styles.toggleControls}>
+          <div className={gateStyles.cameraGrid}>
             <button
               aria-pressed={cameraMode === "free"}
               onClick={enterFreeCamera}
@@ -130,15 +130,22 @@ export function ViewControls() {
             </button>
             <button
               aria-pressed={cameraMode !== "free"}
-              onClick={exitFreeCamera}
+              onClick={guideCamera}
               type="button"
             >
               {copy.guidedCamera}
             </button>
-            <button onClick={clearSelection} type="button">
+            <button onClick={resetView} type="button">
               {copy.resetView}
             </button>
           </div>
+          <p className={gateStyles.cameraStatus} role="status">
+            {cameraMode === "free"
+              ? "Free camera keeps the current pose while selection remains available."
+              : cameraMode === "overview"
+                ? "Guided overview is active."
+                : "Guided camera follows the selected target without locking rotation or zoom."}
+          </p>
         </fieldset>
       </div>
 

@@ -2,6 +2,8 @@
 
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import { useCelestialPointerInteraction } from "@/features/solar-system/hooks/use-celestial-pointer-interaction";
+import { setCameraTargetMetadata } from "@/features/solar-system/lib/camera-runtime";
 import type { ThreeEvent } from "@react-three/fiber";
 import { Quaternion, type Group } from "three";
 
@@ -148,6 +150,13 @@ function MoonObject({
     node.userData.renderRadius = cameraFocusRadius;
     node.userData.physicalRenderRadius = renderRadius;
     node.userData.cameraFocusRadius = cameraFocusRadius;
+    setCameraTargetMetadata(node, {
+      bodyId: moon.id,
+      targetKind: "body",
+      renderRadius,
+      collisionRadius: renderRadius,
+      focusRadius: cameraFocusRadius,
+    });
     node.userData.representationType = moon.representation.representationType;
     const objectRegistry = planetObjects.current;
     objectRegistry.set(moon.id, node);
@@ -179,11 +188,6 @@ function MoonObject({
     }
   });
 
-  const handleClick = (event: ThreeEvent<MouseEvent>) => {
-    if (!visible) return;
-    event.stopPropagation();
-    selectBody(moon.id);
-  };
   const handlePointerOver = (event: ThreeEvent<PointerEvent>) => {
     if (!visible) return;
     event.stopPropagation();
@@ -194,6 +198,12 @@ function MoonObject({
     event.stopPropagation();
     clearHoveredBody(moon.id);
   };
+
+  const pointerInteraction = useCelestialPointerInteraction({
+    bodyId: moon.id,
+    enabled: visible,
+    onSelect: selectBody,
+  });
 
   return (
     <>
@@ -231,7 +241,7 @@ function MoonObject({
 
         <mesh
           raycast={visible ? undefined : DISABLED_RAYCAST}
-          onClick={handleClick}
+          {...pointerInteraction}
           onPointerOut={handlePointerOut}
           onPointerOver={handlePointerOver}
           scale={interactionRadius}
