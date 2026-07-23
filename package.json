@@ -14,7 +14,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "verify": "prettier --check . && eslint . && next typegen && tsc --noEmit && vitest run && node scripts/audit-runtime-textures.mjs",
-    "audit:textures": "node scripts/audit-runtime-textures.mjs"
+    "audit:textures": "node scripts/audit-runtime-textures.mjs",
+    "assets:celestial:official:list": "python scripts/import-official-celestial-assets.py --list",
+    "assets:celestial:official": "python scripts/import-official-celestial-assets.py --apply"
   },
   "dependencies": {
     "@react-three/fiber": "9.6.1",

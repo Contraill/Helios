@@ -7,7 +7,6 @@ import { setCameraTargetMetadata } from "@/features/solar-system/lib/camera-runt
 import type { ThreeEvent } from "@react-three/fiber";
 import {
   AdditiveBlending,
-  BackSide,
   Color,
   DoubleSide,
   Quaternion,
@@ -18,12 +17,13 @@ import type { Group, PointsMaterial } from "three";
 import {
   EXTENDED_BODIES,
   cometTailState,
+  extendedBodySceneLabel,
   extendedBodyPosition,
-  extendedBodyRadius,
   extendedOrbitPoints,
   type ExtendedBody,
   type SystemRegionId,
 } from "@/features/solar-system/lib/extended-system";
+import { extendedBodySceneMetrics } from "@/features/solar-system/lib/extended-body-scene-metrics";
 import { visualProfileFor } from "@/features/solar-system/lib/celestial-visual-registry";
 import {
   labelPriorityForBody,
@@ -53,10 +53,8 @@ import {
 } from "@/stores/simulation-store";
 
 import { CelestialVisualSurface } from "./celestial-visual-surface";
-import {
-  DwarfSatelliteSystem,
-  dwarfParentVisualOffset,
-} from "./dwarf-satellite-system";
+import { CometTailVolume } from "./comet-tail-volume";
+import { DwarfSatelliteSystem } from "./dwarf-satellite-system";
 import { OrbitPath } from "./orbit-path";
 import { PlanetLabel } from "./planet-label";
 
@@ -64,7 +62,6 @@ const DISABLED_RAYCAST = () => undefined;
 
 interface ExtendedSolarSystemProps {
   labelsVisible: boolean;
-  motionEnabled: boolean;
   orbitsVisible: boolean;
   planetObjects: PlanetObjectRegistry;
   quality: SceneQuality;
@@ -467,7 +464,6 @@ function BeltLayer({
 function ExtendedBodyObject({
   body,
   labelsVisible,
-  motionEnabled,
   orbitsVisible,
   planetObjects,
   quality,
@@ -475,7 +471,6 @@ function ExtendedBodyObject({
 }: {
   body: ExtendedBody;
   labelsVisible: boolean;
-  motionEnabled: boolean;
   orbitsVisible: boolean;
   planetObjects: PlanetObjectRegistry;
   quality: SceneQuality;
@@ -485,9 +480,11 @@ function ExtendedBodyObject({
   const surfaceRef = useRef<Group>(null);
   const tailRef = useRef<Group>(null);
   const awayFromSun = useRef(new Vector3());
+  const nucleusDirection = useRef(new Vector3());
   const tailOrientation = useRef(new Quaternion());
   const tailAxis = useRef(new Vector3(0, -1, 0));
   const scenePositionRef = useRef<[number, number, number]>([0, 0, 0]);
+  const tailDirectionRef = useRef<[number, number, number]>([0, 0, 0]);
   const selected = useExplorationStore(
     (state) => state.selectedBodyId === body.id,
   );
@@ -501,11 +498,9 @@ function ExtendedBodyObject({
   );
   const simulationAtMs = useSimulationStore((state) => state.simulationAtMs);
   const profile = sceneProfileFor(scaleMode);
-  const radius = extendedBodyRadius(body, profile.id);
-  const interactionRadius = Math.max(
-    radius * 2,
-    profile.extended.minimumInteractionRadius,
-  );
+  const sceneMetrics = extendedBodySceneMetrics(body, scaleMode);
+  const radius = sceneMetrics.renderedRadius;
+  const interactionRadius = sceneMetrics.interactionRadius;
   const orbitPoints = useMemo(
     () => extendedOrbitPoints(body, scaleMode, quality.orbitSegments),
     [body, quality.orbitSegments, scaleMode],
@@ -523,10 +518,13 @@ function ExtendedBodyObject({
   const isComet = body.kind === "comet";
   const visualProfile = visualProfileFor(body.id);
   const cometVisual = visualProfile.comet;
+  const tailLength =
+    cometVisual?.dustLength ?? profile.extended.cometTailLength;
+  const ionTailLength = cometVisual?.ionLength ?? tailLength * 1.25;
+  const visualExtent = sceneMetrics.geometryBounds;
+  const nucleusFocusRadius = sceneMetrics.focusRadius;
   const dwarfSystemParent = isDwarfSystemParentId(body.id);
-  const parentVisualOffset = dwarfSystemParent
-    ? dwarfParentVisualOffset(body.id, radius)
-    : ([0, 0, 0] as const);
+  const parentVisualOffset = sceneMetrics.parentVisualOffset;
   const visible = useSceneVisibilityStore((state) =>
     effectiveBodyVisibility(body.id, state),
   );
@@ -548,7 +546,8 @@ function ExtendedBodyObject({
     const node = groupRef.current;
     if (!node) return;
     const registry = planetObjects.current;
-    node.userData.renderRadius = interactionRadius;
+    node.userData.renderRadius = visualExtent;
+    node.userData.cameraFocusRadius = nucleusFocusRadius;
     node.userData.bodyId = body.id;
     node.userData.extendedBodyId = body.id;
     node.userData.representationType = body.representation.representationType;
@@ -556,12 +555,10 @@ function ExtendedBodyObject({
     setCameraTargetMetadata(node, {
       bodyId: body.id,
       targetKind: dwarfSystemParent ? "system" : "body",
-      renderRadius: radius,
-      collisionRadius: radius,
-      focusRadius: isComet
-        ? Math.max(radius * 3.8, interactionRadius)
-        : interactionRadius,
-      systemExtent: dwarfSystemParent ? interactionRadius * 3.5 : undefined,
+      renderRadius: visualExtent,
+      collisionRadius: visualExtent,
+      focusRadius: nucleusFocusRadius,
+      systemExtent: dwarfSystemParent ? sceneMetrics.systemExtent : undefined,
     });
     registry.set(body.id, node);
     return () => {
@@ -571,14 +568,15 @@ function ExtendedBodyObject({
     body.id,
     body.representation.referenceFrame,
     body.representation.representationType,
-    interactionRadius,
     isComet,
     dwarfSystemParent,
+    nucleusFocusRadius,
     planetObjects,
-    radius,
+    sceneMetrics.systemExtent,
+    visualExtent,
   ]);
 
-  useFrame((_, delta) => {
+  useFrame(() => {
     const node = groupRef.current;
     if (!node) return;
     const now = currentSimulationTimeMs(useSimulationStore.getState());
@@ -589,12 +587,9 @@ function ExtendedBodyObject({
       scenePositionRef.current,
     );
     node.position.set(...position);
-    if (motionEnabled && surfaceRef.current) {
-      surfaceRef.current.rotation.y += delta * 0.09;
-    }
 
     if (tailRef.current && isComet) {
-      const tail = cometTailState(body, now, scenePositionRef.current);
+      const tail = cometTailState(body, now, tailDirectionRef.current);
       const away = awayFromSun.current.set(...tail.antiSolarDirection);
       tailRef.current.quaternion.copy(
         tailOrientation.current.setFromUnitVectors(tailAxis.current, away),
@@ -609,6 +604,14 @@ function ExtendedBodyObject({
         tail.antiSolarDirection[1],
         tail.antiSolarDirection[2],
       ];
+      const nucleus = nucleusDirection.current.set(...position).normalize();
+      tailRef.current.userData.antiSolarDot = away.dot(nucleus);
+      tailRef.current.userData.nucleusFocusRadius = nucleusFocusRadius;
+      tailRef.current.userData.tailLength =
+        Math.max(tailLength, ionTailLength) * tail.lengthScale;
+      tailRef.current.userData.tailIncludedInFocusBounds = false;
+      tailRef.current.userData.tailAnchorDistance =
+        tailRef.current.position.length();
     }
   });
 
@@ -634,10 +637,6 @@ function ExtendedBodyObject({
     simulationAtMs,
     profile.id,
   );
-  const tailLength =
-    cometVisual?.dustLength ?? profile.extended.cometTailLength;
-  const ionTailLength = cometVisual?.ionLength ?? tailLength * 1.25;
-
   return (
     <>
       <OrbitPath
@@ -693,57 +692,25 @@ function ExtendedBodyObject({
               ref={tailRef}
               userData={{
                 testCometBodyId: body.id,
+                testCometTailPrimitive: "particle-volume",
+                testCometDustParticleCount: 520,
+                testCometIonParticleCount: 260,
+                testCometComaParticleCount: 180,
+                testCometTotalParticleCount: 960,
                 visualLayer: "physical-comet-tails",
               }}
             >
-              <mesh position={[0, -tailLength / 2, 0]}>
-                <coneGeometry
-                  args={[
-                    cometVisual?.dustWidth ?? 0.3,
-                    tailLength,
-                    24,
-                    1,
-                    true,
-                  ]}
-                />
-                <meshBasicMaterial
-                  blending={AdditiveBlending}
-                  color={cometVisual?.dustColor ?? "#e7c68f"}
-                  depthWrite={false}
-                  opacity={0.28}
-                  side={BackSide}
-                  transparent
-                />
-              </mesh>
-              <mesh position={[0.12, -ionTailLength / 2, 0]}>
-                <coneGeometry
-                  args={[
-                    cometVisual?.ionWidth ?? 0.2,
-                    ionTailLength,
-                    18,
-                    1,
-                    true,
-                  ]}
-                />
-                <meshBasicMaterial
-                  blending={AdditiveBlending}
-                  color={cometVisual?.ionColor ?? "#65bfff"}
-                  depthWrite={false}
-                  opacity={0.34}
-                  side={BackSide}
-                  transparent
-                />
-              </mesh>
-              <mesh scale={Math.max(radius * 3.8, 0.16)}>
-                <sphereGeometry args={[1, 20, 14]} />
-                <meshBasicMaterial
-                  blending={AdditiveBlending}
-                  color={cometVisual?.comaColor ?? "#dff6e8"}
-                  depthWrite={false}
-                  opacity={0.34}
-                  transparent
-                />
-              </mesh>
+              <CometTailVolume
+                bodyId={body.id}
+                comaColor={cometVisual?.comaColor ?? "#dff6e8"}
+                comaExtent={sceneMetrics.comaExtent}
+                dustColor={cometVisual?.dustColor ?? "#e7c68f"}
+                dustLength={tailLength}
+                dustWidth={cometVisual?.dustWidth ?? 0.3}
+                ionColor={cometVisual?.ionColor ?? "#65bfff"}
+                ionLength={ionTailLength}
+                ionWidth={cometVisual?.ionWidth ?? 0.2}
+              />
             </group>
           ) : null}
 
@@ -773,7 +740,7 @@ function ExtendedBodyObject({
                 isComet ? "ANTI-SOLAR TAIL" : "REPRESENTATIVE ORBIT"
               }
               selected={selected}
-              text={body.name}
+              text={extendedBodySceneLabel(body)}
             />
           ) : null}
         </group>
@@ -1160,7 +1127,6 @@ function Heliosphere({
 
 export function ExtendedSolarSystem({
   labelsVisible,
-  motionEnabled,
   orbitsVisible,
   planetObjects,
   quality,
@@ -1202,7 +1168,6 @@ export function ExtendedSolarSystem({
           key={body.id}
           body={body}
           labelsVisible={labelsVisible}
-          motionEnabled={motionEnabled}
           orbitsVisible={orbitsVisible}
           planetObjects={planetObjects}
           quality={quality}

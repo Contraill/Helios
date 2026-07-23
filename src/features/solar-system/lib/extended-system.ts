@@ -50,6 +50,10 @@ export interface CometTailState {
   readonly visible: boolean;
 }
 
+export function extendedBodySceneLabel(body: ExtendedBody): string {
+  return body.id === "67p" ? "67P" : body.name;
+}
+
 const NASA_SMALL_BODIES = "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html";
 const SBDB_API = "https://ssd-api.jpl.nasa.gov/sbdb.api";
 const SBDB_SOURCE_ID = "jpl-sbdb-orbital-elements";
@@ -720,10 +724,10 @@ export function extendedOrbitPoints(
   body: ExtendedBody,
   mode: ScaleMode,
   segments: number,
-): readonly [number, number, number][] {
-  const physical = evaluatorFor(body).samplePath(Math.max(8, segments));
-  return physical.map((point) =>
-    scalePhysicalAuToScene(point, mode, [0, 0, 0]),
+): readonly (readonly [number, number, number])[] {
+  return evaluatorFor(body).samplePath(
+    Math.max(8, segments),
+    (source, target) => scalePhysicalAuToScene(source, mode, target),
   );
 }
 

@@ -60,7 +60,10 @@ export function ViewControls() {
         </div>
       </div>
 
-      <div className={styles.controlGrid}>
+      <div
+        className={`${styles.controlGrid} ${gateStyles.viewControlGrid}`}
+        data-view-layout="stacked"
+      >
         <fieldset className={gateStyles.viewSection}>
           <legend>{copy.scale}</legend>
           <div className={styles.segmentedControls}>
@@ -81,7 +84,7 @@ export function ViewControls() {
           className={`${gateStyles.viewSection} ${gateStyles.visibilityFieldset}`}
         >
           <legend>Visibility</legend>
-          <div className={gateStyles.visibilityGrid}>
+          <div className={gateStyles.visibilityGrid} data-visibility-grid>
             {SCENE_VISIBILITY_CATEGORIES.map((category) => (
               <VisibilityToggle
                 key={category}
@@ -178,6 +181,7 @@ function VisibilityToggle({
       aria-label={`${label}: ${pressed ? "visible" : "hidden"}`}
       aria-pressed={pressed}
       className={gateStyles.visibilityToggle}
+      data-visibility-toggle
       onClick={onClick}
       type="button"
     >

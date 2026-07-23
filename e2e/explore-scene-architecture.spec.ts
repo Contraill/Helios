@@ -103,6 +103,100 @@ async function screenshotViewport(page: Page, path: string) {
   await page.screenshot({ path, animations: "disabled" });
 }
 
+async function assertDockPanelReadability(page: Page) {
+  const panelIds = ["selection", "navigator", "view", "time"] as const;
+
+  for (const panelId of panelIds) {
+    await page.locator(`#explore-tab-${panelId}`).click();
+    const panel = page.locator(`#explore-panel-${panelId}`);
+    await expect(panel).toBeVisible();
+
+    const issues = await panel.evaluate((root) => {
+      const rootRect = root.getBoundingClientRect();
+      const isVisible = (element: Element) => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return (
+          style.display !== "none" &&
+          style.visibility !== "hidden" &&
+          rect.width > 0 &&
+          rect.height > 0
+        );
+      };
+      const interactive = Array.from(
+        root.querySelectorAll<HTMLElement>(
+          "button, a, input, select, textarea",
+        ),
+      ).filter(isVisible);
+      const failures: string[] = [];
+
+      if (root.scrollWidth > root.clientWidth + 1) {
+        failures.push(
+          `panel overflow ${root.scrollWidth}px > ${root.clientWidth}px`,
+        );
+      }
+
+      for (const element of interactive) {
+        const rect = element.getBoundingClientRect();
+        const label =
+          element.getAttribute("aria-label") ??
+          element.textContent?.trim().replace(/\s+/g, " ") ??
+          element.tagName.toLowerCase();
+        if (rect.left < rootRect.left - 2 || rect.right > rootRect.right + 2) {
+          failures.push(`${label}: outside panel bounds`);
+        }
+        if (
+          element.tagName !== "INPUT" &&
+          (element.scrollWidth > element.clientWidth + 1 ||
+            element.scrollHeight > element.clientHeight + 1)
+        ) {
+          failures.push(`${label}: clipped content`);
+        }
+      }
+
+      return failures;
+    });
+
+    expect(issues, `${panelId} panel layout issues`).toEqual([]);
+  }
+
+  await page.locator("#explore-tab-view").click();
+  const viewMetrics = await page
+    .locator('[data-embedded-panel="view"]')
+    .evaluate((view) => {
+      const layout = view.querySelector<HTMLElement>("[data-view-layout]");
+      const toggles = Array.from(
+        view.querySelectorAll<HTMLElement>("[data-visibility-toggle]"),
+      );
+      const labelsUsingEmergencyBreaks = toggles
+        .map((toggle) => toggle.firstElementChild)
+        .filter((label): label is Element => Boolean(label))
+        .filter((label) => {
+          const style = getComputedStyle(label);
+          return (
+            style.overflowWrap === "anywhere" || style.wordBreak === "break-all"
+          );
+        })
+        .map((label) => label.textContent?.trim() ?? "unknown");
+
+      return {
+        columnCount: layout
+          ? getComputedStyle(layout).gridTemplateColumns.split(" ").length
+          : 0,
+        labelsUsingEmergencyBreaks,
+        minimumVisibilityButtonWidth: Math.min(
+          ...toggles.map((toggle) => toggle.getBoundingClientRect().width),
+        ),
+      };
+    });
+
+  expect(viewMetrics.columnCount).toBe(1);
+  expect(viewMetrics.labelsUsingEmergencyBreaks).toEqual([]);
+  expect(viewMetrics.minimumVisibilityButtonWidth).toBeGreaterThanOrEqual(120);
+
+  await page.locator("#explore-tab-time").click();
+}
+
 test("bootstrap settles real primary materials, isolates one asset failure and keeps production instrumentation off", async ({
   browser,
 }, testInfo) => {
@@ -194,6 +288,22 @@ test("Time owns draft, scrubber, transport, URL and controller continuity", asyn
   await waitForLoadedScene(page);
   await expect.poll(() => ephemerisRequests).toBe(1);
   await page.getByRole("tab", { name: "Time" }).click();
+
+  const pauseControl = page.getByRole("button", {
+    name: "Pause simulation",
+  });
+  await expect(pauseControl).toBeVisible();
+  const timeControlAppearance = await pauseControl.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      backgroundColor: style.backgroundColor,
+      borderStyle: style.borderStyle,
+      minHeight: Number.parseFloat(style.minHeight),
+    };
+  });
+  expect(timeControlAppearance.borderStyle).toBe("solid");
+  expect(timeControlAppearance.backgroundColor).not.toBe("rgba(0, 0, 0, 0)");
+  expect(timeControlAppearance.minHeight).toBeGreaterThanOrEqual(32);
 
   const field = page.getByLabel("UTC date and time");
   const draft = "2024-02-03T04:05:06";
@@ -411,8 +521,8 @@ test.describe("loaded responsive scene ownership", () => {
         expect(mode).toBe("mobile");
         const trigger = page.getByRole("button", { name: /Open controls/i });
         await trigger.click();
-        await page.getByRole("tab", { name: "Time" }).click();
         await expect(page.getByRole("dialog")).toBeVisible();
+        await assertDockPanelReadability(page);
         await expect(
           page.getByRole("button", { name: "Pause simulation" }),
         ).toBeVisible();
@@ -423,6 +533,7 @@ test.describe("loaded responsive scene ownership", () => {
         for (const panel of ["Selection", "Navigator", "View", "Time"]) {
           await expect(page.getByRole("tab", { name: panel })).toBeVisible();
         }
+        await assertDockPanelReadability(page);
       }
       await expect(page.getByText(/Render quality|Motion/i)).toHaveCount(0);
       await screenshotViewport(page, testInfo.outputPath(`${entry.name}.png`));

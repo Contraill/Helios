@@ -2,23 +2,35 @@
 
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import type { ThreeEvent } from "@react-three/fiber";
+import { Quaternion, type Group } from "three";
+
 import { useCelestialPointerInteraction } from "@/features/solar-system/hooks/use-celestial-pointer-interaction";
 import { setCameraTargetMetadata } from "@/features/solar-system/lib/camera-runtime";
-import type { ThreeEvent } from "@react-three/fiber";
-import type { Group } from "three";
-
 import {
-  DWARF_SATELLITE_BY_ID,
   dwarfSatellitesFor,
   type DwarfSatellite,
   type DwarfSystemParentId,
 } from "@/features/solar-system/lib/dwarf-satellite-catalogue";
-import { effectiveBodyVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
+import {
+  dwarfSatelliteOrbitDistance,
+  dwarfSatelliteSceneMetrics,
+} from "@/features/solar-system/lib/dwarf-satellite-scene-metrics";
+import {
+  dwarfSatelliteOrbitNormal,
+  dwarfSatelliteOrbitPoints,
+  dwarfSatellitePositionAt,
+} from "@/features/solar-system/lib/dwarf-satellite-position";
 import {
   labelPriorityForBody,
   shouldMountLabel,
 } from "@/features/solar-system/lib/label-visibility-policy";
 import { moonOrbitVisibility } from "@/features/solar-system/lib/orbit-visibility-policy";
+import { effectiveBodyVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
+import {
+  createTidalLockScratch,
+  tidalLockQuaternion,
+} from "@/features/solar-system/lib/tidal-lock-orientation";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { useExplorationStore } from "@/stores/exploration-store";
@@ -33,62 +45,6 @@ import { OrbitPath } from "./orbit-path";
 import { PlanetLabel } from "./planet-label";
 
 const DISABLED_RAYCAST = () => undefined;
-
-const DAY_MS = 86_400_000;
-
-function compressedOrbitDistance(
-  moon: DwarfSatellite,
-  parentMeanRadiusKm: number,
-  parentRadius: number,
-) {
-  const physicalRatio = moon.semiMajorAxisKm / parentMeanRadiusKm;
-  return (
-    parentRadius *
-    Math.min(9.5, Math.max(3, 1.9 + Math.log10(physicalRatio) * 1.72))
-  );
-}
-
-export function dwarfParentVisualOffset(
-  parentId: DwarfSystemParentId,
-  parentRadius: number,
-): readonly [number, number, number] {
-  if (parentId !== "pluto") return [0, 0, 0];
-  const charon = DWARF_SATELLITE_BY_ID["dwarf-satellite-charon"];
-  const distance = compressedOrbitDistance(charon, 1_188.3, parentRadius);
-  // Pluto–Charon’s barycentre is represented explicitly. This visual ratio is
-  // derived from the accepted approximate system mass ratio, not the orbit engine.
-  return [-distance * 0.108, 0, 0];
-}
-
-function satellitePosition(
-  moon: DwarfSatellite,
-  timestampMs: number,
-  parentMeanRadiusKm: number,
-  parentRadius: number,
-): readonly [number, number, number] {
-  const elapsedDays = (timestampMs - Date.UTC(2000, 0, 1, 12)) / DAY_MS;
-  const angle =
-    (moon.phaseAtEpochDeg * Math.PI) / 180 +
-    (elapsedDays / moon.orbitalPeriodDays) * Math.PI * 2;
-  const distance = compressedOrbitDistance(
-    moon,
-    parentMeanRadiusKm,
-    parentRadius,
-  );
-  const eccentricity = moon.eccentricity ?? 0;
-  const radial =
-    (distance * (1 - eccentricity * eccentricity)) /
-    (1 + eccentricity * Math.cos(angle));
-  if (moon.id === "dwarf-satellite-charon") {
-    return [
-      Math.cos(angle) * radial * 0.892,
-      0,
-      Math.sin(angle) * radial * 0.892,
-    ];
-  }
-  return [Math.cos(angle) * radial, 0, Math.sin(angle) * radial];
-}
-
 function SatelliteObject({
   moon,
   parentMeanRadiusKm,
@@ -104,24 +60,29 @@ function SatelliteObject({
 }) {
   const groupRef = useRef<Group>(null);
   const surfaceRef = useRef<Group>(null);
+  const tidalOrientation = useRef(new Quaternion());
+  const tidalScratch = useRef(createTidalLockScratch());
   const simulationAtMs = useSimulationStore((state) => state.simulationAtMs);
-  const selected = useExplorationStore(
-    (state) => state.selectedBodyId === moon.id,
-  );
+  const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
+  const hoveredBodyId = useExplorationStore((state) => state.hoveredBodyId);
   const orbitsVisible = useSceneVisibilityStore((state) => state.orbitsVisible);
   const labelsVisible = useSceneVisibilityStore((state) => state.labelsVisible);
-  const hovered = useExplorationStore(
-    (state) => state.hoveredBodyId === moon.id,
-  );
   const selectBody = useExplorationStore((state) => state.selectBody);
   const setHoveredBody = useExplorationStore((state) => state.setHoveredBody);
   const clearHoveredBody = useExplorationStore(
     (state) => state.clearHoveredBody,
   );
-  const physicalRadius =
-    parentRadius * (moon.meanRadiusKm / parentMeanRadiusKm);
-  const visualRadius = Math.max(physicalRadius, parentRadius * 0.075);
-  const interactionRadius = Math.max(visualRadius * 2.3, parentRadius * 0.2);
+  const selected = selectedBodyId === moon.id;
+  const hovered = hoveredBodyId === moon.id;
+  const sceneMetrics = dwarfSatelliteSceneMetrics(
+    moon,
+    parentMeanRadiusKm,
+    parentRadius,
+    scaleMode,
+  );
+  const visualRadius = sceneMetrics.renderedRadius;
+  const interactionRadius = sceneMetrics.interactionRadius;
+  const focusRadius = sceneMetrics.focusRadius;
   const visible = useSceneVisibilityStore((state) =>
     effectiveBodyVisibility(moon.id, state),
   );
@@ -135,71 +96,86 @@ function SatelliteObject({
   const orbitEmphasis = moonOrbitVisibility(moon.id, {
     bodyVisible: visible,
     orbitsVisible,
-    selectedBodyId: selected ? moon.id : null,
-    hoveredBodyId: hovered ? moon.id : null,
+    selectedBodyId,
+    hoveredBodyId,
   });
-  const initialPosition = satellitePosition(
+  const initialPosition = dwarfSatellitePositionAt(
     moon,
     simulationAtMs,
     parentMeanRadiusKm,
     parentRadius,
+    scaleMode,
   );
-  const orbitDistance = compressedOrbitDistance(
+  const orbitDistance = dwarfSatelliteOrbitDistance(
     moon,
     parentMeanRadiusKm,
     parentRadius,
+    scaleMode,
   );
-  const orbitPoints = useMemo(() => {
-    const eccentricity = moon.eccentricity ?? 0;
-    const factor = moon.id === "dwarf-satellite-charon" ? 0.892 : 1;
-    return Array.from({ length: 97 }, (_, index) => {
-      const angle = (index / 96) * Math.PI * 2;
-      const radial =
-        (orbitDistance * (1 - eccentricity * eccentricity)) /
-        (1 + eccentricity * Math.cos(angle));
-      return [
-        Math.cos(angle) * radial * factor,
-        0,
-        Math.sin(angle) * radial * factor,
-      ] as [number, number, number];
-    });
-  }, [moon, orbitDistance]);
+  const resolvedOrbitNormal = useMemo(
+    () => dwarfSatelliteOrbitNormal(moon),
+    [moon],
+  );
+  const orbitPoints = useMemo(
+    () => dwarfSatelliteOrbitPoints(moon, orbitDistance, 96),
+    [moon, orbitDistance],
+  );
 
   useLayoutEffect(() => {
     const node = groupRef.current;
     if (!node) return;
     node.userData.bodyId = moon.id;
     node.userData.parentBodyId = moon.parentId;
-    node.userData.cameraFocusRadius = visualRadius;
+    node.userData.cameraFocusRadius = focusRadius;
+    node.userData.representationType = moon.representation.representationType;
+    node.userData.referenceFrame = moon.representation.referenceFrame;
+    node.userData.rotationKind = moon.rotation.kind;
+    node.userData.orbitNormal = [...resolvedOrbitNormal];
+    node.userData.orbitPlaneStatus = moon.orbitPlaneStatus;
+    node.userData.orbitPlaneReference = moon.orbitPlaneReference;
+    node.userData.orbitPlaneSourceId = moon.orbitPlaneSourceId;
+    node.userData.orbitPlaneInclinationDeg = moon.inclinationDeg;
     setCameraTargetMetadata(node, {
       bodyId: moon.id,
       targetKind: "body",
       renderRadius: visualRadius,
       collisionRadius: visualRadius,
-      focusRadius: visualRadius,
+      focusRadius,
     });
-    node.userData.representationType = moon.representation.representationType;
-    node.userData.referenceFrame = moon.representation.referenceFrame;
     const objectRegistry = planetObjects.current;
     objectRegistry.set(moon.id, node);
     return () => {
       objectRegistry.delete(moon.id);
     };
-  }, [moon, planetObjects, visualRadius]);
+  }, [focusRadius, moon, planetObjects, resolvedOrbitNormal, visualRadius]);
 
   useFrame(() => {
     const node = groupRef.current;
     if (!node) return;
-    const position = satellitePosition(
+    const timestamp = currentSimulationTimeMs(useSimulationStore.getState());
+    const position = dwarfSatellitePositionAt(
       moon,
-      currentSimulationTimeMs(useSimulationStore.getState()),
+      timestamp,
       parentMeanRadiusKm,
       parentRadius,
+      scaleMode,
     );
     node.position.set(...position);
-    if (surfaceRef.current) {
-      surfaceRef.current.rotation.y = -Math.atan2(position[2], position[0]);
+    const surface = surfaceRef.current;
+    if (!surface) return;
+    if (moon.rotation.kind === "tidally-locked") {
+      surface.quaternion.copy(
+        tidalLockQuaternion(
+          position,
+          resolvedOrbitNormal,
+          tidalOrientation.current,
+          tidalScratch.current,
+        ),
+      );
+    } else {
+      surface.quaternion.identity();
     }
+    surface.userData.testRotationKind = moon.rotation.kind;
   });
 
   const over = (event: ThreeEvent<PointerEvent>) => {
@@ -212,7 +188,6 @@ function SatelliteObject({
     event.stopPropagation();
     clearHoveredBody(moon.id);
   };
-
   const pointerInteraction = useCelestialPointerInteraction({
     bodyId: moon.id,
     enabled: visible,
@@ -239,10 +214,15 @@ function SatelliteObject({
         position={initialPosition as [number, number, number]}
         visible={visible}
         userData={{
+          angularOrbitResolved:
+            moon.orbitPlaneStatus === "source-backed-parent-equatorial",
           bodyId: moon.id,
-          testBodyRoot: true,
-          angularOrbitResolved: moon.inclinationDeg !== null,
+          orbitPlaneInclinationDeg: moon.inclinationDeg,
+          orbitPlaneReference: moon.orbitPlaneReference,
+          orbitPlaneSourceId: moon.orbitPlaneSourceId,
+          orbitPlaneStatus: moon.orbitPlaneStatus,
           sourceTarget: moon.sourceTarget,
+          testBodyRoot: true,
           visualLayer: "dwarf-system-satellite",
         }}
       >
@@ -297,7 +277,6 @@ export function DwarfSatelliteSystem({
   scaleMode: ScaleMode;
 }) {
   const moons = useMemo(() => dwarfSatellitesFor(parentId), [parentId]);
-
   return (
     <group
       userData={{

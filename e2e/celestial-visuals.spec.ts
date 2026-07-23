@@ -7,8 +7,9 @@ async function catalogueSnapshot(page: Page) {
 async function openCatalogue(
   page: Page,
   mode: "moons" | "dwarf-systems" | "asteroids" | "dwarf-kuiper" | "comets",
+  pageNumber = 1,
 ) {
-  await page.goto(`/explore?sceneTest=1&catalogue=${mode}`);
+  await page.goto(`/explore?sceneTest=1&catalogue=${mode}&page=${pageNumber}`);
   await expect
     .poll(
       async () => (await catalogueSnapshot(page))?.catalogue.enabled ?? false,
@@ -37,9 +38,21 @@ test("test-only visual catalogue renders complete curated groups", async ({
 
   for (const mode of Object.keys(expected) as Array<keyof typeof expected>) {
     await openCatalogue(page, mode);
-    const snapshot = await catalogueSnapshot(page);
-    expect(snapshot?.catalogue.tileCount).toBe(expected[mode]);
-    expect(new Set(snapshot?.catalogue.bodyIds).size).toBe(expected[mode]);
+    const first = await catalogueSnapshot(page);
+    expect(first?.catalogue.totalCount).toBe(expected[mode]);
+    expect(first?.catalogue.tileCount).toBeLessThanOrEqual(8);
+    const bodyIds = [...(first?.catalogue.bodyIds ?? [])];
+    const pageCount = first?.catalogue.pageCount ?? 1;
+    for (let pageNumber = 2; pageNumber <= pageCount; pageNumber += 1) {
+      await openCatalogue(page, mode, pageNumber);
+      const snapshot = await catalogueSnapshot(page);
+      expect(snapshot?.catalogue.page).toBe(pageNumber);
+      expect(snapshot?.catalogue.totalCount).toBe(expected[mode]);
+      expect(snapshot?.catalogue.tileCount).toBeLessThanOrEqual(8);
+      bodyIds.push(...(snapshot?.catalogue.bodyIds ?? []));
+    }
+    expect(bodyIds).toHaveLength(expected[mode]);
+    expect(new Set(bodyIds).size).toBe(expected[mode]);
   }
 
   expect(pageErrors).toEqual([]);
@@ -75,7 +88,8 @@ test("secondary visual failure remains object-local and final surfaces replace f
     });
 
   const failed = await catalogueSnapshot(page);
-  expect(failed?.catalogue.tileCount).toBe(22);
+  expect(failed?.catalogue.totalCount).toBe(22);
+  expect(failed?.catalogue.tileCount).toBe(8);
   expect(failed?.surfaces["moon-jupiter-europa"]).toBeNull();
   expect(failed?.surfaces["moon-jupiter-io"]).toContain(
     "/textures/celestial/moon-jupiter-io.webp",

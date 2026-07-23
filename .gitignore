@@ -30,7 +30,6 @@ yarn-error.log*
 .DS_Store
 
 # project notes and local delivery artifacts
-/docs/
 /evidence/
 /DELIVERY_MANIFEST.json
 /NEXT_EXPLORE_GATES.md
@@ -43,3 +42,6 @@ yarn-error.log*
 # Python cache
 __pycache__/
 *.py[cod]
+
+# official source-master cache (runtime derivatives only are committed)
+/.cache/celestial-official/

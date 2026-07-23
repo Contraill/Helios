@@ -18,11 +18,10 @@ import {
 } from "@/features/solar-system/lib/label-visibility-policy";
 import {
   moonLocalPositionAt,
-  moonOrbitDistanceScene,
   moonOrbitNormalScene,
   moonOrbitPoints,
-  moonPhysicalRadiusScene,
 } from "@/features/solar-system/lib/moon-position";
+import { moonSceneMetrics } from "@/features/solar-system/lib/moon-scene-metrics";
 import { moonOrbitVisibility } from "@/features/solar-system/lib/orbit-visibility-policy";
 import {
   createTidalLockScratch,
@@ -30,7 +29,6 @@ import {
 } from "@/features/solar-system/lib/tidal-lock-orientation";
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
-import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import { effectiveBodyVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
@@ -97,34 +95,16 @@ function MoonObject({
     scaleMode,
     selected,
   });
-  const profile = sceneProfileFor(scaleMode);
-  const orbitDistance = moonOrbitDistanceScene(
+  const metrics = moonSceneMetrics(
     moon,
     parentRadiusScene,
     parentPlanet.meanRadiusKm,
     scaleMode,
   );
-  const physicalRadius = moonPhysicalRadiusScene(
-    moon,
-    parentRadiusScene,
-    parentPlanet.meanRadiusKm,
-  );
-  const explorationVisualRadius = Math.max(
-    physicalRadius,
-    Math.min(parentRadiusScene * 0.22, 0.16),
-  );
-  const renderRadius =
-    profile.scale.bodyProfile === "physical-ratio"
-      ? physicalRadius
-      : explorationVisualRadius;
-  const interactionRadius = Math.max(
-    renderRadius * 2.6,
-    profile.body.moonMinimumInteractionRadius,
-  );
-  const cameraFocusRadius = Math.max(
-    renderRadius,
-    profile.body.moonMinimumVisualRadius,
-  );
+  const orbitDistance = metrics.semiMajorAxis;
+  const renderRadius = metrics.renderedRadius;
+  const interactionRadius = metrics.interactionRadius;
+  const cameraFocusRadius = metrics.focusRadius;
   const orbitNormal = useMemo(() => moonOrbitNormalScene(moon), [moon]);
   const orbitPoints = useMemo(
     () =>

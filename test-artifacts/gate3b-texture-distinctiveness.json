@@ -1,0 +1,299 @@
+{
+  "schemaVersion": 1,
+  "method": "12x12 grayscale difference hash; diagnostic only, GPU review remains required",
+  "bodies": [
+    {
+      "bodyId": "67p",
+      "dHash": "1e9978c30832959129729e2c4944a47b669f",
+      "nearestBodyId": "moon-neptune-triton",
+      "nearestHammingDistance": 56
+    },
+    {
+      "bodyId": "ceres",
+      "dHash": "34d34b60b4b94c363a0b84e18e71d59b5831",
+      "nearestBodyId": "dwarf-satellite-hiiaka",
+      "nearestHammingDistance": 57
+    },
+    {
+      "bodyId": "dwarf-satellite-charon",
+      "dHash": "9c84d969949b49c4994985189aa46a4ce091",
+      "nearestBodyId": "moon-neptune-proteus",
+      "nearestHammingDistance": 60
+    },
+    {
+      "bodyId": "dwarf-satellite-dysnomia",
+      "dHash": "6e14e5d9950e18b18d90c106f926936d92cc",
+      "nearestBodyId": "moon-saturn-rhea",
+      "nearestHammingDistance": 56
+    },
+    {
+      "bodyId": "dwarf-satellite-hiiaka",
+      "dHash": "18d189998c98598498c618e3243363331b19",
+      "nearestBodyId": "dwarf-satellite-xiangliu",
+      "nearestHammingDistance": 52
+    },
+    {
+      "bodyId": "dwarf-satellite-mk2",
+      "dHash": "1828d04c9648f0a90691c81c80c84c06c461",
+      "nearestBodyId": "haumea",
+      "nearestHammingDistance": 53
+    },
+    {
+      "bodyId": "dwarf-satellite-namaka",
+      "dHash": "4cd1991d11c35b25261b6172d46c6693c938",
+      "nearestBodyId": "moon-saturn-enceladus",
+      "nearestHammingDistance": 52
+    },
+    {
+      "bodyId": "dwarf-satellite-vanth",
+      "dHash": "61064c666e664c56c125121929920945d89c",
+      "nearestBodyId": "moon-jupiter-ganymede",
+      "nearestHammingDistance": 57
+    },
+    {
+      "bodyId": "dwarf-satellite-weywot",
+      "dHash": "89cc80432439461221b20f34b643211b11b1",
+      "nearestBodyId": "tempel-1",
+      "nearestHammingDistance": 52
+    },
+    {
+      "bodyId": "dwarf-satellite-xiangliu",
+      "dHash": "2c1439030070208c89ca18e994912591498c",
+      "nearestBodyId": "dwarf-satellite-hiiaka",
+      "nearestHammingDistance": 52
+    },
+    {
+      "bodyId": "encke",
+      "dHash": "d48602a06a43a28e2ac98c8425644c45ec5a",
+      "nearestBodyId": "neowise",
+      "nearestHammingDistance": 57
+    },
+    {
+      "bodyId": "eris",
+      "dHash": "526d16d834c36517133923933928b1121531",
+      "nearestBodyId": "moon-neptune-nereid",
+      "nearestHammingDistance": 49
+    },
+    {
+      "bodyId": "gonggong",
+      "dHash": "8f1a71cd8e1a69241763ce4c24e24c399398",
+      "nearestBodyId": "moon-saturn-rhea",
+      "nearestHammingDistance": 46
+    },
+    {
+      "bodyId": "hale-bopp",
+      "dHash": "3991899d1de8d3691a36c22503243a2da2d8",
+      "nearestBodyId": "moon-jupiter-io",
+      "nearestHammingDistance": 57
+    },
+    {
+      "bodyId": "halley",
+      "dHash": "1cc1cca4e249b69d3cd3541549cc9a199169",
+      "nearestBodyId": "pluto",
+      "nearestHammingDistance": 54
+    },
+    {
+      "bodyId": "haumea",
+      "dHash": "b323712d1684d10994b10b19a9ce9ce58a78",
+      "nearestBodyId": "dwarf-satellite-mk2",
+      "nearestHammingDistance": 53
+    },
+    {
+      "bodyId": "hygiea",
+      "dHash": "58284a0db4cb54314b648e88ec8e62e52a53",
+      "nearestBodyId": "moon-uranus-umbriel",
+      "nearestHammingDistance": 59
+    },
+    {
+      "bodyId": "makemake",
+      "dHash": "8c31831973b39a396366261aa90993989189",
+      "nearestBodyId": "moon-saturn-enceladus",
+      "nearestHammingDistance": 55
+    },
+    {
+      "bodyId": "moon-earth-moon",
+      "dHash": "bc758b5327d47847a5621ca1c236794e84e8",
+      "nearestBodyId": "moon-uranus-titania",
+      "nearestHammingDistance": 60
+    },
+    {
+      "bodyId": "moon-jupiter-callisto",
+      "dHash": "e65265275a52933b49a4cd4c947b471376b3",
+      "nearestBodyId": "moon-saturn-dione",
+      "nearestHammingDistance": 51
+    },
+    {
+      "bodyId": "moon-jupiter-europa",
+      "dHash": "359a194975b5d2c98c98f98b663e618a12b5",
+      "nearestBodyId": "orcus",
+      "nearestHammingDistance": 60
+    },
+    {
+      "bodyId": "moon-jupiter-ganymede",
+      "dHash": "4d907d66c67463760f44f24926e068a79e49",
+      "nearestBodyId": "gonggong",
+      "nearestHammingDistance": 53
+    },
+    {
+      "bodyId": "moon-jupiter-io",
+      "dHash": "338319d78970142367ba609f46b46a4722a2",
+      "nearestBodyId": "pallas",
+      "nearestHammingDistance": 54
+    },
+    {
+      "bodyId": "moon-mars-deimos",
+      "dHash": "c56c65045349249447894b969b28b2a61665",
+      "nearestBodyId": "eris",
+      "nearestHammingDistance": 54
+    },
+    {
+      "bodyId": "moon-mars-phobos",
+      "dHash": "09e2dee16ea2a298d90c8eca496cd36cbcaa",
+      "nearestBodyId": "sedna",
+      "nearestHammingDistance": 59
+    },
+    {
+      "bodyId": "moon-neptune-nereid",
+      "dHash": "72e70cd82da2d275271a718c31c0151a51a1",
+      "nearestBodyId": "eris",
+      "nearestHammingDistance": 49
+    },
+    {
+      "bodyId": "moon-neptune-proteus",
+      "dHash": "a78e4940a4962162a288499819821c66406c",
+      "nearestBodyId": "haumea",
+      "nearestHammingDistance": 58
+    },
+    {
+      "bodyId": "moon-neptune-triton",
+      "dHash": "29aa98a11a09139469363723421421492892",
+      "nearestBodyId": "moon-saturn-titan",
+      "nearestHammingDistance": 56
+    },
+    {
+      "bodyId": "moon-saturn-dione",
+      "dHash": "dcb86984c290361b89acd90d92514544d429",
+      "nearestBodyId": "moon-saturn-titan",
+      "nearestHammingDistance": 49
+    },
+    {
+      "bodyId": "moon-saturn-enceladus",
+      "dHash": "88c8b8399397136967b6197392318e10a119",
+      "nearestBodyId": "dwarf-satellite-namaka",
+      "nearestHammingDistance": 52
+    },
+    {
+      "bodyId": "moon-saturn-iapetus",
+      "dHash": "a84a86904106406524d01101706706d8cc84",
+      "nearestBodyId": "moon-neptune-nereid",
+      "nearestHammingDistance": 59
+    },
+    {
+      "bodyId": "moon-saturn-mimas",
+      "dHash": "2660b2548658b58b38cb9cb969b68dc85c91",
+      "nearestBodyId": "moon-uranus-miranda",
+      "nearestHammingDistance": 55
+    },
+    {
+      "bodyId": "moon-saturn-rhea",
+      "dHash": "e74a548ccd5a44a4ca50e24e252253291a99",
+      "nearestBodyId": "gonggong",
+      "nearestHammingDistance": 46
+    },
+    {
+      "bodyId": "moon-saturn-tethys",
+      "dHash": "8e586b342292a9a2983cd76972d7bce97e33",
+      "nearestBodyId": "moon-uranus-umbriel",
+      "nearestHammingDistance": 56
+    },
+    {
+      "bodyId": "moon-saturn-titan",
+      "dHash": "2c9858998b983f10e30c98c98654446c06c2",
+      "nearestBodyId": "moon-saturn-dione",
+      "nearestHammingDistance": 49
+    },
+    {
+      "bodyId": "moon-uranus-ariel",
+      "dHash": "11521c68869bc88cf4c3c92a838954776726",
+      "nearestBodyId": "dwarf-satellite-mk2",
+      "nearestHammingDistance": 56
+    },
+    {
+      "bodyId": "moon-uranus-miranda",
+      "dHash": "913915c454c7518a3c4b1cf5a756156d5cd3",
+      "nearestBodyId": "moon-saturn-mimas",
+      "nearestHammingDistance": 55
+    },
+    {
+      "bodyId": "moon-uranus-oberon",
+      "dHash": "21e22a922902a522543d0972962d71290a98",
+      "nearestBodyId": "moon-neptune-triton",
+      "nearestHammingDistance": 60
+    },
+    {
+      "bodyId": "moon-uranus-titania",
+      "dHash": "9a4b2a53073c6a4a8c08d68dcccc74455ad2",
+      "nearestBodyId": "moon-earth-moon",
+      "nearestHammingDistance": 60
+    },
+    {
+      "bodyId": "moon-uranus-umbriel",
+      "dHash": "d25925222482093393393697650671e71e53",
+      "nearestBodyId": "eris",
+      "nearestHammingDistance": 50
+    },
+    {
+      "bodyId": "neowise",
+      "dHash": "c60c661879a6c64c6489c80c98e9cec6986b",
+      "nearestBodyId": "moon-mars-deimos",
+      "nearestHammingDistance": 56
+    },
+    {
+      "bodyId": "orcus",
+      "dHash": "a13a31250cc641d58d1c8dec446646a96b9c",
+      "nearestBodyId": "gonggong",
+      "nearestHammingDistance": 54
+    },
+    {
+      "bodyId": "pallas",
+      "dHash": "a9a992933b34a76f66b26a2d633733136736",
+      "nearestBodyId": "tempel-1",
+      "nearestHammingDistance": 50
+    },
+    {
+      "bodyId": "pluto",
+      "dHash": "84e8ce0e282a01e31de1fc1de1ac1911012c",
+      "nearestBodyId": "halley",
+      "nearestHammingDistance": 54
+    },
+    {
+      "bodyId": "quaoar",
+      "dHash": "434674454e66a66866264a64031373a93f0a",
+      "nearestBodyId": "tempel-1",
+      "nearestHammingDistance": 54
+    },
+    {
+      "bodyId": "sedna",
+      "dHash": "4e16a0e84a84b24b443cc28c4980d01231a2",
+      "nearestBodyId": "moon-neptune-nereid",
+      "nearestHammingDistance": 56
+    },
+    {
+      "bodyId": "tempel-1",
+      "dHash": "41cc1c41bcd38e7b65b26626631291714334",
+      "nearestBodyId": "pallas",
+      "nearestHammingDistance": 50
+    },
+    {
+      "bodyId": "vesta",
+      "dHash": "f8360fc82b34d36df61ec1c4ff0bb0fd0bd0",
+      "nearestBodyId": "moon-neptune-nereid",
+      "nearestHammingDistance": 57
+    }
+  ],
+  "summary": {
+    "total": 48,
+    "minimumNearestHammingDistance": 46,
+    "pairsBelowReviewThreshold": 0
+  }
+}

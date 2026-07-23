@@ -16,6 +16,7 @@ import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 import { CameraRig } from "./camera-rig";
 import { ExploreBloom } from "./explore-bloom";
 import { ExtendedSolarSystem } from "./extended-solar-system";
+import { Gate3BSceneProbe } from "./gate3b-scene-probe";
 import { PlanetSystem } from "./planet-system";
 import { SceneTestProbe } from "./scene-test-probe";
 import { SceneReadinessReporter } from "./scene-readiness-reporter";
@@ -31,6 +32,37 @@ interface SolarSystemSceneProps {
   reducedMotion: boolean;
   scenePlanets: readonly ScenePlanet[];
   sceneSun: SceneSun;
+}
+
+interface VisualCatalogueRequest {
+  readonly evidenceGroup: string | null;
+  readonly mode: VisualCatalogueMode;
+  readonly page: number;
+}
+
+const VISUAL_CATALOGUE_MODES: readonly VisualCatalogueMode[] = [
+  "all",
+  "moons",
+  "dwarf-systems",
+  "asteroids",
+  "dwarf-kuiper",
+  "comets",
+];
+
+function visualCatalogueRequest(): VisualCatalogueRequest | null {
+  if (typeof window === "undefined") return null;
+  const query = new URLSearchParams(window.location.search);
+  if (query.get("sceneTest") !== "1") return null;
+  const mode = query.get("catalogue");
+  if (!mode || !VISUAL_CATALOGUE_MODES.includes(mode as VisualCatalogueMode)) {
+    return null;
+  }
+  const requestedPage = Number.parseInt(query.get("page") ?? "1", 10);
+  return {
+    evidenceGroup: query.get("evidence"),
+    mode: mode as VisualCatalogueMode,
+    page: Number.isFinite(requestedPage) ? Math.max(1, requestedPage) : 1,
+  };
 }
 
 function RendererProfileSettings({ exposure }: { exposure: number }) {
@@ -58,32 +90,19 @@ export function SolarSystemScene({
   const profile = sceneProfileFor(scaleMode);
   const simulationMotionEnabled = !isPaused && !reducedMotion;
   const visualMotionScale = 1 + Math.log10(timeScale);
-  const [catalogueMode, setCatalogueMode] =
-    useState<VisualCatalogueMode | null>(null);
+  const [catalogueRequest] = useState(visualCatalogueRequest);
 
-  useEffect(() => {
-    const query = new URLSearchParams(window.location.search);
-    if (query.get("sceneTest") !== "1") return;
-    const value = query.get("catalogue");
-    const allowed: VisualCatalogueMode[] = [
-      "all",
-      "moons",
-      "dwarf-systems",
-      "asteroids",
-      "dwarf-kuiper",
-      "comets",
-    ];
-    if (value && allowed.includes(value as VisualCatalogueMode)) {
-      queueMicrotask(() => setCatalogueMode(value as VisualCatalogueMode));
-    }
-  }, []);
-
-  if (catalogueMode) {
+  if (catalogueRequest) {
     return (
       <>
         <color attach="background" args={["#03050a"]} />
         <SceneTestProbe />
-        <VisualTestCatalogue mode={catalogueMode} />
+        <Gate3BSceneProbe />
+        <VisualTestCatalogue
+          evidenceGroup={catalogueRequest.evidenceGroup}
+          mode={catalogueRequest.mode}
+          page={catalogueRequest.page}
+        />
       </>
     );
   }
@@ -95,6 +114,7 @@ export function SolarSystemScene({
       <SceneReadinessReporter />
       <CameraRig planetObjects={planetObjects} reducedMotion={reducedMotion} />
       <SceneTestProbe />
+      <Gate3BSceneProbe />
       <ambientLight color="#a8b0bf" intensity={0.22} />
       <UniverseBackdrop
         motionEnabled={simulationMotionEnabled}
@@ -129,7 +149,6 @@ export function SolarSystemScene({
       ))}
       <ExtendedSolarSystem
         labelsVisible={labelsVisible}
-        motionEnabled={simulationMotionEnabled}
         orbitsVisible={orbitsVisible}
         planetObjects={planetObjects}
         quality={quality}

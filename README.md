@@ -24,7 +24,7 @@ Explore starts at the current UTC time, supports accelerated playback across a b
 - pnpm
 - GitHub Actions
 
-Drei, Motion and post-processing are added only when a phase has a concrete need for them. Helios does not use a UI component kit.
+Optional scene packages are added only when an accepted gate has a concrete need for them. Helios does not use a UI component kit.
 
 ## Project structure
 
@@ -68,16 +68,16 @@ pnpm dev
 
 ## Commands
 
-| Command             | Purpose                                               |
-| ------------------- | ----------------------------------------------------- |
-| `pnpm dev`          | Start the development server                          |
-| `pnpm build`        | Create a production build                             |
-| `pnpm lint`         | Run ESLint                                            |
-| `pnpm typecheck`    | Generate Next.js route types and run TypeScript       |
-| `pnpm test`         | Run unit and component tests                          |
-| `pnpm test:e2e`     | Run Playwright smoke tests against a production build |
-| `pnpm format:check` | Check formatting                                      |
-| `pnpm verify`       | Run format, lint, typecheck, unit tests and build     |
+| Command             | Purpose                                                   |
+| ------------------- | --------------------------------------------------------- |
+| `pnpm dev`          | Start the development server                              |
+| `pnpm build`        | Create a production build                                 |
+| `pnpm lint`         | Run ESLint                                                |
+| `pnpm typecheck`    | Generate Next.js route types and run TypeScript           |
+| `pnpm test`         | Run unit and component tests                              |
+| `pnpm test:e2e`     | Run Playwright smoke tests against a production build     |
+| `pnpm format:check` | Check formatting                                          |
+| `pnpm verify`       | Run format, lint, typecheck, unit tests and texture audit |
 
 ## Rendering and interaction policy
 
@@ -86,5 +86,9 @@ pnpm dev
 - Exploration mode uses separate presentation transforms for legibility; scientific mode uses one shared linear ratio for radii and distance.
 - Camera state is centralized; planet components publish selection events and never move the camera directly.
 - Frame loops mutate Three.js objects without writing React state every frame.
-- Quality levels control DPR, star density, geometry, orbit sampling, texture resolution, atmosphere cost, Saturn ring detail and high-tier-only bounded bloom.
+- Helios ships one High visual contract. Runtime capability handling, staged loading and reduced-motion behavior are automatic; there is no user-facing or persisted quality tier.
 - Dynamic NASA/JPL data is normalized and validated on the server before it reaches the UI; source time, retrieval time and fallback status remain distinct.
+
+## Repository documentation
+
+Current product and engineering contracts live in `docs/ROADMAP.md`, `docs/ARCHITECTURE.md`, `docs/CELESTIAL_MODEL.md`, `docs/ASSET_AND_SOURCES.md` and `docs/TESTING_AND_RELEASE.md`. Historical generated delivery reports are not requirements.

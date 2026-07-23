@@ -4,6 +4,7 @@ import {
   normalizeRadiansSigned,
   solveEllipticKepler,
 } from "@/features/solar-system/lib/elliptic-orbit-evaluator";
+import { resampleClosedOrbitByArcLength } from "@/features/solar-system/lib/orbit-path-resampling";
 
 import {
   MAX_PROPAGATION_DAYS,
@@ -151,6 +152,23 @@ function positionOnOrbit(
     Math.sqrt(1 - orbit.eccentricity ** 2) *
     Math.sin(eccentricAnomaly);
 
+  return {
+    x: orbit.basisP.x * perifocalX + orbit.basisQ.x * perifocalY,
+    y: orbit.basisP.y * perifocalX + orbit.basisQ.y * perifocalY,
+    z: orbit.basisP.z * perifocalX + orbit.basisQ.z * perifocalY,
+  };
+}
+
+function positionOnOrbitAtEccentricAnomaly(
+  orbit: OsculatingOrbit,
+  eccentricAnomaly: number,
+): CartesianVector {
+  const perifocalX =
+    orbit.semiMajorAxis * (Math.cos(eccentricAnomaly) - orbit.eccentricity);
+  const perifocalY =
+    orbit.semiMajorAxis *
+    Math.sqrt(1 - orbit.eccentricity ** 2) *
+    Math.sin(eccentricAnomaly);
   return {
     x: orbit.basisP.x * perifocalX + orbit.basisQ.x * perifocalY,
     y: orbit.basisP.y * perifocalX + orbit.basisQ.y * perifocalY,
@@ -419,11 +437,20 @@ export function ephemerisOrbitScenePoints(
   if (!orbit) return [vectorToScenePosition(vector.positionAu, scaleMode)];
 
   const safeSegments = Math.max(24, Math.floor(segments));
-  const periodDays = (Math.PI * 2) / orbit.meanMotion;
-  return Array.from({ length: safeSegments }, (_, index) =>
+  const denseSegments = Math.min(8_192, Math.max(2_048, safeSegments * 16));
+  const points = Array.from({ length: denseSegments }, (_, index) =>
     vectorToScenePosition(
-      positionAfterDays(vector, (periodDays * index) / safeSegments, orbit),
+      positionOnOrbitAtEccentricAnomaly(
+        orbit,
+        (index / denseSegments) * Math.PI * 2,
+      ),
       scaleMode,
     ),
+  );
+  const first =
+    points[0] ?? vectorToScenePosition(vector.positionAu, scaleMode);
+  return resampleClosedOrbitByArcLength(
+    [...points, [first[0], first[1], first[2]] as const],
+    safeSegments,
   );
 }

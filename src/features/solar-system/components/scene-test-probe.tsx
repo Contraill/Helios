@@ -24,6 +24,9 @@ export interface HeliosSceneTestSnapshot {
   readonly catalogue: {
     readonly enabled: boolean;
     readonly mode: string | null;
+    readonly page: number;
+    readonly pageCount: number;
+    readonly totalCount: number;
     readonly tileCount: number;
     readonly bodyIds: readonly string[];
   };
@@ -228,6 +231,9 @@ function ActiveSceneTestProbe() {
     const catalogue = {
       enabled: false,
       mode: null as string | null,
+      page: 1,
+      pageCount: 1,
+      totalCount: 0,
       tileCount: 0,
       bodyIds: [] as string[],
     };
@@ -295,6 +301,13 @@ function ActiveSceneTestProbe() {
       if (object.userData.testCatalogue === true) {
         catalogue.enabled = true;
         catalogue.mode = String(object.userData.testCatalogueMode ?? "unknown");
+        catalogue.page = Number(object.userData.testCataloguePage ?? 1);
+        catalogue.pageCount = Number(
+          object.userData.testCataloguePageCount ?? 1,
+        );
+        catalogue.totalCount = Number(
+          object.userData.testCatalogueTotalCount ?? 0,
+        );
         catalogue.tileCount = Number(
           object.userData.testCatalogueTileCount ?? 0,
         );

@@ -8,6 +8,7 @@ import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 
 import type { OrbitEmphasis } from "@/features/solar-system/lib/orbit-visibility-policy";
+import { orbitPathDiagnosticsFromFlatPositions } from "@/features/solar-system/lib/orbit-path-diagnostics";
 import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
 
 export type OrbitAcceptanceClass = "planet" | "moon" | "extended";
@@ -32,7 +33,7 @@ function ellipsePositions(
   segments: number,
 ): number[] {
   const positions: number[] = [];
-  const safeSegments = Math.max(24, Math.round(segments));
+  const safeSegments = Math.max(96, Math.round(segments));
   for (let index = 0; index <= safeSegments; index += 1) {
     const angle = (index / safeSegments) * Math.PI * 2;
     positions.push(
@@ -75,6 +76,41 @@ function boundsRadiusFor(positions: readonly number[]): number {
   return boundsRadius;
 }
 
+function isClosed(positions: readonly number[]): boolean {
+  if (positions.length < 6) return false;
+  const last = positions.length - 3;
+  const boundsRadius = boundsRadiusFor(positions);
+  return (
+    Math.hypot(
+      (positions[0] ?? 0) - (positions[last] ?? 0),
+      (positions[1] ?? 0) - (positions[last + 1] ?? 0),
+      (positions[2] ?? 0) - (positions[last + 2] ?? 0),
+    ) <= Math.max(1e-9, boundsRadius * 1e-9)
+  );
+}
+
+function contextLineWidth(orbitClass?: OrbitAcceptanceClass): number {
+  switch (orbitClass) {
+    case "moon":
+      return 0.66;
+    case "extended":
+      return 0.76;
+    default:
+      return 0.88;
+  }
+}
+
+function contextOpacity(orbitClass?: OrbitAcceptanceClass): number {
+  switch (orbitClass) {
+    case "moon":
+      return 0.09;
+    case "extended":
+      return 0.12;
+    default:
+      return 0.15;
+  }
+}
+
 export function OrbitPath({
   active = false,
   bodyId,
@@ -95,14 +131,14 @@ export function OrbitPath({
   const [line] = useState(() => {
     const geometry = new LineGeometry();
     const material = new LineMaterial({
-      alphaToCoverage: true,
+      alphaToCoverage: false,
       color: new Color(color),
       depthTest: true,
       depthWrite: false,
       dashed: false,
-      opacity: 0.28,
+      opacity: contextOpacity(orbitClass),
       transparent: true,
-      linewidth: lineWidth * 1.25,
+      linewidth: lineWidth * contextLineWidth(orbitClass),
       worldUnits: false,
     });
     const next = new Line2(geometry, material);
@@ -124,6 +160,7 @@ export function OrbitPath({
     const lineNode = lineRef.current;
     if (!lineNode) return;
     const boundsRadius = boundsRadiusFor(positions);
+    const diagnostics = orbitPathDiagnosticsFromFlatPositions(positions);
     lineNode.geometry.setPositions(positions);
     lineNode.geometry.computeBoundingSphere();
     lineNode.computeLineDistances();
@@ -134,6 +171,12 @@ export function OrbitPath({
     lineNode.userData.testGeometryUuid = lineNode.geometry.uuid;
     lineNode.userData.testMaterialUuid = lineNode.material.uuid;
     lineNode.userData.testBoundsRadius = boundsRadius;
+    lineNode.userData.testOrbitDashed = false;
+    lineNode.userData.testOrbitClosed = isClosed(positions);
+    lineNode.userData.testOrbitMaxChordToBoundsRatio =
+      diagnostics.maxChordToBoundsRatio;
+    lineNode.userData.testOrbitMaxToMedianSegmentRatio =
+      diagnostics.maxToMedianSegmentRatio;
   }, [bodyId, color, orbitClass, positions]);
 
   useEffect(() => {
@@ -149,10 +192,14 @@ export function OrbitPath({
     const lineNode = lineRef.current;
     if (!lineNode) return;
     const selected = emphasis === "selected";
-    lineNode.material.linewidth = lineWidth * (selected ? 2.25 : 1.25);
+    lineNode.material.linewidth =
+      lineWidth * (selected ? 1.9 : contextLineWidth(orbitClass));
     lineNode.renderOrder = selected ? 3 : -1;
     lineNode.visible = emphasis !== "hidden";
-  }, [emphasis, lineWidth]);
+    lineNode.userData.testOrbitEmphasis = emphasis;
+    lineNode.userData.testGeometryUuid = lineNode.geometry.uuid;
+    lineNode.userData.testMaterialUuid = lineNode.material.uuid;
+  }, [emphasis, lineWidth, orbitClass]);
 
   useFrame(() => {
     const lineNode = lineRef.current;
@@ -166,12 +213,12 @@ export function OrbitPath({
     const cameraDistance = camera.position.distanceTo(worldPosition.current);
     const distanceRatio = cameraDistance / boundsRadiusRef.current;
     const distanceFactor = Math.max(
-      0.58,
-      Math.min(1, 5 / Math.max(1, distanceRatio)),
+      emphasis === "selected" ? 0.62 : 0.3,
+      Math.min(1, 4.5 / Math.max(1, distanceRatio)),
     );
-    const selected = emphasis === "selected";
-    const lineMaterial = lineNode.material;
-    lineMaterial.opacity = (selected ? 0.82 : 0.28) * distanceFactor;
+    lineNode.material.opacity =
+      (emphasis === "selected" ? 0.78 : contextOpacity(orbitClass)) *
+      distanceFactor;
   });
 
   useEffect(() => {

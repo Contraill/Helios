@@ -4,6 +4,7 @@ import { AdditiveBlending, DoubleSide, NormalBlending } from "three";
 
 import {
   PLANETARY_RING_PROFILES,
+  planetaryRingOuterRadius,
   type PlanetaryRingBand,
   type ProceduralRingPlanetId,
 } from "@/features/solar-system/lib/planetary-rings";
@@ -35,13 +36,23 @@ function RingBand({
   thetaStart = 0,
 }: RingBandProps) {
   const dusty = planetId !== "uranus";
+  const complete = Math.abs(thetaLength - Math.PI * 2) < 1e-6;
   return (
     <mesh
-      position-y={thetaLength < Math.PI * 2 ? radius * 0.002 : 0}
+      position-y={complete ? 0 : radius * 0.002}
       raycast={() => undefined}
       renderOrder={4}
       rotation-x={Math.PI / 2}
       scale={radius}
+      userData={{
+        testPlanetaryRingBandId: band.id,
+        testPlanetaryRingComplete: complete,
+        testPlanetaryRingOuterRadius: planetaryRingOuterRadius(planetId),
+        testPlanetaryRingPlanetId: planetId,
+        testPlanetaryRingThetaLength: thetaLength,
+        testPlanetaryRingThetaStart: thetaStart,
+        testRingParentTransform: "planet-equatorial",
+      }}
     >
       <ringGeometry
         args={[
@@ -77,7 +88,18 @@ export function PlanetaryRingSystem({
   const opacityMultiplier = 1.35 * (active ? 1.22 : 1);
 
   return (
-    <group userData={{ visualLayer: `${planetId}-rings` }}>
+    <group
+      userData={{
+        testPlanetaryRingArcCount: profile.arcs.length,
+        testPlanetaryRingArcsOpen: profile.arcs.every(
+          ({ arcLength }) => arcLength > 0 && arcLength < Math.PI * 2,
+        ),
+        testPlanetaryRingBandCount: profile.bands.length,
+        testPlanetaryRingPlanetId: planetId,
+        testRingParentTransform: "planet-equatorial",
+        visualLayer: `${planetId}-rings`,
+      }}
+    >
       {profile.bands.map((ringBand) => (
         <RingBand
           band={ringBand}

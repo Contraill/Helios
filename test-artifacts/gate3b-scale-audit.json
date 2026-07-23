@@ -1,0 +1,1713 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": "gate3b-scale-audit.ts",
+  "bodies": [
+    {
+      "bodyId": "moon-earth-moon",
+      "parentId": "earth",
+      "category": "featured-moon",
+      "physicalRadiusKm": 1737.4,
+      "renderedRadiusExplore": 0.16907653111868445,
+      "renderedRadiusScientific": 0.00013936561999475038,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.074025648968449,
+        "scientific": 0.03083466347759989,
+        "physicalKm": 384400
+      },
+      "orbitExtent": {
+        "exploration": 2.188926669921301,
+        "scientific": 0.03254290383425892
+      },
+      "focusRadius": {
+        "exploration": 0.16907653111868445,
+        "scientific": 0.00013936561999475038
+      },
+      "geometryBounds": {
+        "exploration": 0.16907653111868445,
+        "scientific": 0.00013936561999475038
+      },
+      "systemExtent": {
+        "exploration": 2.3580032010399856,
+        "scientific": 0.03268226945425367
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-mars-phobos",
+      "parentId": "mars",
+      "category": "featured-moon",
+      "physicalRadiusKm": 11.08,
+      "renderedRadiusExplore": 0.10464148729431244,
+      "renderedRadiusScientific": 8.887827037768127e-7,
+      "visualAmplification": {
+        "exploration": 67.30054151624549,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 0.9072429835935474,
+        "scientific": 0.0007520160512552002,
+        "physicalKm": 9375
+      },
+      "orbitExtent": {
+        "exploration": 0.9208516283474505,
+        "scientific": 0.0007632962920240281
+      },
+      "focusRadius": {
+        "exploration": 0.14,
+        "scientific": 1.0843148986077114e-6
+      },
+      "geometryBounds": {
+        "exploration": 0.12766261449906116,
+        "scientific": 1.0843148986077114e-6
+      },
+      "systemExtent": {
+        "exploration": 1.0485142428465117,
+        "scientific": 0.0007643806069226358
+      },
+      "representationStatus": "review",
+      "flags": [
+        "review:procedural-surface-gpu-review-required",
+        "review:high-exploration-visual-amplification"
+      ]
+    },
+    {
+      "bodyId": "moon-mars-deimos",
+      "parentId": "mars",
+      "category": "featured-moon",
+      "physicalRadiusKm": 6.2,
+      "renderedRadiusExplore": 0.10464148729431244,
+      "renderedRadiusScientific": 4.973332818967724e-7,
+      "visualAmplification": {
+        "exploration": 120.2725806451613,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 1.2019858652663786,
+        "scientific": 0.0018816043215246112,
+        "physicalKm": 23457
+      },
+      "orbitExtent": {
+        "exploration": 1.2019858652663786,
+        "scientific": 0.0018816043215246112
+      },
+      "focusRadius": {
+        "exploration": 0.14,
+        "scientific": 5.868532726381914e-7
+      },
+      "geometryBounds": {
+        "exploration": 0.12347695500728867,
+        "scientific": 5.868532726381914e-7
+      },
+      "systemExtent": {
+        "exploration": 1.3254628202736674,
+        "scientific": 0.0018821911747972494
+      },
+      "representationStatus": "review",
+      "flags": [
+        "review:procedural-surface-gpu-review-required",
+        "review:high-exploration-visual-amplification"
+      ]
+    },
+    {
+      "bodyId": "moon-jupiter-io",
+      "parentId": "jupiter",
+      "category": "featured-moon",
+      "physicalRadiusKm": 1821.49,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 0.00014611090316808903,
+      "visualAmplification": {
+        "exploration": 3.6216404719151316,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.646294641408415,
+        "scientific": 0.033834706178073964,
+        "physicalKm": 421800
+      },
+      "orbitExtent": {
+        "exploration": 2.6568798199740487,
+        "scientific": 0.03397004500278626
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 0.00014611090316808903
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 0.00014611090316808903
+      },
+      "systemExtent": {
+        "exploration": 2.816879819974049,
+        "scientific": 0.03411615590595435
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-jupiter-europa",
+      "parentId": "jupiter",
+      "category": "featured-moon",
+      "physicalRadiusKm": 1560.8,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 0.00012519964296523907,
+      "visualAmplification": {
+        "exploration": 4.226538892355647,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.795538332333905,
+        "scientific": 0.05383231701305225,
+        "physicalKm": 671100
+      },
+      "orbitExtent": {
+        "exploration": 2.8206981773249096,
+        "scientific": 0.054316807866169714
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 0.00012519964296523907
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 0.00012519964296523907
+      },
+      "systemExtent": {
+        "exploration": 2.9806981773249097,
+        "scientific": 0.05444200750913495
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-jupiter-ganymede",
+      "parentId": "jupiter",
+      "category": "featured-moon",
+      "physicalRadiusKm": 2631.2,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 0.00021106182763335282,
+      "visualAmplification": {
+        "exploration": 2.5071381511054627,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.9455798899234225,
+        "scientific": 0.08586218466811374,
+        "physicalKm": 1070400
+      },
+      "orbitExtent": {
+        "exploration": 2.9485254698133456,
+        "scientific": 0.08594804685278185
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 0.00021106182763335282
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 0.00021106182763335282
+      },
+      "systemExtent": {
+        "exploration": 3.1085254698133458,
+        "scientific": 0.0861591086804152
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-jupiter-callisto",
+      "parentId": "jupiter",
+      "category": "featured-moon",
+      "physicalRadiusKm": 2410.3,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 0.00019334232408964365,
+      "visualAmplification": {
+        "exploration": 2.7369132071479454,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 3.1270538063382194,
+        "scientific": 0.15102086610113763,
+        "physicalKm": 1882700
+      },
+      "orbitExtent": {
+        "exploration": 3.1489431829825865,
+        "scientific": 0.1520780121638456
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 0.00019334232408964365
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 0.00019334232408964365
+      },
+      "systemExtent": {
+        "exploration": 3.3089431829825866,
+        "scientific": 0.15227135448793525
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-saturn-mimas",
+      "parentId": "saturn",
+      "category": "featured-moon",
+      "physicalRadiusKm": 198.2,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 1.5898622011603268e-5,
+      "visualAmplification": {
+        "exploration": 29.935455261891647,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.2890280032335606,
+        "scientific": 0.01491999845690317,
+        "physicalKm": 186000
+      },
+      "orbitExtent": {
+        "exploration": 2.334808563298232,
+        "scientific": 0.015218398426041235
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 1.5898622011603268e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 1.5898622011603268e-5
+      },
+      "systemExtent": {
+        "exploration": 2.494808563298232,
+        "scientific": 0.015234297048052839
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-saturn-enceladus",
+      "parentId": "saturn",
+      "category": "featured-moon",
+      "physicalRadiusKm": 252.1,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 2.02222129622865e-5,
+      "visualAmplification": {
+        "exploration": 23.53513380764349,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.36879505030277,
+        "scientific": 0.019123266839385568,
+        "physicalKm": 238400
+      },
+      "orbitExtent": {
+        "exploration": 2.3806390255542835,
+        "scientific": 0.019218883173582495
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 2.02222129622865e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 2.02222129622865e-5
+      },
+      "systemExtent": {
+        "exploration": 2.5406390255542837,
+        "scientific": 0.01923910538654478
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-saturn-tethys",
+      "parentId": "saturn",
+      "category": "featured-moon",
+      "physicalRadiusKm": 531.1,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 4.260221064764126e-5,
+      "visualAmplification": {
+        "exploration": 11.17154440389178,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.4372567163361434,
+        "scientific": 0.023663438412830293,
+        "physicalKm": 295000
+      },
+      "orbitExtent": {
+        "exploration": 2.439693973052479,
+        "scientific": 0.02368710185124312
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 4.260221064764126e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 4.260221064764126e-5
+      },
+      "systemExtent": {
+        "exploration": 2.5996939730524793,
+        "scientific": 0.02372970406189076
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-saturn-dione",
+      "parentId": "saturn",
+      "category": "featured-moon",
+      "physicalRadiusKm": 561.4,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 4.503272652529806e-5,
+      "visualAmplification": {
+        "exploration": 10.568591437311943,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.5166771932846714,
+        "scientific": 0.0302972226729695,
+        "physicalKm": 377700
+      },
+      "orbitExtent": {
+        "exploration": 2.521710547671241,
+        "scientific": 0.03035781711831544
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 4.503272652529806e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 4.503272652529806e-5
+      },
+      "systemExtent": {
+        "exploration": 2.681710547671241,
+        "scientific": 0.030402849844840738
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-saturn-rhea",
+      "parentId": "saturn",
+      "category": "featured-moon",
+      "physicalRadiusKm": 763.5,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 6.124418721422349e-5,
+      "visualAmplification": {
+        "exploration": 7.771063828299836,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.6238502216859083,
+        "scientific": 0.04228937197031909,
+        "physicalKm": 527200
+      },
+      "orbitExtent": {
+        "exploration": 2.626474071907594,
+        "scientific": 0.042331661342289405
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 6.124418721422349e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 6.124418721422349e-5
+      },
+      "systemExtent": {
+        "exploration": 2.786474071907594,
+        "scientific": 0.04239290552950363
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-saturn-titan",
+      "parentId": "saturn",
+      "category": "featured-moon",
+      "physicalRadiusKm": 2574.76,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 0.00020653449046718284,
+      "visualAmplification": {
+        "exploration": 2.3043729252073684,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.893994816468491,
+        "scientific": 0.09801476405639777,
+        "physicalKm": 1221900
+      },
+      "orbitExtent": {
+        "exploration": 2.977920666146077,
+        "scientific": 0.10085719221403329
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 0.00020653449046718284
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 0.00020653449046718284
+      },
+      "systemExtent": {
+        "exploration": 3.1379206661460772,
+        "scientific": 0.10106372670450048
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-saturn-iapetus",
+      "parentId": "saturn",
+      "category": "featured-moon",
+      "physicalRadiusKm": 734.3,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 5.890190788658063e-5,
+      "visualAmplification": {
+        "exploration": 8.080086113178435,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 3.237814853364144,
+        "scientific": 0.28570192744060224,
+        "physicalKm": 3561700
+      },
+      "orbitExtent": {
+        "exploration": 3.32847366925834,
+        "scientific": 0.2937015814089391
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 5.890190788658063e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 5.890190788658063e-5
+      },
+      "systemExtent": {
+        "exploration": 3.4884736692583402,
+        "scientific": 0.2937604833168257
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-uranus-miranda",
+      "parentId": "uranus",
+      "category": "featured-moon",
+      "physicalRadiusKm": 235.8,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 1.8914707721170793e-5,
+      "visualAmplification": {
+        "exploration": 15.537400339428906,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 1.876108307447454,
+        "scientific": 0.010415602793736822,
+        "physicalKm": 129846
+      },
+      "orbitExtent": {
+        "exploration": 1.8779844157549013,
+        "scientific": 0.010426018396530559
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 1.8914707721170793e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 1.8914707721170793e-5
+      },
+      "systemExtent": {
+        "exploration": 2.0379844157549014,
+        "scientific": 0.010444933104251729
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-uranus-ariel",
+      "parentId": "uranus",
+      "category": "featured-moon",
+      "physicalRadiusKm": 578.9,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 4.643648982097444e-5,
+      "visualAmplification": {
+        "exploration": 6.328759716768589,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.00001636610408,
+        "scientific": 0.015315378416011105,
+        "physicalKm": 190929
+      },
+      "orbitExtent": {
+        "exploration": 2.0020163824701838,
+        "scientific": 0.015330693794427114
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 4.643648982097444e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 4.643648982097444e-5
+      },
+      "systemExtent": {
+        "exploration": 2.162016382470184,
+        "scientific": 0.015377130284248088
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-uranus-umbriel",
+      "parentId": "uranus",
+      "category": "featured-moon",
+      "physicalRadiusKm": 584.7,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 4.690173708468433e-5,
+      "visualAmplification": {
+        "exploration": 6.26598084494157,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.106566657674592,
+        "scientific": 0.02133607908364434,
+        "physicalKm": 265986
+      },
+      "orbitExtent": {
+        "exploration": 2.1149929243052905,
+        "scientific": 0.021421423399978917
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 4.690173708468433e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 4.690173708468433e-5
+      },
+      "systemExtent": {
+        "exploration": 2.2749929243052907,
+        "scientific": 0.0214683251370636
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-uranus-titania",
+      "parentId": "uranus",
+      "category": "featured-moon",
+      "physicalRadiusKm": 788.9,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 6.328164936909092e-5,
+      "visualAmplification": {
+        "exploration": 4.6440854354637295,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.265610746049841,
+        "scientific": 0.034997663907257746,
+        "physicalKm": 436298
+      },
+      "orbitExtent": {
+        "exploration": 2.270141967541941,
+        "scientific": 0.03506765923507226
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 6.328164936909092e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 6.328164936909092e-5
+      },
+      "systemExtent": {
+        "exploration": 2.430141967541941,
+        "scientific": 0.03513094088444135
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-uranus-oberon",
+      "parentId": "uranus",
+      "category": "featured-moon",
+      "physicalRadiusKm": 761.4,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 6.107573561874233e-5,
+      "visualAmplification": {
+        "exploration": 4.8118190176481965,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.3590474568033253,
+        "scientific": 0.046806361395623795,
+        "physicalKm": 583511
+      },
+      "orbitExtent": {
+        "exploration": 2.363765551716932,
+        "scientific": 0.046899974118415046
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 6.107573561874233e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 6.107573561874233e-5
+      },
+      "systemExtent": {
+        "exploration": 2.523765551716932,
+        "scientific": 0.046961049854033786
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-neptune-proteus",
+      "parentId": "neptune",
+      "category": "featured-moon",
+      "physicalRadiusKm": 208,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 1.6684729457182038e-5,
+      "visualAmplification": {
+        "exploration": 17.314100037948513,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 1.8370876229634405,
+        "scientific": 0.00943328934694523,
+        "physicalKm": 117600
+      },
+      "orbitExtent": {
+        "exploration": 1.8370876229634405,
+        "scientific": 0.00943328934694523
+      },
+      "focusRadius": {
+        "exploration": 0.1808,
+        "scientific": 1.88537442866157e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.1808,
+        "scientific": 1.88537442866157e-5
+      },
+      "systemExtent": {
+        "exploration": 2.0178876229634404,
+        "scientific": 0.009452143091231846
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-neptune-triton",
+      "parentId": "neptune",
+      "category": "featured-moon",
+      "physicalRadiusKm": 1352.6,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 0.00010849887049896359,
+      "visualAmplification": {
+        "exploration": 2.662526103721197,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 2.1919740771339216,
+        "scientific": 0.028460298131770135,
+        "physicalKm": 354800
+      },
+      "orbitExtent": {
+        "exploration": 2.1919740771339216,
+        "scientific": 0.028460298131770135
+      },
+      "focusRadius": {
+        "exploration": 0.16,
+        "scientific": 0.00010849887049896359
+      },
+      "geometryBounds": {
+        "exploration": 0.16,
+        "scientific": 0.00010849887049896359
+      },
+      "systemExtent": {
+        "exploration": 2.3519740771339217,
+        "scientific": 0.028568797002269098
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "moon-neptune-nereid",
+      "parentId": "neptune",
+      "category": "featured-moon",
+      "physicalRadiusKm": 170,
+      "renderedRadiusExplore": 0.16,
+      "renderedRadiusScientific": 1.3636557729427628e-5,
+      "visualAmplification": {
+        "exploration": 21.184310634666417,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 3.073665780133596,
+        "scientific": 0.4422977392017118,
+        "physicalKm": 5513900
+      },
+      "orbitExtent": {
+        "exploration": 5.381988781013926,
+        "scientific": 0.7744633413421973
+      },
+      "focusRadius": {
+        "exploration": 0.1728,
+        "scientific": 1.472748234778184e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.1728,
+        "scientific": 1.472748234778184e-5
+      },
+      "systemExtent": {
+        "exploration": 5.554788781013926,
+        "scientific": 0.7744780688245451
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "dwarf-satellite-charon",
+      "parentId": "pluto",
+      "category": "dwarf-system-satellite",
+      "physicalRadiusKm": 606,
+      "renderedRadiusExplore": 0.1561851513252982,
+      "renderedRadiusScientific": 4.8610317553136134e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 1.2231050818527607,
+        "scientific": 0.0015718940309756694,
+        "physicalKm": 19596
+      },
+      "orbitExtent": {
+        "exploration": 1.2233497028691311,
+        "scientific": 0.0015722084097818645
+      },
+      "focusRadius": {
+        "exploration": 0.23349680123132083,
+        "scientific": 7.267242474193852e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.1561851513252982,
+        "scientific": 4.8610317553136134e-5
+      },
+      "systemExtent": {
+        "exploration": 1.3795348541944294,
+        "scientific": 0.0016208187273350006
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "dwarf-satellite-dysnomia",
+      "parentId": "eris",
+      "category": "dwarf-system-satellite",
+      "physicalRadiusKm": 350,
+      "renderedRadiusExplore": 0.0913389604888621,
+      "renderedRadiusScientific": 2.807526591352747e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 1.3627437201481643,
+        "scientific": 0.0029898553896997413,
+        "physicalKm": 37273
+      },
+      "orbitExtent": {
+        "exploration": 1.371192731213083,
+        "scientific": 0.0030083924931158797
+      },
+      "focusRadius": {
+        "exploration": 0.13655174593084884,
+        "scientific": 4.1972522540723565e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.0913389604888621,
+        "scientific": 2.807526591352747e-5
+      },
+      "systemExtent": {
+        "exploration": 1.462531691701945,
+        "scientific": 0.003036467759029407
+      },
+      "representationStatus": "review",
+      "flags": [
+        "review:procedural-surface-gpu-review-required",
+        "review:orbit-plane-unresolved"
+      ]
+    },
+    {
+      "bodyId": "dwarf-satellite-hiiaka",
+      "parentId": "haumea",
+      "category": "dwarf-system-satellite",
+      "physicalRadiusKm": 160,
+      "renderedRadiusExplore": 0.052641634802255324,
+      "renderedRadiusScientific": 1.2834407274755416e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 1.284687512165114,
+        "scientific": 0.004001126467905001,
+        "physicalKm": 49880
+      },
+      "orbitExtent": {
+        "exploration": 1.3502065752855348,
+        "scientific": 0.004205183917768156
+      },
+      "focusRadius": {
+        "exploration": 0.0786992440293717,
+        "scientific": 1.9187438875759347e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.052641634802255324,
+        "scientific": 1.2834407274755416e-5
+      },
+      "systemExtent": {
+        "exploration": 1.4028482100877901,
+        "scientific": 0.0042180183250429115
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "dwarf-satellite-namaka",
+      "parentId": "haumea",
+      "category": "dwarf-system-satellite",
+      "physicalRadiusKm": 85,
+      "renderedRadiusExplore": 0.027965868488698142,
+      "renderedRadiusScientific": 6.818278864713815e-6,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 1.1572462211658403,
+        "scientific": 0.0020580774215524984,
+        "physicalKm": 25657
+      },
+      "orbitExtent": {
+        "exploration": 1.4454005302361346,
+        "scientific": 0.0025705386995190705
+      },
+      "focusRadius": {
+        "exploration": 0.04180897339060372,
+        "scientific": 1.0193326902747153e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.027965868488698142,
+        "scientific": 6.818278864713815e-6
+      },
+      "systemExtent": {
+        "exploration": 1.4733663987248327,
+        "scientific": 0.0025773569783837844
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "dwarf-satellite-mk2",
+      "parentId": "makemake",
+      "category": "dwarf-system-satellite",
+      "physicalRadiusKm": 87.5,
+      "renderedRadiusExplore": 0.03027853118380672,
+      "renderedRadiusScientific": 7.018816478381868e-6,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 1.094781619688483,
+        "scientific": 0.0016845159548116483,
+        "physicalKm": 21000
+      },
+      "orbitExtent": {
+        "exploration": 1.094781619688483,
+        "scientific": 0.0016845159548116483
+      },
+      "focusRadius": {
+        "exploration": 0.04526640411979105,
+        "scientific": 1.0493130635180891e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.03027853118380672,
+        "scientific": 7.018816478381868e-6
+      },
+      "systemExtent": {
+        "exploration": 1.1250601508722897,
+        "scientific": 0.00169153477129003
+      },
+      "representationStatus": "review",
+      "flags": [
+        "review:procedural-surface-gpu-review-required",
+        "review:orbit-plane-unresolved"
+      ]
+    },
+    {
+      "bodyId": "dwarf-satellite-weywot",
+      "parentId": "quaoar",
+      "category": "dwarf-system-satellite",
+      "physicalRadiusKm": 85,
+      "renderedRadiusExplore": 0.03406851866301254,
+      "renderedRadiusScientific": 6.818278864713814e-6,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 0.9648364059278882,
+        "scientific": 0.0011631181592747096,
+        "physicalKm": 14500
+      },
+      "orbitExtent": {
+        "exploration": 1.0999135027577926,
+        "scientific": 0.0013259547015731692
+      },
+      "focusRadius": {
+        "exploration": 0.05093243540120374,
+        "scientific": 1.0193326902747153e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.03406851866301254,
+        "scientific": 6.818278864713814e-6
+      },
+      "systemExtent": {
+        "exploration": 1.1339820214208052,
+        "scientific": 0.001332772980437883
+      },
+      "representationStatus": "review",
+      "flags": [
+        "review:procedural-surface-gpu-review-required",
+        "review:orbit-plane-unresolved"
+      ]
+    },
+    {
+      "bodyId": "dwarf-satellite-xiangliu",
+      "parentId": "gonggong",
+      "category": "dwarf-system-satellite",
+      "physicalRadiusKm": 50,
+      "renderedRadiusExplore": 0.018881943425485086,
+      "renderedRadiusScientific": 4.010752273361068e-6,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 1.0771008349934166,
+        "scientific": 0.0019267653921226568,
+        "physicalKm": 24020
+      },
+      "orbitExtent": {
+        "exploration": 1.3894600771415073,
+        "scientific": 0.0024855273558382273
+      },
+      "focusRadius": {
+        "exploration": 0.030192227537350656,
+        "scientific": 5.996074648674796e-6
+      },
+      "geometryBounds": {
+        "exploration": 0.018881943425485086,
+        "scientific": 4.010752273361068e-6
+      },
+      "systemExtent": {
+        "exploration": 1.4083420205669923,
+        "scientific": 0.0024895381081115886
+      },
+      "representationStatus": "review",
+      "flags": [
+        "review:procedural-surface-gpu-review-required",
+        "review:orbit-plane-unresolved"
+      ]
+    },
+    {
+      "bodyId": "dwarf-satellite-vanth",
+      "parentId": "orcus",
+      "category": "dwarf-system-satellite",
+      "physicalRadiusKm": 221,
+      "renderedRadiusExplore": 0.09939623140543186,
+      "renderedRadiusScientific": 1.772752504825592e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 0.8447215001010994,
+        "scientific": 0.0007203311082956478,
+        "physicalKm": 8980
+      },
+      "orbitExtent": {
+        "exploration": 0.8506345506018069,
+        "scientific": 0.0007253734260537172
+      },
+      "focusRadius": {
+        "exploration": 0.1485973659511206,
+        "scientific": 2.65026499471426e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.09939623140543186,
+        "scientific": 1.772752504825592e-5
+      },
+      "systemExtent": {
+        "exploration": 0.9500307820072388,
+        "scientific": 0.0007431009511019731
+      },
+      "representationStatus": "review",
+      "flags": [
+        "review:procedural-surface-gpu-review-required",
+        "review:orbit-plane-unresolved"
+      ]
+    },
+    {
+      "bodyId": "ceres",
+      "parentId": "sun",
+      "category": "asteroid",
+      "physicalRadiusKm": 469.7,
+      "renderedRadiusExplore": 0.20739051504124276,
+      "renderedRadiusScientific": 3.7677006855953866e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 33.428784637481684,
+        "scientific": 33.184182,
+        "physicalKm": 413690247.3434389
+      },
+      "orbitExtent": {
+        "exploration": 34.29346204522659,
+        "scientific": 35.8103200911615
+      },
+      "focusRadius": {
+        "exploration": 0.20739051504124276,
+        "scientific": 3.7677006855953866e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.20739051504124276,
+        "scientific": 3.7677006855953866e-5
+      },
+      "systemExtent": {
+        "exploration": 0.20739051504124276,
+        "scientific": 3.7677006855953866e-5
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "vesta",
+      "parentId": "sun",
+      "category": "asteroid",
+      "physicalRadiusKm": 262.7,
+      "renderedRadiusExplore": 0.17,
+      "renderedRadiusScientific": 2.1072492444239047e-5,
+      "visualAmplification": {
+        "exploration": 1.0462884615128563,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 31.664379676128345,
+        "scientific": 28.338,
+        "physicalKm": 353275371.65804994
+      },
+      "orbitExtent": {
+        "exploration": 32.60975767241708,
+        "scientific": 30.85271412
+      },
+      "focusRadius": {
+        "exploration": 0.1836,
+        "scientific": 2.2758291839778172e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.1836,
+        "scientific": 2.2758291839778172e-5
+      },
+      "systemExtent": {
+        "exploration": 0.1836,
+        "scientific": 2.2758291839778172e-5
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "pallas",
+      "parentId": "sun",
+      "category": "asteroid",
+      "physicalRadiusKm": 256,
+      "renderedRadiusExplore": 0.17,
+      "renderedRadiusScientific": 2.0535051639608668e-5,
+      "visualAmplification": {
+        "exploration": 1.0577033529414124,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 33.45655529334616,
+        "scientific": 33.2658384,
+        "physicalKm": 414708215.9741912
+      },
+      "orbitExtent": {
+        "exploration": 35.835572931798595,
+        "scientific": 40.9502324334311
+      },
+      "focusRadius": {
+        "exploration": 0.1836,
+        "scientific": 2.2177855770777363e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.1836,
+        "scientific": 2.2177855770777363e-5
+      },
+      "systemExtent": {
+        "exploration": 0.1836,
+        "scientific": 2.2177855770777363e-5
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "hygiea",
+      "parentId": "sun",
+      "category": "asteroid",
+      "physicalRadiusKm": 216.5,
+      "renderedRadiusExplore": 0.17,
+      "renderedRadiusScientific": 1.7366557343653423e-5,
+      "visualAmplification": {
+        "exploration": 1.1348340242884651,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 34.87945727602903,
+        "scientific": 37.692,
+        "physicalKm": 469886911.86869997
+      },
+      "orbitExtent": {
+        "exploration": 36.10527949346497,
+        "scientific": 41.913504
+      },
+      "focusRadius": {
+        "exploration": 0.1751,
+        "scientific": 1.7887554063963028e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.1751,
+        "scientific": 1.7887554063963028e-5
+      },
+      "systemExtent": {
+        "exploration": 0.1751,
+        "scientific": 1.7887554063963028e-5
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "pluto",
+      "parentId": "sun",
+      "category": "dwarf-kuiper",
+      "physicalRadiusKm": 1188.3,
+      "renderedRadiusExplore": 0.30626207148490403,
+      "renderedRadiusScientific": 9.531953852869912e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 66.30355136960591,
+        "scientific": 473.784,
+        "physicalKm": 5906423130.9774
+      },
+      "orbitExtent": {
+        "exploration": 69.16485561125761,
+        "scientific": 591.6614591999999
+      },
+      "focusRadius": {
+        "exploration": 0.30626207148490403,
+        "scientific": 9.531953852869912e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.30626207148490403,
+        "scientific": 9.531953852869912e-5
+      },
+      "systemExtent": {
+        "exploration": 1.3795348541944294,
+        "scientific": 0.0016208187273350006
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "eris",
+      "parentId": "sun",
+      "category": "dwarf-kuiper",
+      "physicalRadiusKm": 1163,
+      "renderedRadiusExplore": 0.3035063172815618,
+      "renderedRadiusScientific": 9.329009787837843e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 73.27223752699582,
+        "scientific": 813.36,
+        "physicalKm": 10139743676.046
+      },
+      "orbitExtent": {
+        "exploration": 77.99459697443064,
+        "scientific": 1171.8077520000002
+      },
+      "focusRadius": {
+        "exploration": 0.3035063172815618,
+        "scientific": 9.329009787837843e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.3035063172815618,
+        "scientific": 9.329009787837843e-5
+      },
+      "systemExtent": {
+        "exploration": 1.462531691701945,
+        "scientific": 0.003036467759029407
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "haumea",
+      "parentId": "sun",
+      "category": "dwarf-kuiper",
+      "physicalRadiusKm": 780,
+      "renderedRadiusExplore": 0.2566279696609947,
+      "renderedRadiusScientific": 6.256773546443265e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 67.46716882456101,
+        "scientific": 518.616,
+        "physicalKm": 6465320775.9126
+      },
+      "orbitExtent": {
+        "exploration": 69.71955859653173,
+        "scientific": 617.671656
+      },
+      "focusRadius": {
+        "exploration": 0.5440512956813088,
+        "scientific": 0.00013264359918459723
+      },
+      "geometryBounds": {
+        "exploration": 0.5440512956813088,
+        "scientific": 0.00013264359918459723
+      },
+      "systemExtent": {
+        "exploration": 1.4733663987248327,
+        "scientific": 0.0042180183250429115
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "makemake",
+      "parentId": "sun",
+      "category": "dwarf-kuiper",
+      "physicalRadiusKm": 715,
+      "renderedRadiusExplore": 0.2474188548162492,
+      "renderedRadiusScientific": 5.7353757509063266e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 68.11002602350725,
+        "scientific": 545.16,
+        "physicalKm": 6796231265.900999
+      },
+      "orbitExtent": {
+        "exploration": 70.01205592636292,
+        "scientific": 631.8404400000001
+      },
+      "focusRadius": {
+        "exploration": 0.2474188548162492,
+        "scientific": 5.7353757509063266e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.2474188548162492,
+        "scientific": 5.7353757509063266e-5
+      },
+      "systemExtent": {
+        "exploration": 1.1250601508722897,
+        "scientific": 0.00169153477129003
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "quaoar",
+      "parentId": "sun",
+      "category": "dwarf-kuiper",
+      "physicalRadiusKm": 555,
+      "renderedRadiusExplore": 0.22244738656437602,
+      "renderedRadiusScientific": 4.451935023430785e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 67.60703583949523,
+        "scientific": 524.28,
+        "physicalKm": 6535930970.882999
+      },
+      "orbitExtent": {
+        "exploration": 68.09978853420068,
+        "scientific": 544.7269199999998
+      },
+      "focusRadius": {
+        "exploration": 0.5383226754857899,
+        "scientific": 0.00010773682756702499
+      },
+      "geometryBounds": {
+        "exploration": 0.5383226754857899,
+        "scientific": 0.00010773682756702499
+      },
+      "systemExtent": {
+        "exploration": 1.1339820214208052,
+        "scientific": 0.001332772980437883
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "gonggong",
+      "parentId": "sun",
+      "category": "dwarf-kuiper",
+      "physicalRadiusKm": 615,
+      "renderedRadiusExplore": 0.23224790413346655,
+      "renderedRadiusScientific": 4.933225296234113e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 73.21875261048791,
+        "scientific": 810,
+        "physicalKm": 10097856272.25
+      },
+      "orbitExtent": {
+        "exploration": 78.46318692881162,
+        "scientific": 1215
+      },
+      "focusRadius": {
+        "exploration": 0.23224790413346655,
+        "scientific": 4.933225296234113e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.23224790413346655,
+        "scientific": 4.933225296234113e-5
+      },
+      "systemExtent": {
+        "exploration": 1.4083420205669923,
+        "scientific": 0.0024895381081115886
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "sedna",
+      "parentId": "sun",
+      "category": "dwarf-kuiper",
+      "physicalRadiusKm": 500,
+      "renderedRadiusExplore": 0.2129078413427849,
+      "renderedRadiusScientific": 4.010752273361068e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 99.3572910010952,
+        "scientific": 6081.6,
+        "physicalKm": 75816200870.76
+      },
+      "orbitExtent": {
+        "exploration": 107.38486890032698,
+        "scientific": 11281.368
+      },
+      "focusRadius": {
+        "exploration": 0.2129078413427849,
+        "scientific": 4.010752273361068e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.2129078413427849,
+        "scientific": 4.010752273361068e-5
+      },
+      "systemExtent": {
+        "exploration": 0.2129078413427849,
+        "scientific": 4.010752273361068e-5
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "orcus",
+      "parentId": "sun",
+      "category": "dwarf-kuiper",
+      "physicalRadiusKm": 455,
+      "renderedRadiusExplore": 0.20463929995235972,
+      "renderedRadiusScientific": 3.6497845687585715e-5,
+      "visualAmplification": {
+        "exploration": 1,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 66.20149428155754,
+        "scientific": 470.04,
+        "physicalKm": 5859748595.319
+      },
+      "orbitExtent": {
+        "exploration": 68.83559354209125,
+        "scientific": 576.7390800000001
+      },
+      "focusRadius": {
+        "exploration": 0.20463929995235972,
+        "scientific": 3.6497845687585715e-5
+      },
+      "geometryBounds": {
+        "exploration": 0.20463929995235972,
+        "scientific": 3.6497845687585715e-5
+      },
+      "systemExtent": {
+        "exploration": 0.9500307820072388,
+        "scientific": 0.0007431009511019731
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "halley",
+      "parentId": "sun",
+      "category": "comet",
+      "physicalRadiusKm": 5.5,
+      "renderedRadiusExplore": 0.1,
+      "renderedRadiusScientific": 4.411827500697174e-7,
+      "visualAmplification": {
+        "exploration": 3.121931829262285,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 56.13581784432653,
+        "scientific": 214.00974097199997,
+        "physicalKm": 2667950129.8724785
+      },
+      "orbitExtent": {
+        "exploration": 64.78464464413162,
+        "scientific": 420.98774462400627
+      },
+      "focusRadius": {
+        "exploration": 0.38,
+        "scientific": 1.676494450264926e-6
+      },
+      "geometryBounds": {
+        "exploration": 0.133,
+        "scientific": 5.867730575927241e-7
+      },
+      "systemExtent": {
+        "exploration": 0.38,
+        "scientific": 1.676494450264926e-6
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "hale-bopp",
+      "parentId": "sun",
+      "category": "comet",
+      "physicalRadiusKm": 30,
+      "renderedRadiusExplore": 0.1,
+      "renderedRadiusScientific": 2.4064513640166403e-6,
+      "visualAmplification": {
+        "exploration": 1.531033939619527,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 86.11979608923862,
+        "scientific": 2193.6000000000004,
+        "physicalKm": 27346490763.96
+      },
+      "orbitExtent": {
+        "exploration": 95.08341528900957,
+        "scientific": 4376.232
+      },
+      "focusRadius": {
+        "exploration": 0.38,
+        "scientific": 9.144515183263233e-6
+      },
+      "geometryBounds": {
+        "exploration": 0.118,
+        "scientific": 2.8396126095396356e-6
+      },
+      "systemExtent": {
+        "exploration": 0.38,
+        "scientific": 9.144515183263233e-6
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "encke",
+      "parentId": "sun",
+      "category": "comet",
+      "physicalRadiusKm": 2.4,
+      "renderedRadiusExplore": 0.1,
+      "renderedRadiusScientific": 1.9251610912133125e-7,
+      "visualAmplification": {
+        "exploration": 4.4226953384273076,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 30.957615209002768,
+        "scientific": 26.5739176848,
+        "physicalKm": 331283458.48359615
+      },
+      "orbitExtent": {
+        "exploration": 37.96233460568641,
+        "scientific": 49.117410729657976
+      },
+      "focusRadius": {
+        "exploration": 0.38,
+        "scientific": 7.315612146610587e-7
+      },
+      "geometryBounds": {
+        "exploration": 0.12,
+        "scientific": 2.3101933094559748e-7
+      },
+      "systemExtent": {
+        "exploration": 0.38,
+        "scientific": 7.315612146610587e-7
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "67p",
+      "parentId": "sun",
+      "category": "comet",
+      "physicalRadiusKm": 2,
+      "renderedRadiusExplore": 0.1,
+      "renderedRadiusScientific": 1.6043009093444272e-7,
+      "visualAmplification": {
+        "exploration": 4.77466764878458,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 36.00382305891399,
+        "scientific": 41.5488,
+        "physicalKm": 517967667.51168
+      },
+      "orbitExtent": {
+        "exploration": 41.88557602990361,
+        "scientific": 68.1815808
+      },
+      "focusRadius": {
+        "exploration": 0.38,
+        "scientific": 6.096343455508823e-7
+      },
+      "geometryBounds": {
+        "exploration": 0.118,
+        "scientific": 1.893075073026424e-7
+      },
+      "systemExtent": {
+        "exploration": 0.38,
+        "scientific": 6.096343455508823e-7
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "neowise",
+      "parentId": "sun",
+      "category": "comet",
+      "physicalRadiusKm": 2.5,
+      "renderedRadiusExplore": 0.1,
+      "renderedRadiusScientific": 2.0053761366805337e-7,
+      "visualAmplification": {
+        "exploration": 4.347513522325429,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 95.2176327762645,
+        "scientific": 4421.700000000001,
+        "physicalKm": 55123075406.1825
+      },
+      "orbitExtent": {
+        "exploration": 104.2160041366984,
+        "scientific": 8839.862640000001
+      },
+      "focusRadius": {
+        "exploration": 0.38,
+        "scientific": 7.620429319386028e-7
+      },
+      "geometryBounds": {
+        "exploration": 0.11599999999999999,
+        "scientific": 2.326236318549419e-7
+      },
+      "systemExtent": {
+        "exploration": 0.38,
+        "scientific": 7.620429319386028e-7
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    },
+    {
+      "bodyId": "tempel-1",
+      "parentId": "sun",
+      "category": "comet",
+      "physicalRadiusKm": 3,
+      "renderedRadiusExplore": 0.1,
+      "renderedRadiusScientific": 2.4064513640166404e-7,
+      "visualAmplification": {
+        "exploration": 4.0270295658867274,
+        "scientific": 1
+      },
+      "parentDistance": {
+        "exploration": 35.06647345202946,
+        "scientific": 38.3106,
+        "physicalKm": 477598682.103285
+      },
+      "orbitExtent": {
+        "exploration": 39.96221616308537,
+        "scientific": 58.1171802
+      },
+      "focusRadius": {
+        "exploration": 0.38,
+        "scientific": 9.144515183263233e-7
+      },
+      "geometryBounds": {
+        "exploration": 0.11699999999999999,
+        "scientific": 2.815548095899469e-7
+      },
+      "systemExtent": {
+        "exploration": 0.38,
+        "scientific": 9.144515183263233e-7
+      },
+      "representationStatus": "review",
+      "flags": ["review:procedural-surface-gpu-review-required"]
+    }
+  ],
+  "summary": {
+    "total": 48,
+    "pass": 0,
+    "review": 48,
+    "fail": 0
+  }
+}

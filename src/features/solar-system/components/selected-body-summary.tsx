@@ -110,6 +110,7 @@ export function SelectedBodySummary({
     const moon = MOON_BY_ID[selectedBodyId];
     const parent = registry.get(moon.parentPlanetId);
     const type = representationTypeAt(moon.representation, simulationAtMs);
+    const visual = visualProfileFor(moon.id);
     return (
       <section className={gateStyles.summary} aria-live="polite">
         <SummaryHeader
@@ -143,12 +144,13 @@ export function SelectedBodySummary({
           </div>
           <div>
             <dt>{exploreSceneCopy.summary.visual}</dt>
-            <dd>{visualProfileFor(moon.id).surface.representation}</dd>
+            <dd>{visual.surface.representation}</dd>
           </div>
         </dl>
         <p className={gateStyles.methodNote}>
           {exploreSceneCopy.summary.featuredSetNote}
         </p>
+        <p className={gateStyles.methodNote}>{visual.surface.note}</p>
       </section>
     );
   }
@@ -191,6 +193,7 @@ export function SelectedBodySummary({
         <p className={gateStyles.methodNote}>
           {moon.representation.precisionNote}
         </p>
+        <p className={gateStyles.methodNote}>{visual.surface.note}</p>
       </section>
     );
   }
@@ -250,6 +253,7 @@ export function SelectedBodySummary({
   if (isExtendedBodyId(selectedBodyId)) {
     const body = EXTENDED_BODY_BY_ID[selectedBodyId];
     const type = representationTypeAt(body.representation, simulationAtMs);
+    const visual = visualProfileFor(body.id);
     return (
       <section className={gateStyles.summary} aria-live="polite">
         <SummaryHeader
@@ -278,12 +282,13 @@ export function SelectedBodySummary({
           </div>
           <div>
             <dt>{exploreSceneCopy.summary.visual}</dt>
-            <dd>{visualProfileFor(body.id).surface.representation}</dd>
+            <dd>{visual.surface.representation}</dd>
           </div>
         </dl>
         <p className={gateStyles.methodNote}>
           {body.representation.precisionNote}
         </p>
+        <p className={gateStyles.methodNote}>{visual.surface.note}</p>
         <Link className={gateStyles.detailLink} href={`/object/${body.id}`}>
           {exploreSceneCopy.summary.openObjectEditorial(body.name)}
         </Link>

@@ -5,11 +5,11 @@ import { DoubleSide } from "three";
 import type { RingGeometry } from "three";
 
 import { saturnRingTextureSource } from "@/content/sources/planet-textures";
+import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
 import {
   SATURN_RING_INNER_RADIUS,
   SATURN_RING_OUTER_RADIUS,
 } from "@/features/solar-system/lib/planetary-rings";
-import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
 import {
   textureMaterialKey,
   useSceneTexture,
@@ -52,7 +52,18 @@ export function SaturnRings({ radius, segments }: SaturnRingsProps) {
       raycast={() => undefined}
       rotation-x={Math.PI / 2}
       scale={radius}
-      userData={{ visualLayer: "saturn-rings" }}
+      userData={{
+        testPlanetaryRingArcCount: 0,
+        testPlanetaryRingArcsOpen: true,
+        testPlanetaryRingBandCount: 1,
+        testPlanetaryRingComplete: true,
+        testPlanetaryRingOuterRadius: SATURN_RING_OUTER_RADIUS,
+        testPlanetaryRingPlanetId: "saturn",
+        testRingParentTransform: "planet-equatorial",
+        testSaturnRingTexturePath: saturnRingTextureSource.path,
+        testSaturnRingTextureReady: Boolean(texture),
+        visualLayer: "saturn-rings",
+      }}
     >
       <ringGeometry
         ref={geometryRef}

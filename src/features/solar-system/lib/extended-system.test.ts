@@ -3,12 +3,18 @@ import { describe, expect, it } from "vitest";
 import {
   EXTENDED_BODIES,
   EXTENDED_BODY_BY_ID,
+  extendedBodySceneLabel,
   extendedBodyPosition,
   extendedBodyRadius,
   extendedOrbitPoints,
 } from "./extended-system";
 
 describe("extended Solar System catalog and orbital preview", () => {
+  it("uses a compact 67P scene label without truncating the catalogue name", () => {
+    expect(EXTENDED_BODY_BY_ID["67p"].name).toBe("67P/Churyumov–Gerasimenko");
+    expect(extendedBodySceneLabel(EXTENDED_BODY_BY_ID["67p"])).toBe("67P");
+  });
+
   it("includes every requested featured small body and comet", () => {
     expect(EXTENDED_BODIES.map(({ id }) => id)).toEqual(
       expect.arrayContaining([

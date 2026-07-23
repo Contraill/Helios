@@ -1,4 +1,5 @@
 import type { CelestialRepresentation } from "@/features/solar-system/lib/celestial-representation";
+import type { VisualRotationProfile } from "@/features/solar-system/lib/visual-rotation-policy";
 import {
   DWARF_SATELLITE_IDS,
   DWARF_SYSTEM_PARENT_IDS,
@@ -9,6 +10,10 @@ import {
 export { DWARF_SATELLITE_IDS, DWARF_SYSTEM_PARENT_IDS };
 export type { DwarfSatelliteId, DwarfSystemParentId };
 
+export type DwarfSatelliteOrbitPlaneStatus =
+  | "source-backed-parent-equatorial"
+  | "representative-parent-equatorial-unresolved";
+
 export interface DwarfSatellite {
   readonly id: DwarfSatelliteId;
   readonly parentId: DwarfSystemParentId;
@@ -18,7 +23,12 @@ export interface DwarfSatellite {
   readonly orbitalPeriodDays: number;
   readonly eccentricity: number | null;
   readonly inclinationDeg: number | null;
+  readonly orbitPlaneStatus: DwarfSatelliteOrbitPlaneStatus;
+  readonly orbitPlaneReference: string;
+  readonly orbitPlaneSourceId: string | null;
+  readonly orbitPlaneSourceUrl: string | null;
   readonly phaseAtEpochDeg: number;
+  readonly rotation: VisualRotationProfile;
   readonly sourceTarget: string;
   readonly representation: CelestialRepresentation;
   readonly sourceIds: readonly string[];
@@ -35,6 +45,8 @@ function representation(input: {
   sourceUrl: string;
   sourceTarget: string;
   precisionNote: string;
+  orbitPlaneStatus: DwarfSatelliteOrbitPlaneStatus;
+  orbitPlaneReference: string;
 }): CelestialRepresentation {
   return Object.freeze({
     provider: "NASA/JPL and cited system literature",
@@ -42,36 +54,46 @@ function representation(input: {
     sourceUrl: input.sourceUrl,
     targetCode: input.sourceTarget,
     referenceFrame: "parent-equatorial-j2000",
-    referencePlane:
-      "Parent-system visual reference plane; unresolved pole angles are not synthesized",
+    referencePlane: input.orbitPlaneReference,
     epoch: J2000,
     representationType: "representative-mean-elements",
     precisionNote: input.precisionNote,
     fallbackReason:
-      "The source set does not provide a complete common six-element J2000 solution for every dwarf satellite. Helios uses only cited mean separation and period; unresolved plane orientation remains explicitly representative.",
+      input.orbitPlaneStatus === "source-backed-parent-equatorial"
+        ? "The inclination is source-backed relative to the parent equator; missing node/periapsis angles remain representative rather than navigation-grade."
+        : "The source set does not provide a complete parent-equatorial plane solution. Helios uses cited mean separation and period while keeping the unresolved visual plane explicit.",
   });
 }
 
+const fixedUnknownRotation = (id: DwarfSatelliteId): VisualRotationProfile => ({
+  kind: "fixed-unknown",
+  sourceId: `helios-rotation-unknown-${id}`,
+  note: "The accepted source set does not establish a navigation-grade rotation or tidal-lock solution; the visual orientation remains fixed.",
+});
+
 const satellite = (
-  input: Omit<DwarfSatellite, "representation"> & {
+  input: Omit<DwarfSatellite, "representation" | "rotation"> & {
     sourceUrl: string;
     precisionNote: string;
+    rotation?: VisualRotationProfile;
   },
 ): DwarfSatellite =>
   Object.freeze({
     ...input,
+    rotation: input.rotation ?? fixedUnknownRotation(input.id),
     representation: representation({
       sourceId: input.sourceIds[0] ?? `helios-visual-${input.id}`,
       sourceUrl: input.sourceUrl,
       sourceTarget: input.sourceTarget,
       precisionNote: input.precisionNote,
+      orbitPlaneStatus: input.orbitPlaneStatus,
+      orbitPlaneReference: input.orbitPlaneReference,
     }),
   });
 
 /**
- * The catalogue includes only the named dwarf-system satellites represented by
- * the visual layer. Mean separation and period support a truthful system-context animation.
- * Missing angular elements are `null`; the renderer never invents a random plane.
+ * Mean separation and period support system-context motion. Missing angular
+ * elements remain null; unresolved planes and rotations are never randomized.
  */
 export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([
   satellite({
@@ -82,13 +104,19 @@ export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([
     semiMajorAxisKm: 19_596,
     orbitalPeriodDays: 6.3872304,
     eccentricity: 0.0002,
-    inclinationDeg: null,
+    inclinationDeg: 0,
+    orbitPlaneStatus: "source-backed-parent-equatorial",
+    orbitPlaneReference: "Pluto equatorial plane",
+    orbitPlaneSourceId: "nasa-nssdc-pluto-fact-sheet",
+    orbitPlaneSourceUrl:
+      "https://nssdc.gsfc.nasa.gov/planetary/factsheet/plutofact.html",
     phaseAtEpochDeg: 0,
+    rotation: { kind: "tidally-locked", sourceId: "nasa-pluto-charon-facts" },
     sourceTarget: "Charon (JPL target 901)",
     sourceUrl: "https://science.nasa.gov/dwarf-planets/pluto/facts/",
     sourceIds: ["nasa-pluto-charon-facts", "jpl-horizons-charon"],
     precisionNote:
-      "Pluto–Charon is shown around a shared visual barycentre using sourced size and mean separation. The scene is system context, not a longitude- or navigation-grade ephemeris.",
+      "Pluto–Charon is shown around a shared visual barycentre using sourced size, mean separation and a source-backed near-zero inclination to Pluto's equator. Node/periapsis orientation remains representative.",
   }),
   satellite({
     id: "dwarf-satellite-dysnomia",
@@ -99,6 +127,11 @@ export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([
     orbitalPeriodDays: 15.7859,
     eccentricity: 0.0062,
     inclinationDeg: null,
+    orbitPlaneStatus: "representative-parent-equatorial-unresolved",
+    orbitPlaneReference:
+      "Representative parent-equatorial visual plane; source-backed pole unresolved",
+    orbitPlaneSourceId: null,
+    orbitPlaneSourceUrl: null,
     phaseAtEpochDeg: 40,
     sourceTarget: "Dysnomia / Eris I",
     sourceUrl: "https://science.nasa.gov/dwarf-planets/eris/",
@@ -114,13 +147,18 @@ export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([
     semiMajorAxisKm: 49_880,
     orbitalPeriodDays: 49.462,
     eccentricity: 0.051,
-    inclinationDeg: null,
+    inclinationDeg: 2,
+    orbitPlaneStatus: "source-backed-parent-equatorial",
+    orbitPlaneReference: "Haumea equatorial plane",
+    orbitPlaneSourceId: "mnras-haumea-ring-perturbation-maps",
+    orbitPlaneSourceUrl:
+      "https://academic.oup.com/mnras/article/496/2/2085/5858006",
     phaseAtEpochDeg: 115,
     sourceTarget: "Haumea I Hiʻiaka",
     sourceUrl: "https://science.nasa.gov/dwarf-planets/haumea/",
     sourceIds: ["nasa-haumea-system", "haumea-satellite-orbit-solution"],
     precisionNote:
-      "Published mean system scale is used. The renderer does not claim a fully resolved inertial orbital plane.",
+      "Published mean system scale and the 2° inclination to Haumea's equator are used. Missing node/periapsis orientation remains representative.",
   }),
   satellite({
     id: "dwarf-satellite-namaka",
@@ -130,13 +168,18 @@ export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([
     semiMajorAxisKm: 25_657,
     orbitalPeriodDays: 18.2783,
     eccentricity: 0.249,
-    inclinationDeg: null,
+    inclinationDeg: 13,
+    orbitPlaneStatus: "source-backed-parent-equatorial",
+    orbitPlaneReference: "Haumea equatorial plane",
+    orbitPlaneSourceId: "mnras-haumea-ring-perturbation-maps",
+    orbitPlaneSourceUrl:
+      "https://academic.oup.com/mnras/article/496/2/2085/5858006",
     phaseAtEpochDeg: 248,
     sourceTarget: "Haumea II Namaka",
     sourceUrl: "https://science.nasa.gov/dwarf-planets/haumea/",
     sourceIds: ["nasa-haumea-system", "haumea-satellite-orbit-solution"],
     precisionNote:
-      "The non-circular mean orbit is visualized without inventing missing longitude or pole angles.",
+      "The non-circular mean orbit and 13° inclination to Haumea's equator are used without inventing missing node/periapsis angles.",
   }),
   satellite({
     id: "dwarf-satellite-mk2",
@@ -147,6 +190,11 @@ export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([
     orbitalPeriodDays: 12.4,
     eccentricity: null,
     inclinationDeg: null,
+    orbitPlaneStatus: "representative-parent-equatorial-unresolved",
+    orbitPlaneReference:
+      "Representative parent-equatorial visual plane; source-backed pole unresolved",
+    orbitPlaneSourceId: null,
+    orbitPlaneSourceUrl: null,
     phaseAtEpochDeg: 70,
     sourceTarget: "S/2015 (136472) 1 (MK2)",
     sourceUrl: "https://science.nasa.gov/dwarf-planets/makemake/facts/",
@@ -163,6 +211,11 @@ export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([
     orbitalPeriodDays: 12.438,
     eccentricity: 0.14,
     inclinationDeg: null,
+    orbitPlaneStatus: "representative-parent-equatorial-unresolved",
+    orbitPlaneReference:
+      "Representative parent-equatorial visual plane; source-backed pole unresolved",
+    orbitPlaneSourceId: null,
+    orbitPlaneSourceUrl: null,
     phaseAtEpochDeg: 190,
     sourceTarget: "(50000) Quaoar I Weywot",
     sourceUrl: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=50000",
@@ -179,6 +232,11 @@ export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([
     orbitalPeriodDays: 25.22,
     eccentricity: 0.29,
     inclinationDeg: null,
+    orbitPlaneStatus: "representative-parent-equatorial-unresolved",
+    orbitPlaneReference:
+      "Representative parent-equatorial visual plane; source-backed pole unresolved",
+    orbitPlaneSourceId: null,
+    orbitPlaneSourceUrl: null,
     phaseAtEpochDeg: 310,
     sourceTarget: "(225088) Gonggong I Xiangliu",
     sourceUrl: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=225088",
@@ -195,6 +253,11 @@ export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([
     orbitalPeriodDays: 9.5393,
     eccentricity: 0.007,
     inclinationDeg: null,
+    orbitPlaneStatus: "representative-parent-equatorial-unresolved",
+    orbitPlaneReference:
+      "Representative parent-equatorial visual plane; source-backed pole unresolved",
+    orbitPlaneSourceId: null,
+    orbitPlaneSourceUrl: null,
     phaseAtEpochDeg: 145,
     sourceTarget: "(90482) Orcus I Vanth",
     sourceUrl: "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html#/?sstr=90482",

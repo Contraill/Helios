@@ -130,6 +130,56 @@
   min-width: 0;
 }
 
+.ephemerisPanel fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.ephemerisPanel button {
+  appearance: none;
+  min-height: 2.3rem;
+  padding: 0.42rem 0.68rem;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 0.66rem;
+  background: rgb(255 255 255 / 0.055);
+  color: rgb(235 240 248 / 0.82);
+  font: inherit;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    color 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    transform 160ms ease;
+}
+
+.ephemerisPanel button:hover,
+.ephemerisPanel button:focus-visible {
+  border-color: rgb(232 165 75 / 0.48);
+  background: rgb(232 165 75 / 0.11);
+  color: #fff8ec;
+}
+
+.ephemerisPanel button[aria-pressed="true"],
+.ephemerisPanel button[type="submit"] {
+  border-color: rgb(232 165 75 / 0.62);
+  background: rgb(232 165 75 / 0.16);
+  color: #fff8ec;
+  box-shadow: inset 0 0 0 1px rgb(255 214 152 / 0.08);
+}
+
+.ephemerisPanel button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.ephemerisPanel button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
 .mobileDockBar {
   position: absolute;
   z-index: 22;
@@ -471,6 +521,9 @@
   color: rgb(226 234 247 / 0.76);
   font: inherit;
   font-size: 0.72rem;
+  line-height: 1.25;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .viewPanel button:hover,
@@ -501,6 +554,11 @@
   }
 }
 
+.viewPanel .viewControlGrid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.8rem;
+}
+
 .visibilityFieldset {
   min-width: 0;
 }
@@ -522,7 +580,9 @@
 
 .visibilityToggle > span:first-child {
   min-width: 0;
-  overflow-wrap: anywhere;
+  flex: 1 1 auto;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .visibilityState {
@@ -631,5 +691,16 @@
 
   .cameraGrid button:last-child {
     grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 360px) {
+  .visibilityGrid,
+  .cameraGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cameraGrid button:last-child {
+    grid-column: auto;
   }
 }

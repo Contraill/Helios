@@ -5,6 +5,7 @@ import {
   type ReferenceBasis,
   type Vector3Tuple,
 } from "./reference-frame-math";
+import { resampleClosedOrbitByArcLength } from "./orbit-path-resampling";
 
 export interface EllipticOrbitElements {
   readonly semiMajorAxis: number;
@@ -231,6 +232,28 @@ export class EllipticOrbitEvaluator {
     return { position: target, solver };
   }
 
+  positionAtEccentricAnomaly(
+    eccentricAnomalyRadians: number,
+    target: MutableVector3 = [0, 0, 0],
+  ): MutableVector3 {
+    const eccentricAnomaly = normalizeRadiansSigned(eccentricAnomalyRadians);
+    const x =
+      this.elements.semiMajorAxis *
+      (Math.cos(eccentricAnomaly) - this.elements.eccentricity);
+    const y =
+      this.elements.semiMajorAxis *
+      Math.sqrt(1 - this.elements.eccentricity ** 2) *
+      Math.sin(eccentricAnomaly);
+    rotatePerifocal(x, y, this.elements, this.sourcePosition);
+    applyReferenceBasis(
+      this.referenceBasis,
+      this.sourcePosition,
+      this.eclipticPosition,
+    );
+    eclipticToThreeYUp(this.eclipticPosition, target);
+    return target;
+  }
+
   samplePath(
     segments: number,
     scalePosition: (
@@ -244,14 +267,17 @@ export class EllipticOrbitEvaluator {
     },
   ): readonly (readonly [number, number, number])[] {
     const safeSegments = Math.max(24, Math.round(segments));
+    const denseSegments = Math.min(8_192, Math.max(2_048, safeSegments * 16));
     const points: [number, number, number][] = [];
     const raw: MutableVector3 = [0, 0, 0];
     const scaled: MutableVector3 = [0, 0, 0];
-    for (let index = 0; index <= safeSegments; index += 1) {
-      this.positionAtMeanAnomaly((index / safeSegments) * TWO_PI, raw);
+    for (let index = 0; index < denseSegments; index += 1) {
+      this.positionAtEccentricAnomaly((index / denseSegments) * TWO_PI, raw);
       scalePosition(raw, scaled);
       points.push([scaled[0], scaled[1], scaled[2]]);
     }
-    return points;
+    const first = points[0] ?? [0, 0, 0];
+    points.push([first[0], first[1], first[2]]);
+    return resampleClosedOrbitByArcLength(points, safeSegments);
   }
 }
