@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
@@ -12,6 +12,9 @@ import {
   UnsignedShortType,
   Vector2,
   WebGLRenderTarget,
+  type Camera,
+  type Scene,
+  type WebGLRenderer,
 } from "three";
 
 const LIMITED_BLOOM_SHADER = {
@@ -67,65 +70,94 @@ interface ExploreBloomProps {
   strength: number;
 }
 
+interface BloomResources {
+  readonly bloom: ShaderPass;
+  readonly composer: EffectComposer;
+}
+
+function createBloomResources({
+  camera,
+  gl,
+  height,
+  scene,
+  strength,
+  width,
+}: {
+  camera: Camera;
+  gl: WebGLRenderer;
+  height: number;
+  scene: Scene;
+  strength: number;
+  width: number;
+}): BloomResources {
+  const renderTarget = new WebGLRenderTarget(width, height, {
+    depthBuffer: true,
+    format: RGBAFormat,
+    magFilter: LinearFilter,
+    minFilter: LinearFilter,
+  });
+  renderTarget.depthTexture = new DepthTexture(
+    width,
+    height,
+    UnsignedShortType,
+  );
+
+  const composer = new EffectComposer(gl, renderTarget);
+  const bloom = new ShaderPass(LIMITED_BLOOM_SHADER);
+  bloom.uniforms.uStrength.value = strength;
+  bloom.uniforms.uTexelSize.value = new Vector2(
+    1 / Math.max(width, 1),
+    1 / Math.max(height, 1),
+  );
+
+  composer.renderTarget2.depthTexture = new DepthTexture(
+    width,
+    height,
+    UnsignedShortType,
+  );
+  composer.addPass(new RenderPass(scene, camera));
+  composer.addPass(bloom);
+  composer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+  composer.setSize(width, height);
+
+  return { bloom, composer };
+}
+
 function BloomPipeline({ strength }: Pick<ExploreBloomProps, "strength">) {
   const camera = useThree((state) => state.camera);
   const gl = useThree((state) => state.gl);
+  const invalidate = useThree((state) => state.invalidate);
   const scene = useThree((state) => state.scene);
   const size = useThree((state) => state.size);
-  const pipeline = useMemo(() => {
-    const renderTarget = new WebGLRenderTarget(size.width, size.height, {
-      depthBuffer: true,
-      format: RGBAFormat,
-      magFilter: LinearFilter,
-      minFilter: LinearFilter,
-    });
-    renderTarget.depthTexture = new DepthTexture(
-      size.width,
-      size.height,
-      UnsignedShortType,
-    );
-    const pipeline = new EffectComposer(gl, renderTarget);
-    const bloom = new ShaderPass(LIMITED_BLOOM_SHADER);
-    bloom.uniforms.uStrength.value = strength;
-    bloom.uniforms.uTexelSize.value = new Vector2(
-      1 / Math.max(size.width, 1),
-      1 / Math.max(size.height, 1),
-    );
-
-    const secondaryDepth = new DepthTexture(
-      size.width,
-      size.height,
-      UnsignedShortType,
-    );
-    pipeline.renderTarget2.depthTexture = secondaryDepth;
-
-    pipeline.addPass(new RenderPass(scene, camera));
-    pipeline.addPass(bloom);
-    pipeline.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-    pipeline.setSize(size.width, size.height);
-    return { bloom, composer: pipeline };
-  }, [camera, gl, scene, size.height, size.width, strength]);
-
-  const activePipelineRef = useRef<typeof pipeline | null>(null);
+  const resourcesRef = useRef<BloomResources | null>(null);
 
   useEffect(() => {
-    activePipelineRef.current = pipeline;
+    const resources = createBloomResources({
+      camera,
+      gl,
+      height: size.height,
+      scene,
+      strength,
+      width: size.width,
+    });
+    resourcesRef.current = resources;
+    invalidate();
+
     return () => {
-      if (activePipelineRef.current === pipeline) {
-        activePipelineRef.current = null;
-      }
-      pipeline.composer.dispose();
+      if (resourcesRef.current === resources) resourcesRef.current = null;
+      resources.composer.dispose();
     };
-  }, [pipeline]);
+  }, [camera, gl, invalidate, scene, size.height, size.width, strength]);
 
   useFrame(() => {
-    const activePipeline = activePipelineRef.current;
-    if (!activePipeline) return;
-    activePipeline.bloom.uniforms.uDepthTexture.value =
-      activePipeline.composer.readBuffer.depthTexture ??
-      activePipeline.composer.renderTarget1.depthTexture;
-    activePipeline.composer.render();
+    const resources = resourcesRef.current;
+    if (!resources) return;
+    resources.bloom.uniforms.uDepthTexture.value =
+      resources.composer.readBuffer.depthTexture ??
+      resources.composer.renderTarget1.depthTexture;
+    resources.composer.render();
   }, 1);
+
   return null;
 }
 

@@ -36,6 +36,7 @@ function loadingSnapshot(
 describe("ExploreOpeningLoader", () => {
   beforeEach(() => {
     useAssetLoadingSnapshot.mockReset();
+    window.history.replaceState({}, "", "/explore");
     delete document.documentElement.dataset.exploreSceneReady;
   });
 
@@ -67,6 +68,24 @@ describe("ExploreOpeningLoader", () => {
       }),
     );
     rerender(<ExploreOpeningLoader />);
+
+    expect(
+      screen.queryByTestId("explore-opening-loader"),
+    ).not.toBeInTheDocument();
+    expect(document.documentElement).toHaveAttribute(
+      "data-explore-scene-ready",
+      "true",
+    );
+  });
+  it("uses the visual catalogue probe as the readiness contract in scene-test mode", () => {
+    window.history.replaceState(
+      {},
+      "",
+      "/explore?sceneTest=1&catalogue=comets&page=1",
+    );
+    useAssetLoadingSnapshot.mockReturnValue(loadingSnapshot());
+
+    render(<ExploreOpeningLoader />);
 
     expect(
       screen.queryByTestId("explore-opening-loader"),

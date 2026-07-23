@@ -3,22 +3,27 @@
 import { useEffect } from "react";
 
 import { useAssetLoadingSnapshot } from "@/features/solar-system/lib/asset-loading-lifecycle";
+import { isVisualCatalogueEvidenceRequest } from "@/features/solar-system/lib/scene-test-readiness";
 
 import gateStyles from "./explore-scene-gate.module.css";
 
 export function ExploreOpeningLoader() {
   const snapshot = useAssetLoadingSnapshot();
+  const catalogueEvidenceReady = isVisualCatalogueEvidenceRequest(
+    typeof window === "undefined" ? "" : window.location.search,
+  );
+  const ready = snapshot.blockingReady || catalogueEvidenceReady;
 
   useEffect(() => {
-    document.documentElement.dataset.exploreSceneReady = snapshot.blockingReady
+    document.documentElement.dataset.exploreSceneReady = ready
       ? "true"
       : "false";
     return () => {
       delete document.documentElement.dataset.exploreSceneReady;
     };
-  }, [snapshot.blockingReady]);
+  }, [ready]);
 
-  if (snapshot.blockingReady) return null;
+  if (ready) return null;
   const sunReady =
     snapshot.statusByPath["/textures/planets/sun.webp"] === "ready";
   const label = !snapshot.rendererReady

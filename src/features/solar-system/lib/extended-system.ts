@@ -42,7 +42,7 @@ export interface ExtendedBodyPositionResult {
 }
 
 export interface CometTailState {
-  /** Unit vector in rendered Three.js coordinates, pointing away from the Sun. */
+  /** Unit vector in the source ecliptic frame, pointing away from the Sun. */
   readonly antiSolarDirection: [number, number, number];
   readonly heliocentricDistanceAu: number;
   readonly activity: number;
@@ -729,6 +729,29 @@ export function extendedOrbitPoints(
     Math.max(8, segments),
     (source, target) => scalePhysicalAuToScene(source, mode, target),
   );
+}
+
+export function cometTailSceneDirection(
+  physicalDirection: readonly [number, number, number],
+  target: [number, number, number] = [0, 0, 0],
+): [number, number, number] {
+  // Extended-body positions already use the ecliptic basis directly in the
+  // Three.js scene. Only the exploration/scientific radial scale changes, so
+  // the anti-solar direction must preserve the same axis order.
+  const x = physicalDirection[0];
+  const y = physicalDirection[1];
+  const z = physicalDirection[2];
+  const length = Math.hypot(x, y, z);
+  if (length <= 1e-12) {
+    target[0] = 1;
+    target[1] = 0;
+    target[2] = 0;
+    return target;
+  }
+  target[0] = x / length;
+  target[1] = y / length;
+  target[2] = z / length;
+  return target;
 }
 
 export function cometTailState(

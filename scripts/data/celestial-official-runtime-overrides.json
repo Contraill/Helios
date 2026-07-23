@@ -13,10 +13,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-earth-moon",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-earth-moon",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-mars-phobos",
@@ -29,10 +29,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-mars-phobos",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-mars-phobos",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-mars-deimos",
@@ -45,10 +45,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-mars-deimos",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-mars-deimos",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-jupiter-io",
@@ -61,10 +61,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-jupiter-io",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-jupiter-io",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-jupiter-europa",
@@ -77,10 +77,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-jupiter-europa",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-jupiter-europa",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-jupiter-ganymede",
@@ -93,10 +93,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-jupiter-ganymede",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-jupiter-ganymede",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-jupiter-callisto",
@@ -109,10 +109,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-jupiter-callisto",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-jupiter-callisto",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-saturn-mimas",
@@ -125,10 +125,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-saturn-mimas",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-saturn-mimas",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-saturn-enceladus",
@@ -141,10 +141,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-saturn-enceladus",
-      "visualCalibrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "visualCalibrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-saturn-enceladus",
       "coverage": "partial-imagery-filled",
-      "surfaceNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed."
+      "surfaceNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-saturn-tethys",
@@ -157,10 +157,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-saturn-tethys",
-      "visualCalibrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "visualCalibrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-saturn-tethys",
       "coverage": "partial-imagery-filled",
-      "surfaceNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed."
+      "surfaceNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-saturn-dione",
@@ -173,10 +173,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-saturn-dione",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-saturn-dione",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-saturn-rhea",
@@ -189,10 +189,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-saturn-rhea",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-saturn-rhea",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-saturn-titan",
@@ -205,10 +205,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-saturn-titan",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-saturn-titan",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-uranus-ariel",
@@ -221,10 +221,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-uranus-ariel",
-      "visualCalibrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "visualCalibrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-uranus-ariel",
       "coverage": "partial-imagery-filled",
-      "surfaceNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed."
+      "surfaceNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-uranus-miranda",
@@ -237,10 +237,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-uranus-miranda",
-      "visualCalibrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "visualCalibrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-uranus-miranda",
       "coverage": "partial-imagery-filled",
-      "surfaceNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed."
+      "surfaceNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-uranus-umbriel",
@@ -253,10 +253,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-uranus-umbriel",
-      "visualCalibrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "visualCalibrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-uranus-umbriel",
       "coverage": "partial-imagery-filled",
-      "surfaceNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed."
+      "surfaceNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-uranus-titania",
@@ -269,10 +269,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-uranus-titania",
-      "visualCalibrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "visualCalibrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-uranus-titania",
       "coverage": "partial-imagery-filled",
-      "surfaceNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed."
+      "surfaceNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-uranus-oberon",
@@ -285,10 +285,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-uranus-oberon",
-      "visualCalibrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "visualCalibrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-uranus-oberon",
       "coverage": "partial-imagery-filled",
-      "surfaceNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed."
+      "surfaceNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review."
     },
     {
       "bodyId": "moon-neptune-triton",
@@ -301,10 +301,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-moon-neptune-triton",
-      "visualCalibrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "visualCalibrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review.",
       "sourceId": "official-derived-moon-neptune-triton",
       "coverage": "partial-imagery-filled",
-      "surfaceNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed."
+      "surfaceNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review."
     },
     {
       "bodyId": "dwarf-satellite-charon",
@@ -317,10 +317,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-dwarf-satellite-charon",
-      "visualCalibrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "visualCalibrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review.",
       "sourceId": "official-derived-dwarf-satellite-charon",
       "coverage": "partial-imagery-filled",
-      "surfaceNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed."
+      "surfaceNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed; final seam, pole and landmark acceptance still requires manual GPU review."
     },
     {
       "bodyId": "ceres",
@@ -333,10 +333,10 @@
       "textureLongitudeOffsetDeg": 0,
       "primeMeridianVerified": false,
       "orientationSourceId": "official-derived-ceres",
-      "visualCalibrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "visualCalibrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "sourceId": "official-derived-ceres",
       "coverage": "global-map",
-      "surfaceNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
+      "surfaceNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review."
     }
   ]
 }

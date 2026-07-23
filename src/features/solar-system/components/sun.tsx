@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { ThreeEvent } from "@react-three/fiber";
-import { AdditiveBlending, BackSide } from "three";
+import { AdditiveBlending } from "three";
 import type { Group, Mesh } from "three";
 
 import { planetTextureSources } from "@/content/sources/planet-textures";
@@ -17,6 +17,7 @@ import {
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
+import { createSolarProminenceCurve } from "@/features/solar-system/lib/solar-prominence";
 import { effectiveBodyVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
 import {
   textureMaterialKey,
@@ -29,8 +30,61 @@ import { useExplorationStore } from "@/stores/exploration-store";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 
 import { PlanetLabel } from "./planet-label";
+import { SolarCoronaShell } from "./solar-corona-shell";
 
 const DISABLED_RAYCAST = () => undefined;
+
+const SOLAR_PROMINENCES = [
+  {
+    lift: 0.3,
+    rotation: [0.16, 0.15, -0.28] as const,
+    spanRadians: 1.02,
+    tube: 0.013,
+  },
+  {
+    lift: 0.22,
+    rotation: [-0.62, 2.3, 0.42] as const,
+    spanRadians: 0.74,
+    tube: 0.01,
+  },
+  {
+    lift: 0.16,
+    rotation: [0.78, 4.15, 0.18] as const,
+    spanRadians: 0.58,
+    tube: 0.0085,
+  },
+] as const;
+
+function SolarProminenceArc({
+  lift,
+  rotation,
+  spanRadians,
+  tube,
+}: (typeof SOLAR_PROMINENCES)[number]) {
+  const curve = useMemo(
+    () =>
+      createSolarProminenceCurve({
+        anchorRadius: 0.995,
+        lift,
+        spanRadians,
+      }),
+    [lift, spanRadians],
+  );
+
+  return (
+    <mesh raycast={DISABLED_RAYCAST} rotation={[...rotation]}>
+      <tubeGeometry args={[curve, 64, tube, 8, false]} />
+      <meshBasicMaterial
+        blending={AdditiveBlending}
+        color="#ffb15c"
+        depthWrite={false}
+        opacity={0.54}
+        toneMapped={false}
+        transparent
+      />
+    </mesh>
+  );
+}
 
 interface SunProps {
   labelsVisible: boolean;
@@ -182,48 +236,13 @@ export function Sun({
           scale={radius}
           userData={{ visualLayer: "controlled-solar-prominences" }}
         >
-          {[
-            { arc: 1.05, radius: 1.08, tube: 0.012, rotation: 0.2 },
-            { arc: 0.72, radius: 1.13, tube: 0.009, rotation: 2.35 },
-            { arc: 0.56, radius: 1.06, tube: 0.008, rotation: 4.2 },
-          ].map((prominence) => (
-            <mesh
-              key={prominence.rotation}
-              raycast={() => undefined}
-              rotation={[Math.PI / 2, prominence.rotation, 0]}
-            >
-              <torusGeometry
-                args={[
-                  prominence.radius,
-                  prominence.tube,
-                  8,
-                  72,
-                  prominence.arc,
-                ]}
-              />
-              <meshBasicMaterial
-                blending={AdditiveBlending}
-                color="#ffb15c"
-                depthWrite={false}
-                opacity={0.58}
-                toneMapped={false}
-                transparent
-              />
-            </mesh>
+          {SOLAR_PROMINENCES.map((prominence) => (
+            <SolarProminenceArc
+              key={prominence.rotation.join(":")}
+              {...prominence}
+            />
           ))}
         </group>
-      ) : null}
-      {primary && active ? (
-        <mesh raycast={() => undefined} scale={radius * 1.095}>
-          <sphereGeometry args={[1, 40, 30]} />
-          <meshBasicMaterial
-            color="#f6bd69"
-            depthWrite={false}
-            opacity={selected ? 0.13 : 0.08}
-            side={BackSide}
-            transparent
-          />
-        </mesh>
       ) : null}
       {shouldMountLabel(labelPriority) ? (
         <PlanetLabel
@@ -239,28 +258,16 @@ export function Sun({
           text={sun.name}
         />
       ) : null}
-      <mesh
-        raycast={() => undefined}
-        scale={radius * 1.085}
-        userData={{ visualLayer: "solar-corona" }}
-      >
-        <sphereGeometry
-          args={[
-            1,
-            quality.atmosphereSegments[0],
-            quality.atmosphereSegments[1],
-          ]}
-        />
-        <meshBasicMaterial
-          blending={AdditiveBlending}
-          color="#ffd18a"
-          depthWrite={false}
-          opacity={(primary ? 0.16 : 0.025) * profile.effects.coronaMultiplier}
-          side={BackSide}
-          toneMapped={false}
-          transparent
-        />
-      </mesh>
+      <SolarCoronaShell
+        color={active ? "#ffd7a0" : "#ffb35a"}
+        opacity={
+          (primary ? (selected ? 0.34 : hovered ? 0.27 : 0.2) : 0.04) *
+          profile.effects.coronaMultiplier
+        }
+        power={active ? 2.7 : 3.35}
+        radius={radius * (active ? 1.045 : 1.035)}
+        segments={quality.atmosphereSegments}
+      />
       <pointLight
         color="#fff8ed"
         decay={1.7}

@@ -16,6 +16,7 @@ import type { Group, PointsMaterial } from "three";
 
 import {
   EXTENDED_BODIES,
+  cometTailSceneDirection,
   cometTailState,
   extendedBodySceneLabel,
   extendedBodyPosition,
@@ -485,6 +486,7 @@ function ExtendedBodyObject({
   const tailAxis = useRef(new Vector3(0, -1, 0));
   const scenePositionRef = useRef<[number, number, number]>([0, 0, 0]);
   const tailDirectionRef = useRef<[number, number, number]>([0, 0, 0]);
+  const tailSceneDirectionRef = useRef<[number, number, number]>([1, 0, 0]);
   const selected = useExplorationStore(
     (state) => state.selectedBodyId === body.id,
   );
@@ -521,6 +523,22 @@ function ExtendedBodyObject({
   const tailLength =
     cometVisual?.dustLength ?? profile.extended.cometTailLength;
   const ionTailLength = cometVisual?.ionLength ?? tailLength * 1.25;
+  const initialTail = useMemo(
+    () => cometTailState(body, simulationAtMs),
+    [body, simulationAtMs],
+  );
+  const initialTailSceneDirection = useMemo(
+    () => cometTailSceneDirection(initialTail.antiSolarDirection),
+    [initialTail],
+  );
+  const initialTailQuaternion = useMemo(
+    () =>
+      new Quaternion().setFromUnitVectors(
+        new Vector3(0, -1, 0),
+        new Vector3(...initialTailSceneDirection),
+      ),
+    [initialTailSceneDirection],
+  );
   const visualExtent = sceneMetrics.geometryBounds;
   const nucleusFocusRadius = sceneMetrics.focusRadius;
   const dwarfSystemParent = isDwarfSystemParentId(body.id);
@@ -590,7 +608,11 @@ function ExtendedBodyObject({
 
     if (tailRef.current && isComet) {
       const tail = cometTailState(body, now, tailDirectionRef.current);
-      const away = awayFromSun.current.set(...tail.antiSolarDirection);
+      const sceneDirection = cometTailSceneDirection(
+        tail.antiSolarDirection,
+        tailSceneDirectionRef.current,
+      );
+      const away = awayFromSun.current.set(...sceneDirection);
       tailRef.current.quaternion.copy(
         tailOrientation.current.setFromUnitVectors(tailAxis.current, away),
       );
@@ -600,9 +622,9 @@ function ExtendedBodyObject({
         tail.heliocentricDistanceAu;
       tailRef.current.userData.activity = tail.activity;
       tailRef.current.userData.antiSolarDirection = [
-        tail.antiSolarDirection[0],
-        tail.antiSolarDirection[1],
-        tail.antiSolarDirection[2],
+        sceneDirection[0],
+        sceneDirection[1],
+        sceneDirection[2],
       ];
       const nucleus = nucleusDirection.current.set(...position).normalize();
       tailRef.current.userData.antiSolarDot = away.dot(nucleus);
@@ -690,7 +712,18 @@ function ExtendedBodyObject({
           {isComet ? (
             <group
               ref={tailRef}
+              quaternion={initialTailQuaternion}
+              scale={initialTail.lengthScale}
               userData={{
+                activity: initialTail.activity,
+                antiSolarDirection: initialTailSceneDirection,
+                antiSolarDot: 1,
+                heliocentricDistanceAu: initialTail.heliocentricDistanceAu,
+                nucleusFocusRadius,
+                tailAnchorDistance: 0,
+                tailIncludedInFocusBounds: false,
+                tailLength:
+                  Math.max(tailLength, ionTailLength) * initialTail.lengthScale,
                 testCometBodyId: body.id,
                 testCometTailPrimitive: "particle-volume",
                 testCometDustParticleCount: 520,
@@ -699,6 +732,7 @@ function ExtendedBodyObject({
                 testCometTotalParticleCount: 960,
                 visualLayer: "physical-comet-tails",
               }}
+              visible={initialTail.visible}
             >
               <CometTailVolume
                 bodyId={body.id}

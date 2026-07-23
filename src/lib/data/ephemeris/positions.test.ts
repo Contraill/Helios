@@ -101,7 +101,10 @@ describe("ephemeris scene positions", () => {
 
     for (const vector of HORIZONS_SNAPSHOT.vectors) {
       const points = ephemerisOrbitScenePoints(vector, "exploration", 96);
-      expect(points).toHaveLength(96);
+      // A closed line with 96 segments contains 97 vertices because the final
+      // vertex repeats the first one and prevents a long closure chord.
+      expect(points).toHaveLength(97);
+      expect(points.at(-1)).toEqual(points[0]);
       expect(points[0]).toEqual(
         ephemerisScenePosition(
           vector,

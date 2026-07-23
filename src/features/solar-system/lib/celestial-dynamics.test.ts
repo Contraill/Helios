@@ -2,6 +2,7 @@ import { Quaternion, Vector3 } from "three";
 import { describe, expect, it } from "vitest";
 
 import {
+  cometTailSceneDirection,
   cometTailState,
   EXTENDED_BODY_BY_ID,
   extendedBodyPhysicalPositionAu,
@@ -174,6 +175,12 @@ describe("celestial reference frames and shared orbit evaluators", () => {
     ).position;
     const radial = new Vector3(...cometPosition).normalize();
     expect(new Vector3(...tail.antiSolarDirection).dot(radial)).toBeCloseTo(
+      1,
+      10,
+    );
+    const sceneTailDirection = cometTailSceneDirection(tail.antiSolarDirection);
+    const sceneRadial = new Vector3(...cometPosition).normalize();
+    expect(new Vector3(...sceneTailDirection).dot(sceneRadial)).toBeCloseTo(
       1,
       10,
     );

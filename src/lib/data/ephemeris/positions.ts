@@ -438,19 +438,33 @@ export function ephemerisOrbitScenePoints(
 
   const safeSegments = Math.max(24, Math.floor(segments));
   const denseSegments = Math.min(8_192, Math.max(2_048, safeSegments * 16));
-  const points = Array.from({ length: denseSegments }, (_, index) =>
-    vectorToScenePosition(
+  const initialEccentricAnomaly = solveEllipticKepler(
+    orbit.initialMeanAnomaly,
+    orbit.eccentricity,
+  ).eccentricAnomalyRadians;
+  const observedScenePosition = vectorToScenePosition(
+    vector.positionAu,
+    scaleMode,
+  );
+  const points = Array.from({ length: denseSegments }, (_, index) => {
+    if (index === 0) return observedScenePosition;
+    return vectorToScenePosition(
       positionOnOrbitAtEccentricAnomaly(
         orbit,
-        (index / denseSegments) * Math.PI * 2,
+        initialEccentricAnomaly + (index / denseSegments) * Math.PI * 2,
       ),
       scaleMode,
-    ),
-  );
-  const first =
-    points[0] ?? vectorToScenePosition(vector.positionAu, scaleMode);
+    );
+  });
   return resampleClosedOrbitByArcLength(
-    [...points, [first[0], first[1], first[2]] as const],
+    [
+      ...points,
+      [
+        observedScenePosition[0],
+        observedScenePosition[1],
+        observedScenePosition[2],
+      ] as const,
+    ],
     safeSegments,
   );
 }

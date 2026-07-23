@@ -571,8 +571,9 @@ test("deterministic rotation returns to timestamp A and leaves unknown bodies fi
   await page.goto(
     `/explore?sceneTest=1&catalogue=comets&page=1&at=${encodeURIComponent(timestampA)}`,
   );
+  // Catalogue mode has its own explicit readiness contract and no longer waits
+  // for the production eight-planet texture gate that it intentionally omits.
   await waitForScene(page);
-  await expect(page.getByTestId("explore-opening-loader")).toHaveCount(0);
   await page.getByRole("tab", { name: "Time" }).click();
   const pause = page.getByRole("button", { name: "Pause simulation" });
   await expect(pause).toBeVisible();

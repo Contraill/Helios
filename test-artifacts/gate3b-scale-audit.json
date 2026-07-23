@@ -34,8 +34,8 @@
         "exploration": 2.3580032010399856,
         "scientific": 0.03268226945425367
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-mars-phobos",
@@ -70,10 +70,7 @@
         "scientific": 0.0007643806069226358
       },
       "representationStatus": "review",
-      "flags": [
-        "review:procedural-surface-gpu-review-required",
-        "review:high-exploration-visual-amplification"
-      ]
+      "flags": ["review:high-exploration-visual-amplification"]
     },
     {
       "bodyId": "moon-mars-deimos",
@@ -108,10 +105,7 @@
         "scientific": 0.0018821911747972494
       },
       "representationStatus": "review",
-      "flags": [
-        "review:procedural-surface-gpu-review-required",
-        "review:high-exploration-visual-amplification"
-      ]
+      "flags": ["review:high-exploration-visual-amplification"]
     },
     {
       "bodyId": "moon-jupiter-io",
@@ -145,8 +139,8 @@
         "exploration": 2.816879819974049,
         "scientific": 0.03411615590595435
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-jupiter-europa",
@@ -180,8 +174,8 @@
         "exploration": 2.9806981773249097,
         "scientific": 0.05444200750913495
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-jupiter-ganymede",
@@ -215,8 +209,8 @@
         "exploration": 3.1085254698133458,
         "scientific": 0.0861591086804152
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-jupiter-callisto",
@@ -250,8 +244,8 @@
         "exploration": 3.3089431829825866,
         "scientific": 0.15227135448793525
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-saturn-mimas",
@@ -285,8 +279,8 @@
         "exploration": 2.494808563298232,
         "scientific": 0.015234297048052839
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-saturn-enceladus",
@@ -320,8 +314,8 @@
         "exploration": 2.5406390255542837,
         "scientific": 0.01923910538654478
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-saturn-tethys",
@@ -355,8 +349,8 @@
         "exploration": 2.5996939730524793,
         "scientific": 0.02372970406189076
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-saturn-dione",
@@ -390,8 +384,8 @@
         "exploration": 2.681710547671241,
         "scientific": 0.030402849844840738
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-saturn-rhea",
@@ -425,8 +419,8 @@
         "exploration": 2.786474071907594,
         "scientific": 0.04239290552950363
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-saturn-titan",
@@ -460,8 +454,8 @@
         "exploration": 3.1379206661460772,
         "scientific": 0.10106372670450048
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-saturn-iapetus",
@@ -530,8 +524,8 @@
         "exploration": 2.0379844157549014,
         "scientific": 0.010444933104251729
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-uranus-ariel",
@@ -565,8 +559,8 @@
         "exploration": 2.162016382470184,
         "scientific": 0.015377130284248088
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-uranus-umbriel",
@@ -600,8 +594,8 @@
         "exploration": 2.2749929243052907,
         "scientific": 0.0214683251370636
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-uranus-titania",
@@ -635,8 +629,8 @@
         "exploration": 2.430141967541941,
         "scientific": 0.03513094088444135
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-uranus-oberon",
@@ -670,8 +664,8 @@
         "exploration": 2.523765551716932,
         "scientific": 0.046961049854033786
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-neptune-proteus",
@@ -740,8 +734,8 @@
         "exploration": 2.3519740771339217,
         "scientific": 0.028568797002269098
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "moon-neptune-nereid",
@@ -810,8 +804,8 @@
         "exploration": 1.3795348541944294,
         "scientific": 0.0016208187273350006
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "dwarf-satellite-dysnomia",
@@ -1105,8 +1099,8 @@
         "exploration": 0.20739051504124276,
         "scientific": 3.7677006855953866e-5
       },
-      "representationStatus": "review",
-      "flags": ["review:procedural-surface-gpu-review-required"]
+      "representationStatus": "pass",
+      "flags": []
     },
     {
       "bodyId": "vesta",
@@ -1706,8 +1700,8 @@
   ],
   "summary": {
     "total": 48,
-    "pass": 0,
-    "review": 48,
+    "pass": 19,
+    "review": 29,
     "fail": 0
   }
 }

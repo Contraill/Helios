@@ -15,7 +15,7 @@
       "longitudeDirection": "Positive East",
       "longitudeDomain": "-180 to 180",
       "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "configured-direct",
@@ -24,7 +24,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "3616cd0f477b5868f9b6673219e4eb12c059a2fd242acee3d5ef735d76bc9e96",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-mars-phobos",
@@ -38,7 +40,7 @@
       "longitudeDirection": "Positive East",
       "longitudeDomain": "-180 to 180",
       "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "configured-direct",
@@ -47,7 +49,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "412d35f549c2d43efd8339faa09dbf045df0b0be1db00c5a7f1955093ffe546a",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-mars-deimos",
@@ -60,17 +64,19 @@
       "projection": null,
       "longitudeDirection": null,
       "longitudeDomain": null,
-      "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "coverage": "partial-imagery-filled",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
-      "importPolicy": "reference-only",
+      "importPolicy": "manual-derived-map",
       "downloadStrategy": "none",
       "preferredRuntimeDownloadUrl": "https://science.nasa.gov/mars/moons/deimos/",
       "manualGpuReviewRequired": true,
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "1ab2f48cbb8f50601e8aa7916d13be8eff4f9bc5306fa4a8b7f09a0f6e918f6f",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-jupiter-io",
@@ -84,7 +90,7 @@
       "longitudeDirection": "Positive West",
       "longitudeDomain": "-180 to 180",
       "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -93,7 +99,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": true
+      "flipHorizontal": true,
+      "runtimeSha256": "ecf12987200552a7293ba5735a2f43d7318eb6a3640d9431a4b29f5fa91853a4",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-jupiter-europa",
@@ -107,7 +115,7 @@
       "longitudeDirection": "Positive West",
       "longitudeDomain": "0 to 360",
       "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -116,7 +124,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 180,
-      "flipHorizontal": true
+      "flipHorizontal": true,
+      "runtimeSha256": "73f91668aebecba4fe16fe3712cf5b4b47a73fee411c9eaf7687f0b17c40982c",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-jupiter-ganymede",
@@ -130,7 +140,7 @@
       "longitudeDirection": "Positive West",
       "longitudeDomain": "0 to 360",
       "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -139,7 +149,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 180,
-      "flipHorizontal": true
+      "flipHorizontal": true,
+      "runtimeSha256": "20a341d4d501320d963f39b4cac24b459e982ebf594b6f77cafe8858f67a9855",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-jupiter-callisto",
@@ -153,7 +165,7 @@
       "longitudeDirection": "Positive West",
       "longitudeDomain": "0 to 360",
       "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -162,7 +174,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 180,
-      "flipHorizontal": true
+      "flipHorizontal": true,
+      "runtimeSha256": "d12ffed44a6116a923b2dca5bf92ceb3f6eebb25a8d2dbb146a693d99bf0bb23",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-saturn-mimas",
@@ -176,7 +190,7 @@
       "longitudeDirection": "Positive West",
       "longitudeDomain": "-180 to 180",
       "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -185,7 +199,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": true
+      "flipHorizontal": true,
+      "runtimeSha256": "f088a1de484cb0e6a03e155be6cadaa30106c28f9b84b42052a35dfb282db8de",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-saturn-enceladus",
@@ -199,7 +215,7 @@
       "longitudeDirection": "Positive East",
       "longitudeDomain": "0 to 360",
       "coverage": "partial-imagery-filled",
-      "integrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "integrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -208,7 +224,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 180,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "793c069420de6fb050156780a52926373bf47a52ce647e8309e7ac0b9126609e",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-saturn-tethys",
@@ -222,7 +240,7 @@
       "longitudeDirection": "Positive West",
       "longitudeDomain": "-180 to 180",
       "coverage": "partial-imagery-filled",
-      "integrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "integrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -231,7 +249,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": true
+      "flipHorizontal": true,
+      "runtimeSha256": "fae974afa9e22d84815d833034df859aad302470dc8f017001cbeae11f7ed14e",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-saturn-dione",
@@ -245,7 +265,7 @@
       "longitudeDirection": "Positive West",
       "longitudeDomain": "-180 to 180",
       "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -254,7 +274,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": true
+      "flipHorizontal": true,
+      "runtimeSha256": "1ff16a4ac78d810cd29d63623fbd8412c7226ed02c71963b5b08606b42b6fe98",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-saturn-rhea",
@@ -268,7 +290,7 @@
       "longitudeDirection": "Positive West",
       "longitudeDomain": "-180 to 180",
       "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -277,7 +299,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": true
+      "flipHorizontal": true,
+      "runtimeSha256": "985207fa014ef72f9bb820b720fa9620d4561a3a3c3df6fd5984a4c04a9f0200",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-saturn-titan",
@@ -291,7 +315,7 @@
       "longitudeDirection": "Positive West",
       "longitudeDomain": "0 to 360",
       "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -300,7 +324,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 180,
-      "flipHorizontal": true
+      "flipHorizontal": true,
+      "runtimeSha256": "24db623c187259f67278fb5cbe9390fa98d89e311610add9da6f81eeed8fa8e9",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-saturn-iapetus",
@@ -337,16 +363,18 @@
       "longitudeDirection": null,
       "longitudeDomain": null,
       "coverage": "partial-imagery-filled",
-      "integrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "integrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
       "integrationState": "runtime-derived-imported",
-      "importPolicy": "reference-only",
+      "importPolicy": "manual-derived-map",
       "downloadStrategy": "none",
       "preferredRuntimeDownloadUrl": "https://astrogeology.usgs.gov/search/map/miranda_voyager_image_control_network",
       "manualGpuReviewRequired": true,
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "db218ec236ee08bcd486b971f802bcd35ea316e8c9ae75d3ab2c674045288cf4",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-uranus-ariel",
@@ -360,16 +388,18 @@
       "longitudeDirection": null,
       "longitudeDomain": null,
       "coverage": "partial-imagery-filled",
-      "integrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "integrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
       "integrationState": "runtime-derived-imported",
-      "importPolicy": "reference-only",
+      "importPolicy": "manual-derived-map",
       "downloadStrategy": "none",
       "preferredRuntimeDownloadUrl": "https://astrogeology.usgs.gov/search/map/ariel_voyager_image_control_network",
       "manualGpuReviewRequired": true,
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "3665a834f92a753b40554359dc3b70b34ff666e36b8572d74f562b108efbd59b",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-uranus-umbriel",
@@ -383,16 +413,18 @@
       "longitudeDirection": null,
       "longitudeDomain": null,
       "coverage": "partial-imagery-filled",
-      "integrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "integrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
       "integrationState": "runtime-derived-imported",
-      "importPolicy": "reference-only",
+      "importPolicy": "manual-derived-map",
       "downloadStrategy": "none",
       "preferredRuntimeDownloadUrl": "https://astrogeology.usgs.gov/search/map/umbriel_voyager_image_control_network",
       "manualGpuReviewRequired": true,
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "84f57ac451db9000acdff57893b4da881c6384b196a0de0f8f8fda68806ee4d5",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-uranus-titania",
@@ -406,16 +438,18 @@
       "longitudeDirection": null,
       "longitudeDomain": null,
       "coverage": "partial-imagery-filled",
-      "integrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "integrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
       "integrationState": "runtime-derived-imported",
-      "importPolicy": "reference-only",
+      "importPolicy": "manual-derived-map",
       "downloadStrategy": "none",
       "preferredRuntimeDownloadUrl": "https://astrogeology.usgs.gov/search/map/titania_voyager_image_control_network",
       "manualGpuReviewRequired": true,
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "cd14c85eee32bbd42ecf96aec8bd457296885924b000e755d6f1a4c3b89465e2",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-uranus-oberon",
@@ -429,16 +463,18 @@
       "longitudeDirection": null,
       "longitudeDomain": null,
       "coverage": "partial-imagery-filled",
-      "integrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "integrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
       "integrationState": "runtime-derived-imported",
-      "importPolicy": "reference-only",
+      "importPolicy": "manual-derived-map",
       "downloadStrategy": "none",
       "preferredRuntimeDownloadUrl": "https://astrogeology.usgs.gov/search/map/oberon_voyager_image_control_network",
       "manualGpuReviewRequired": true,
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "f28db362d3b039e2cbb3d64be0c1e51ed98b5784ea076a0f377203370d5f6652",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-neptune-proteus",
@@ -475,7 +511,7 @@
       "longitudeDirection": "Positive East",
       "longitudeDomain": "-180 to 180",
       "coverage": "partial-imagery-filled",
-      "integrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "integrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -484,7 +520,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 2,
       "seamShiftDeg": 0,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "e6e6cf47c616e54ecc29b04a202c0193e50ebca4e4dc6690131e80ebbf86da2c",
+      "appliedOperations": []
     },
     {
       "bodyId": "moon-neptune-nereid",
@@ -521,7 +559,7 @@
       "longitudeDirection": "Positive East",
       "longitudeDomain": "-180 to 180",
       "coverage": "global-map",
-      "integrationNote": "Reviewed official global map imported into a 2K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
+      "integrationNote": "Reviewed official global map imported into a 1K runtime derivative. Small no-data seams were cleaned without inventing large-scale landmarks; final seam, pole and lighting acceptance still requires manual GPU review.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "discover-product-page-raster",
@@ -530,7 +568,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 0,
       "seamShiftDeg": 0,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "59797a0d83079299c1f798913dbd3e75d91a695bc75415bb0539de31d2a068c4",
+      "appliedOperations": []
     },
     {
       "bodyId": "vesta",
@@ -935,7 +975,7 @@
       "longitudeDirection": "Positive East",
       "longitudeDomain": "0 to 360",
       "coverage": "partial-imagery-filled",
-      "integrationNote": "Reviewed official partial imagery imported into a 2K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
+      "integrationNote": "Reviewed official partial imagery imported into a 1K runtime derivative. Unobserved areas are softly synthesized from the observed hemisphere so the globe remains natural-looking in motion, and the selected-body summary explicitly states that those regions are reconstructed rather than directly observed.",
       "integrationState": "runtime-derived-imported",
       "importPolicy": "automatic-derived-map",
       "downloadStrategy": "configured-direct",
@@ -944,7 +984,9 @@
       "targetRepresentation": "derived-map",
       "blackNoDataThreshold": 2,
       "seamShiftDeg": 180,
-      "flipHorizontal": false
+      "flipHorizontal": false,
+      "runtimeSha256": "7cb20f8c8b12cd412f224d5491e39cf84840d6d562156bfbdc4c770279bdd7bf",
+      "appliedOperations": []
     },
     {
       "bodyId": "dwarf-satellite-dysnomia",

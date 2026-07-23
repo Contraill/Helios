@@ -33,7 +33,8 @@ interface SourceResearchArtifact {
       | "runtime-derived-imported"
       | "procedural-retained-no-suitable-global-product";
     readonly integrationNote: string;
-    readonly importPolicy: "automatic-derived-map" | "reference-only";
+    readonly importPolicy:
+      "automatic-derived-map" | "manual-derived-map" | "reference-only";
     readonly downloadStrategy:
       "configured-direct" | "discover-product-page-raster" | "none";
     readonly targetRepresentation: "derived-map" | "procedural-reconstruction";
@@ -107,10 +108,22 @@ describe("Gate 3B official-source research and import ledger", () => {
         expect(candidate.projection).toBeNull();
         expect(candidate.longitudeDirection).toBeNull();
         expect(candidate.longitudeDomain).toBeNull();
-        expect(candidate.importPolicy).toBe("reference-only");
-        expect(candidate.targetRepresentation).toBe(
-          "procedural-reconstruction",
-        );
+
+        if (candidate.integrationState === "runtime-derived-imported") {
+          // Some official sources are partial mission mosaics or control-network
+          // products rather than global cartographic rasters. They are integrated
+          // only through an explicit, manually reviewed derivative workflow.
+          expect(candidate.importPolicy).toBe("manual-derived-map");
+          expect(candidate.targetRepresentation).toBe("derived-map");
+          expect(candidate.runtimeStatus).toBe("integrated-derived-map");
+          expect(candidate.coverage).toMatch(/partial-imagery-filled/i);
+          expect(candidate.preferredRuntimeDownloadUrl).not.toBeNull();
+        } else {
+          expect(candidate.importPolicy).toBe("reference-only");
+          expect(candidate.targetRepresentation).toBe(
+            "procedural-reconstruction",
+          );
+        }
       }
     }
   });
