@@ -567,18 +567,21 @@ test("deterministic rotation returns to timestamp A and leaves unknown bodies fi
 }) => {
   test.setTimeout(90_000);
   const audit = watchRuntime(page);
+  const timestampA = "2026-07-21T12:00:00.000Z";
+  await page.goto(
+    `/explore?sceneTest=1&catalogue=comets&page=1&at=${encodeURIComponent(timestampA)}`,
+  );
+  await waitForScene(page);
+  await expect(page.getByTestId("explore-opening-loader")).toHaveCount(0);
+  await page.getByRole("tab", { name: "Time" }).click();
+  const pause = page.getByRole("button", { name: "Pause simulation" });
+  await expect(pause).toBeVisible();
+  await pause.click();
+  await expect(
+    page.getByRole("button", { name: "Resume simulation" }),
+  ).toBeVisible();
+
   const readAngles = async (timestamp: string) => {
-    await page.goto(
-      `/explore?sceneTest=1&catalogue=comets&page=1&at=${encodeURIComponent(timestamp)}`,
-    );
-    await waitForGateProbe(page);
-    await page.getByRole("tab", { name: "Time" }).click();
-    const pause = page.getByRole("button", { name: "Pause simulation" });
-    await expect(pause).toBeVisible();
-    await pause.click();
-    await expect(
-      page.getByRole("button", { name: "Resume simulation" }),
-    ).toBeVisible();
     const exactInput = timestamp.slice(0, 23);
     await page.getByLabel("UTC date and time").fill(exactInput);
     await page.getByRole("button", { name: "Apply", exact: true }).click();
@@ -599,9 +602,10 @@ test("deterministic rotation returns to timestamp A and leaves unknown bodies fi
       unknown: bodies?.encke.rotationAngle ?? 0,
     };
   };
-  const a1 = await readAngles("2026-07-21T12:00:00.000Z");
+
+  const a1 = await readAngles(timestampA);
   const b = await readAngles("2026-07-21T18:00:00.000Z");
-  const a2 = await readAngles("2026-07-21T12:00:00.000Z");
+  const a2 = await readAngles(timestampA);
   expect(a2.periodic).toBeCloseTo(a1.periodic, 10);
   expect(b.periodic).not.toBeCloseTo(a1.periodic, 6);
   expect(a1.unknown).toBe(0);

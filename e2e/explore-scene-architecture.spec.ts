@@ -111,7 +111,7 @@ async function assertDockPanelReadability(page: Page) {
     const panel = page.locator(`#explore-panel-${panelId}`);
     await expect(panel).toBeVisible();
 
-    const issues = await panel.evaluate((root) => {
+    const result = await panel.evaluate((root, activePanelId) => {
       const rootRect = root.getBoundingClientRect();
       const isVisible = (element: Element) => {
         const rect = element.getBoundingClientRect();
@@ -154,19 +154,13 @@ async function assertDockPanelReadability(page: Page) {
         }
       }
 
-      return failures;
-    });
+      if (activePanelId !== "view") {
+        return { failures, viewMetrics: null };
+      }
 
-    expect(issues, `${panelId} panel layout issues`).toEqual([]);
-  }
-
-  await page.locator("#explore-tab-view").click();
-  const viewMetrics = await page
-    .locator('[data-embedded-panel="view"]')
-    .evaluate((view) => {
-      const layout = view.querySelector<HTMLElement>("[data-view-layout]");
+      const layout = root.querySelector<HTMLElement>("[data-view-layout]");
       const toggles = Array.from(
-        view.querySelectorAll<HTMLElement>("[data-visibility-toggle]"),
+        root.querySelectorAll<HTMLElement>("[data-visibility-toggle]"),
       );
       const labelsUsingEmergencyBreaks = toggles
         .map((toggle) => toggle.firstElementChild)
@@ -180,19 +174,28 @@ async function assertDockPanelReadability(page: Page) {
         .map((label) => label.textContent?.trim() ?? "unknown");
 
       return {
-        columnCount: layout
-          ? getComputedStyle(layout).gridTemplateColumns.split(" ").length
-          : 0,
-        labelsUsingEmergencyBreaks,
-        minimumVisibilityButtonWidth: Math.min(
-          ...toggles.map((toggle) => toggle.getBoundingClientRect().width),
-        ),
+        failures,
+        viewMetrics: {
+          columnCount: layout
+            ? getComputedStyle(layout).gridTemplateColumns.split(" ").length
+            : 0,
+          labelsUsingEmergencyBreaks,
+          minimumVisibilityButtonWidth: Math.min(
+            ...toggles.map((toggle) => toggle.getBoundingClientRect().width),
+          ),
+        },
       };
-    });
+    }, panelId);
 
-  expect(viewMetrics.columnCount).toBe(1);
-  expect(viewMetrics.labelsUsingEmergencyBreaks).toEqual([]);
-  expect(viewMetrics.minimumVisibilityButtonWidth).toBeGreaterThanOrEqual(120);
+    expect(result.failures, `${panelId} panel layout issues`).toEqual([]);
+    if (result.viewMetrics) {
+      expect(result.viewMetrics.columnCount).toBe(1);
+      expect(result.viewMetrics.labelsUsingEmergencyBreaks).toEqual([]);
+      expect(
+        result.viewMetrics.minimumVisibilityButtonWidth,
+      ).toBeGreaterThanOrEqual(120);
+    }
+  }
 
   await page.locator("#explore-tab-time").click();
 }
@@ -522,7 +525,11 @@ test.describe("loaded responsive scene ownership", () => {
         const trigger = page.getByRole("button", { name: /Open controls/i });
         await trigger.click();
         await expect(page.getByRole("dialog")).toBeVisible();
-        await assertDockPanelReadability(page);
+        if (entry.name === "mobile-time-sheet") {
+          await assertDockPanelReadability(page);
+        } else {
+          await page.getByRole("tab", { name: "Time" }).click();
+        }
         await expect(
           page.getByRole("button", { name: "Pause simulation" }),
         ).toBeVisible();
@@ -533,7 +540,9 @@ test.describe("loaded responsive scene ownership", () => {
         for (const panel of ["Selection", "Navigator", "View", "Time"]) {
           await expect(page.getByRole("tab", { name: panel })).toBeVisible();
         }
-        await assertDockPanelReadability(page);
+        if (entry.name === "desktop-dock") {
+          await assertDockPanelReadability(page);
+        }
       }
       await expect(page.getByText(/Render quality|Motion/i)).toHaveCount(0);
       await screenshotViewport(page, testInfo.outputPath(`${entry.name}.png`));

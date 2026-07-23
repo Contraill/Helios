@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
@@ -106,18 +106,25 @@ function BloomPipeline({ strength }: Pick<ExploreBloomProps, "strength">) {
     return { bloom, composer: pipeline };
   }, [camera, gl, scene, size.height, size.width, strength]);
 
-  useEffect(
-    () => () => {
+  const activePipelineRef = useRef<typeof pipeline | null>(null);
+
+  useEffect(() => {
+    activePipelineRef.current = pipeline;
+    return () => {
+      if (activePipelineRef.current === pipeline) {
+        activePipelineRef.current = null;
+      }
       pipeline.composer.dispose();
-    },
-    [pipeline],
-  );
+    };
+  }, [pipeline]);
 
   useFrame(() => {
-    pipeline.bloom.uniforms.uDepthTexture.value =
-      pipeline.composer.readBuffer.depthTexture ??
-      pipeline.composer.renderTarget1.depthTexture;
-    pipeline.composer.render();
+    const activePipeline = activePipelineRef.current;
+    if (!activePipeline) return;
+    activePipeline.bloom.uniforms.uDepthTexture.value =
+      activePipeline.composer.readBuffer.depthTexture ??
+      activePipeline.composer.renderTarget1.depthTexture;
+    activePipeline.composer.render();
   }, 1);
   return null;
 }
