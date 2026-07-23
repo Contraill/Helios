@@ -1,6 +1,6 @@
 # Helios Roadmap
 
-This file is the repository-tracked source of truth for active quality gates.
+This file is the repository-tracked source of truth for active quality gates. Earlier architecture foundations are recorded separately below and must not be reused as active gate numbering.
 
 ## Active gates
 
@@ -26,6 +26,16 @@ This file is the repository-tracked source of truth for active quality gates.
 - Manual 1440×900 GPU review confirms silhouettes, seams, crossfade stability, tails, rings, focus distance and parent-system framing.
 
 Gate 3B may be changed to **Complete** only after every checklist item has evidence. Code presence alone is not acceptance.
+
+## Architecture foundations
+
+The following contracts were established before the active gate sequence and remain part of the product architecture:
+
+- Transactional Explore settings, a persistent ephemeris controller, clear dock ownership, one High visual contract and staged texture loading.
+- A shared simulation timestamp, typed reference frames, representative mean elements, tidal-lock evaluation and anti-solar comet dynamics.
+- A visual registry, asset and provenance policy, the non-Sun/non-planet catalogue and test-only visual acceptance surfaces.
+
+These foundations remain active engineering constraints but are not separate product gates.
 
 ## Later work
 

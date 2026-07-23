@@ -583,7 +583,19 @@ test("deterministic rotation returns to timestamp A and leaves unknown bodies fi
   ).toBeVisible();
 
   const readAngles = async (timestamp: string) => {
-    const exactInput = timestamp.slice(0, 23);
+    const date = new Date(timestamp);
+    if (
+      Number.isNaN(date.getTime()) ||
+      date.getUTCSeconds() !== 0 ||
+      date.getUTCMilliseconds() !== 0
+    ) {
+      throw new Error(
+        `Rotation test timestamps must resolve to an exact UTC minute: ${timestamp}`,
+      );
+    }
+    // Playwright's datetime-local fill contract accepts minute precision. The
+    // ephemeris controller expands this value to :00 seconds in UTC.
+    const exactInput = date.toISOString().slice(0, 16);
     await page.getByLabel("UTC date and time").fill(exactInput);
     await page.getByRole("button", { name: "Apply", exact: true }).click();
     const expectedAt = Date.parse(timestamp);
