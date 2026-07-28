@@ -18,12 +18,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const locale = await getRequestLocale();
   const apod = await loadApodArchive();
 
   return (
     <HomeExperience
-      initialLocale={locale}
       metadata={apod.metadata}
       records={apod.data ?? []}
       status={apod.status}

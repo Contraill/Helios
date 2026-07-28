@@ -138,6 +138,7 @@ function SatelliteObject({
     node.userData.orbitPlaneInclinationDeg = moon.inclinationDeg;
     setCameraTargetMetadata(node, {
       bodyId: moon.id,
+      scaleMode,
       targetKind: "body",
       renderRadius: visualRadius,
       collisionRadius: visualRadius,
@@ -148,7 +149,14 @@ function SatelliteObject({
     return () => {
       objectRegistry.delete(moon.id);
     };
-  }, [focusRadius, moon, planetObjects, resolvedOrbitNormal, visualRadius]);
+  }, [
+    focusRadius,
+    moon,
+    planetObjects,
+    resolvedOrbitNormal,
+    scaleMode,
+    visualRadius,
+  ]);
 
   useFrame(() => {
     const node = groupRef.current;

@@ -3,7 +3,15 @@
 import { useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { PerspectiveCamera, Vector3 } from "three";
-import type { Material, Mesh, Object3D, ShaderMaterial, Texture } from "three";
+import type {
+  BufferGeometry,
+  InterleavedBufferAttribute,
+  Material,
+  Mesh,
+  Object3D,
+  ShaderMaterial,
+  Texture,
+} from "three";
 
 import { cameraRuntimeSnapshot } from "@/features/solar-system/lib/camera-runtime";
 import { regionFocusAnchorOffset } from "@/features/solar-system/lib/region-visual-policy";
@@ -58,6 +66,11 @@ export interface HeliosSceneTestSnapshot {
     readonly programs: number;
     readonly textures: number;
   };
+  readonly lighting: {
+    readonly scientificExposureCompensationDecay: number | null;
+    readonly scientificExposureCompensationIntensity: number;
+    readonly scientificExposureCompensationMounted: boolean;
+  };
   readonly bodyPositions: Readonly<
     Record<
       string,
@@ -88,6 +101,15 @@ export interface HeliosSceneTestSnapshot {
         readonly materialUuid: string;
         readonly orbitClass: "planet" | "moon" | "extended";
         readonly visible: boolean;
+      }
+    >
+  >;
+  readonly orbitMembership: Readonly<
+    Record<
+      string,
+      {
+        readonly screenDistancePx: number;
+        readonly worldDistance: number;
       }
     >
   >;
@@ -183,6 +205,57 @@ function isEffectivelyVisible(object: Object3D): boolean {
   return true;
 }
 
+function distanceToScreenSegment(
+  pointX: number,
+  pointY: number,
+  startX: number,
+  startY: number,
+  endX: number,
+  endY: number,
+): number {
+  const segmentX = endX - startX;
+  const segmentY = endY - startY;
+  const denominator = segmentX * segmentX + segmentY * segmentY;
+  const progress =
+    denominator > 0
+      ? Math.max(
+          0,
+          Math.min(
+            1,
+            ((pointX - startX) * segmentX + (pointY - startY) * segmentY) /
+              denominator,
+          ),
+        )
+      : 0;
+  return Math.hypot(
+    pointX - (startX + segmentX * progress),
+    pointY - (startY + segmentY * progress),
+  );
+}
+
+function distanceToWorldSegment(
+  point: Vector3,
+  start: Vector3,
+  end: Vector3,
+  closest: Vector3,
+  pointDelta: Vector3,
+): number {
+  closest.subVectors(end, start);
+  const denominator = closest.lengthSq();
+  const progress =
+    denominator > 0
+      ? Math.max(
+          0,
+          Math.min(
+            1,
+            pointDelta.subVectors(point, start).dot(closest) / denominator,
+          ),
+        )
+      : 0;
+  closest.copy(start).lerp(end, progress);
+  return closest.distanceTo(point);
+}
+
 /**
  * Direct renderer instrumentation for scene integration tests. It reads mounted Three
  * objects and materials; it does not predict scene state from UI policy.
@@ -197,6 +270,10 @@ function ActiveSceneTestProbe() {
   const regionCenter = useRef(new Vector3());
   const regionFocusAnchor = useRef(new Vector3());
   const sunWorldPosition = useRef(new Vector3());
+  const orbitSegmentStart = useRef(new Vector3());
+  const orbitSegmentEnd = useRef(new Vector3());
+  const orbitClosestPoint = useRef(new Vector3());
+  const orbitPointDelta = useRef(new Vector3());
 
   useFrame(() => {
     frame.current += 1;
@@ -204,6 +281,7 @@ function ActiveSceneTestProbe() {
     // captures loader, selection and profile invalidations without creating a
     // private continuous loop; normal production never mounts this probe.
     if (typeof window === "undefined") return;
+    camera.updateMatrixWorld();
 
     const bodyPositions: Record<
       string,
@@ -232,6 +310,10 @@ function ActiveSceneTestProbe() {
         visible: boolean;
       }
     > = {};
+    const orbitMembership: Record<
+      string,
+      { screenDistancePx: number; worldDistance: number }
+    > = {};
     const orbits = { planet: 0, moon: 0, extended: 0 };
     const surfaces: Record<string, string | null> = {};
     const cityMaterials: ShaderMaterial[] = [];
@@ -249,6 +331,9 @@ function ActiveSceneTestProbe() {
     const interactiveBodyIds = new Set<string>();
     const visibleOrbitBodyIds = new Set<string>();
     const visibleLabelBodyIds = new Set<string>();
+    const bodyRootObjects = new Map<string, Object3D>();
+    const orbitObjects = new Map<string, Object3D>();
+    const orbitAnchorObjects = new Map<string, Object3D>();
     const screenTargets: Record<
       string,
       { visible: boolean; x: number; y: number }
@@ -273,11 +358,34 @@ function ActiveSceneTestProbe() {
       solarMarkerColor: null as string | null,
       solarMarkerRadiusRatio: 0,
     };
+    const lighting = {
+      scientificExposureCompensationDecay: null as number | null,
+      scientificExposureCompensationIntensity: 0,
+      scientificExposureCompensationMounted: false,
+    };
     let sunProjected: [number, number] = [0.5, 0.5];
     let sunProjectedCoverage = 0;
     let sunRenderRadius = 0;
 
     scene.traverse((object) => {
+      if (
+        object.userData.testScientificExposureCompensation === true &&
+        isEffectivelyVisible(object)
+      ) {
+        const scientificLight = object as Object3D & {
+          decay?: number;
+          intensity?: number;
+        };
+        lighting.scientificExposureCompensationMounted = true;
+        lighting.scientificExposureCompensationDecay =
+          typeof scientificLight.decay === "number"
+            ? scientificLight.decay
+            : null;
+        lighting.scientificExposureCompensationIntensity = Math.max(
+          lighting.scientificExposureCompensationIntensity,
+          Number(scientificLight.intensity ?? 0),
+        );
+      }
       const backdropLayer = object.userData.testBackdropLayer as
         string | undefined;
       if (backdropLayer === "local-stars" || backdropLayer === "milky-way") {
@@ -307,8 +415,7 @@ function ActiveSceneTestProbe() {
             typeof object.userData.surfaceAsset === "string"
               ? object.userData.surfaceAsset
               : null;
-          backdrop.galaxySurfaceReady =
-            object.userData.surfaceReady === true;
+          backdrop.galaxySurfaceReady = object.userData.surfaceReady === true;
           backdrop.galaxyMapRadius = Number(
             object.userData.testGalaxyMapRadius ?? 0,
           );
@@ -359,12 +466,18 @@ function ActiveSceneTestProbe() {
       const orbitClass = object.userData.testOrbitClass as
         keyof typeof orbits | undefined;
       const orbitBodyId = object.userData.testOrbitBodyId as string | undefined;
+      const orbitAnchorBodyId = object.userData.testOrbitAnchorBodyId as
+        string | undefined;
+      if (orbitAnchorBodyId) {
+        orbitAnchorObjects.set(orbitAnchorBodyId, object);
+      }
       const objectVisible = isEffectivelyVisible(object);
       if (orbitClass && objectVisible) orbits[orbitClass] += 1;
       if (orbitClass && orbitBodyId && objectVisible) {
         visibleOrbitBodyIds.add(orbitBodyId);
       }
       if (orbitClass && orbitBodyId) {
+        orbitObjects.set(orbitBodyId, object);
         orbitResources[orbitBodyId] = {
           boundsRadius: Number(object.userData.testBoundsRadius ?? 0),
           geometryUuid: String(object.userData.testGeometryUuid ?? ""),
@@ -378,6 +491,7 @@ function ActiveSceneTestProbe() {
         ? (object.userData.bodyId as string | undefined)
         : undefined;
       if (rootBodyId) {
+        bodyRootObjects.set(rootBodyId, object);
         mountedBodyIds.add(rootBodyId);
         if (objectVisible) visibleBodyIds.add(rootBodyId);
         object.getWorldPosition(projectedPosition.current);
@@ -474,6 +588,78 @@ function ActiveSceneTestProbe() {
         }
       }
     });
+
+    for (const [bodyId, bodyRoot] of bodyRootObjects) {
+      const orbit =
+        orbitAnchorObjects.get(bodyId)?.visible === true
+          ? orbitAnchorObjects.get(bodyId)
+          : orbitObjects.get(bodyId);
+      if (!orbit) continue;
+      const geometry = (orbit as Mesh).geometry as BufferGeometry | undefined;
+      const starts = geometry?.getAttribute("instanceStart") as
+        InterleavedBufferAttribute | undefined;
+      const ends = geometry?.getAttribute("instanceEnd") as
+        InterleavedBufferAttribute | undefined;
+      if (!starts || !ends || starts.count !== ends.count) continue;
+
+      bodyRoot.getWorldPosition(worldPosition.current);
+      projectedPosition.current.copy(worldPosition.current).project(camera);
+      const bodyScreenX =
+        canvasBounds.left +
+        ((projectedPosition.current.x + 1) / 2) * canvasBounds.width;
+      const bodyScreenY =
+        canvasBounds.top +
+        ((1 - projectedPosition.current.y) / 2) * canvasBounds.height;
+      let screenDistancePx = Number.POSITIVE_INFINITY;
+      let worldDistance = Number.POSITIVE_INFINITY;
+
+      for (let index = 0; index < starts.count; index += 1) {
+        orbitSegmentStart.current
+          .set(starts.getX(index), starts.getY(index), starts.getZ(index))
+          .applyMatrix4(orbit.matrixWorld);
+        orbitSegmentEnd.current
+          .set(ends.getX(index), ends.getY(index), ends.getZ(index))
+          .applyMatrix4(orbit.matrixWorld);
+        worldDistance = Math.min(
+          worldDistance,
+          distanceToWorldSegment(
+            worldPosition.current,
+            orbitSegmentStart.current,
+            orbitSegmentEnd.current,
+            orbitClosestPoint.current,
+            orbitPointDelta.current,
+          ),
+        );
+        orbitPointDelta.current.copy(orbitSegmentStart.current).project(camera);
+        const startX =
+          canvasBounds.left +
+          ((orbitPointDelta.current.x + 1) / 2) * canvasBounds.width;
+        const startY =
+          canvasBounds.top +
+          ((1 - orbitPointDelta.current.y) / 2) * canvasBounds.height;
+        orbitPointDelta.current.copy(orbitSegmentEnd.current).project(camera);
+        const endX =
+          canvasBounds.left +
+          ((orbitPointDelta.current.x + 1) / 2) * canvasBounds.width;
+        const endY =
+          canvasBounds.top +
+          ((1 - orbitPointDelta.current.y) / 2) * canvasBounds.height;
+        if (![startX, startY, endX, endY].every(Number.isFinite)) continue;
+        screenDistancePx = Math.min(
+          screenDistancePx,
+          distanceToScreenSegment(
+            bodyScreenX,
+            bodyScreenY,
+            startX,
+            startY,
+            endX,
+            endY,
+          ),
+        );
+      }
+
+      orbitMembership[bodyId] = { screenDistancePx, worldDistance };
+    }
 
     const regions: Record<string, HeliosSceneTestSnapshot["regions"][string]> =
       {};
@@ -643,7 +829,9 @@ function ActiveSceneTestProbe() {
         programs: gl.info.programs?.length ?? 0,
         textures: gl.info.memory.textures,
       },
+      lighting,
       orbitResources,
+      orbitMembership,
       orbits,
       regions,
       screenTargets,

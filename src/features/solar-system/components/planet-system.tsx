@@ -198,6 +198,7 @@ export function PlanetSystem({
     const ringOuterRadius = planetaryRingOuterRadius(planet.id);
     setCameraTargetMetadata(node, {
       bodyId: planet.id,
+      scaleMode,
       targetKind: "body",
       renderRadius: scale.radius,
       collisionRadius: scale.radius,
@@ -216,6 +217,7 @@ export function PlanetSystem({
     representation.referenceFrame,
     representation.representationType,
     scale.radius,
+    scaleMode,
   ]);
 
   useLayoutEffect(() => {

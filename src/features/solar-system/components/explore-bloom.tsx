@@ -137,7 +137,7 @@ function BloomPipeline({ strength }: Pick<ExploreBloomProps, "strength">) {
       gl,
       height: size.height,
       scene,
-      strength,
+      strength: 0,
       width: size.width,
     });
     resourcesRef.current = resources;
@@ -147,11 +147,27 @@ function BloomPipeline({ strength }: Pick<ExploreBloomProps, "strength">) {
       if (resourcesRef.current === resources) resourcesRef.current = null;
       resources.composer.dispose();
     };
-  }, [camera, gl, invalidate, scene, size.height, size.width, strength]);
+  }, [camera, gl, invalidate, scene, size.height, size.width]);
+
+  useEffect(() => {
+    const resources = resourcesRef.current;
+    if (resources) resources.bloom.uniforms.uStrength.value = strength;
+    invalidate();
+  }, [invalidate, strength]);
 
   useFrame(() => {
     const resources = resourcesRef.current;
-    if (!resources) return;
+    if (strength <= 0) {
+      gl.setRenderTarget(null);
+      gl.render(scene, camera);
+      return;
+    }
+    if (!resources) {
+      gl.setRenderTarget(null);
+      gl.render(scene, camera);
+      return;
+    }
+    resources.bloom.uniforms.uStrength.value = strength;
     resources.bloom.uniforms.uDepthTexture.value =
       resources.composer.readBuffer.depthTexture ??
       resources.composer.renderTarget1.depthTexture;

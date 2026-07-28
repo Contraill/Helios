@@ -11,6 +11,13 @@ const COMETS = [
   ["Tempel 1", "tempel-1"],
 ] as const;
 
+const MAIN_BELT_WORLDS = [
+  ["Ceres", "ceres"],
+  ["Vesta", "vesta"],
+  ["Pallas", "pallas"],
+  ["Hygiea", "hygiea"],
+] as const;
+
 async function snapshot(page: Page): Promise<HeliosSceneTestSnapshot> {
   return page.evaluate(() => window.__HELIOS_SCENE_TEST__!);
 }
@@ -41,15 +48,42 @@ async function selectComet(page: Page, name: string, id: string) {
   await page.getByRole("button", { name, exact: true }).click();
   await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
   await expect
+    .poll(async () => (await snapshot(page)).camera?.targetBodyId, {
+      timeout: 45_000,
+    })
+    .toBe(id);
+  await expect
     .poll(async () => (await snapshot(page)).camera?.mode, {
       timeout: 45_000,
     })
     .toBe("focus");
   await expect
+    .poll(async () => (await snapshot(page)).screenTargets[id]?.visible, {
+      timeout: 45_000,
+    })
+    .toBe(true);
+}
+
+async function selectMainBeltWorld(page: Page, name: string, id: string) {
+  await openNavigatorRoot(page);
+  await page.getByRole("button", { name: /Main-belt worlds/i }).click();
+  await page.getByRole("button", { name, exact: true }).click();
+  await expect(page.getByRole("heading", { name, exact: true })).toBeVisible();
+  await expect
     .poll(async () => (await snapshot(page)).camera?.targetBodyId, {
       timeout: 45_000,
     })
     .toBe(id);
+  await expect
+    .poll(async () => (await snapshot(page)).camera?.mode, {
+      timeout: 45_000,
+    })
+    .toBe("focus");
+  await expect
+    .poll(async () => (await snapshot(page)).screenTargets[id]?.visible, {
+      timeout: 45_000,
+    })
+    .toBe(true);
 }
 
 async function screenStability(page: Page, bodyId: string) {
@@ -129,6 +163,10 @@ test("all comets remain camera-stable on their orbit during accelerated scientif
     expect(stability.yRange).toBeLessThan(2.5);
     const scene = await snapshot(page);
     expect(scene.orbitResources[id]?.visible).toBe(true);
+    expect(scene.orbitMembership[id]?.screenDistancePx).toBeLessThanOrEqual(
+      0.5,
+    );
+    expect(scene.orbitMembership[id]?.worldDistance).toBeLessThanOrEqual(1e-9);
     expect(scene.sceneContract.visibleBodyIds).toContain(id);
     await expect(page.locator(".solar-canvas-shell")).toHaveAttribute(
       "data-galactic-context",
@@ -138,6 +176,102 @@ test("all comets remain camera-stable on their orbit during accelerated scientif
 
   expect(pageErrors).toEqual([]);
   expect(consoleErrors).toEqual([]);
+});
+
+test("scientific profile changes reframe a selected comet in the new coordinate system", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.addInitScript(() => localStorage.clear());
+  await page.setViewportSize({ width: 1536, height: 887 });
+  await page.goto("/explore?sceneTest=1&at=2026-07-27T00%3A00%3A00.000Z");
+  await waitForScene(page);
+  await selectComet(page, "Tempel 1", "tempel-1");
+
+  await page.getByRole("tab", { name: "View" }).click();
+  await page.getByRole("button", { name: "Scientific", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Scientific", exact: true }),
+  ).toHaveAttribute("aria-pressed", "true");
+
+  const immediate = await page.evaluate(async () => {
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          resolve();
+        }),
+      ),
+    );
+    return window.__HELIOS_SCENE_TEST__!;
+  });
+  const canvas = await page.locator("canvas").first().boundingBox();
+  expect(canvas).not.toBeNull();
+  const target = immediate.screenTargets["tempel-1"];
+  expect(target?.visible).toBe(true);
+  expect(
+    Math.abs((target?.x ?? 0) - (canvas!.x + canvas!.width / 2)),
+  ).toBeLessThan(1);
+  expect(
+    Math.abs((target?.y ?? 0) - (canvas!.y + canvas!.height / 2)),
+  ).toBeLessThan(1);
+  expect(
+    immediate.orbitMembership["tempel-1"]?.screenDistancePx,
+  ).toBeLessThanOrEqual(0.5);
+});
+
+test("all main-belt worlds sit on their rendered scientific orbit while focused", async ({
+  page,
+}) => {
+  test.setTimeout(150_000);
+  await page.addInitScript(() => localStorage.clear());
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/explore?sceneTest=1&at=2026-07-27T00%3A00%3A00.000Z");
+  await waitForScene(page);
+  await page.getByRole("tab", { name: "View" }).click();
+  await page.getByRole("button", { name: "Scientific", exact: true }).click();
+
+  for (const [name, id] of MAIN_BELT_WORLDS) {
+    await selectMainBeltWorld(page, name, id);
+    const scene = await snapshot(page);
+    expect(scene.orbitResources[id]?.visible).toBe(true);
+    expect(scene.orbitMembership[id]?.screenDistancePx).toBeLessThanOrEqual(
+      0.5,
+    );
+    expect(scene.orbitMembership[id]?.worldDistance).toBeLessThanOrEqual(1e-9);
+  }
+});
+
+test("distant dwarf and Kuiper worlds retain scientific surface exposure", async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  await page.addInitScript(() => localStorage.clear());
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/explore?sceneTest=1&at=2026-07-27T00%3A00%3A00.000Z");
+  await waitForScene(page);
+  await page.getByRole("tab", { name: "View" }).click();
+  await page.getByRole("button", { name: "Scientific", exact: true }).click();
+  await openNavigatorRoot(page);
+  await page.getByRole("button", { name: /Dwarf & Kuiper worlds/i }).click();
+  await page.getByRole("button", { name: "Sedna", exact: true }).click();
+  await expect
+    .poll(async () => (await snapshot(page)).camera?.targetBodyId, {
+      timeout: 45_000,
+    })
+    .toBe("sedna");
+  await expect
+    .poll(async () => (await snapshot(page)).camera?.mode, {
+      timeout: 45_000,
+    })
+    .toBe("focus");
+
+  const scene = await snapshot(page);
+  expect(scene.screenTargets.sedna?.visible).toBe(true);
+  expect(scene.lighting.scientificExposureCompensationMounted).toBe(true);
+  expect(scene.lighting.scientificExposureCompensationDecay).toBe(0);
+  expect(
+    scene.lighting.scientificExposureCompensationIntensity,
+  ).toBeGreaterThanOrEqual(1);
 });
 
 test("galactic context renders an exterior Milky Way and isolates the Solar System", async ({

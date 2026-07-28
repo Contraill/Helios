@@ -76,7 +76,7 @@ describe("ExploreExperience integration shell", () => {
     rerender(<ExploreExperience {...props} />);
     expect(
       screen.getByRole("region", {
-        name: "Animated scientific-scale model of the Sun and the eight planets",
+        name: "Animated scientific-scale model of the Solar System",
       }),
     ).toBeVisible();
   });

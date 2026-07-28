@@ -117,10 +117,12 @@ function RegionRegistry({
   id,
   planetObjects,
   profile,
+  scaleMode,
 }: {
   id: SystemRegionId;
   planetObjects: PlanetObjectRegistry;
   profile: RegionVisualProfile;
+  scaleMode: ScaleMode;
 }) {
   const ref = useRef<Group>(null);
   useLayoutEffect(() => {
@@ -131,6 +133,7 @@ function RegionRegistry({
     node.userData.cameraFocusRadius = profile.camera.framingExtent;
     setCameraTargetMetadata(node, {
       bodyId: id,
+      scaleMode,
       targetKind: "region",
       renderRadius: profile.camera.framingExtent,
       collisionRadius: profile.collisionRadius,
@@ -142,7 +145,7 @@ function RegionRegistry({
     return () => {
       registry.delete(id);
     };
-  }, [id, planetObjects, profile]);
+  }, [id, planetObjects, profile, scaleMode]);
   return <group ref={ref} userData={{ bodyId: id, testBodyRoot: true }} />;
 }
 
@@ -432,7 +435,12 @@ function BeltLayer({
       }}
       visible={visible}
     >
-      <RegionRegistry id={id} planetObjects={planetObjects} profile={profile} />
+      <RegionRegistry
+        id={id}
+        planetObjects={planetObjects}
+        profile={profile}
+        scaleMode={scaleMode}
+      />
       <BeltMacroEnvelope profile={profile} state={state} />
       {distribution.strata.map((stratum) => (
         <points
@@ -577,6 +585,7 @@ function ExtendedBodyObject({
     node.userData.referenceFrame = body.representation.referenceFrame;
     setCameraTargetMetadata(node, {
       bodyId: body.id,
+      scaleMode,
       targetKind: dwarfSystemParent ? "system" : "body",
       renderRadius: visualExtent,
       collisionRadius: visualExtent,
@@ -596,6 +605,7 @@ function ExtendedBodyObject({
     nucleusFocusRadius,
     planetObjects,
     sceneMetrics.systemExtent,
+    scaleMode,
     visualExtent,
   ]);
 
@@ -675,6 +685,7 @@ function ExtendedBodyObject({
         segments={quality.orbitSegments}
         semiMajorAxis={1}
         semiMinorAxis={1}
+        trackedObjectRef={groupRef}
       />
       {isComet && active && visible ? (
         <points
@@ -897,6 +908,7 @@ function OortCloud({
         id="oort-cloud"
         planetObjects={planetObjects}
         profile={profile}
+        scaleMode={scaleMode}
       />
       <OortMacroEnvelope profile={profile} state={state} />
       {distribution.strata.map((stratum, index) => (
@@ -1051,6 +1063,7 @@ function Heliosphere({
         id="heliosphere"
         planetObjects={planetObjects}
         profile={profile}
+        scaleMode={scaleMode}
       />
       <group visible={overlayVisible}>
         {[

@@ -1405,6 +1405,28 @@
       "northPoleConvention": "visual-north-up; not navigation-grade",
       "primeMeridianVerified": false,
       "representationType": "procedural-reconstruction"
+    },
+    {
+      "path": "/textures/context/milky-way-exterior-v1.webp",
+      "format": "webp",
+      "width": 1024,
+      "height": 1024,
+      "byteSize": 44776,
+      "decodedBytes": 4194304,
+      "owner": "context:milky-way:exterior-texture",
+      "kind": "context-backdrop",
+      "stage": "background-context",
+      "provider": "OpenAI image generation",
+      "sourceId": "helios-milky-way-exterior-v1",
+      "attribution": "AI-generated Milky Way exterior texture prepared for the Helios galactic context view.",
+      "license": "Project-owned generated asset",
+      "sha256": "e3e7b4183b70f47118375cfce9ab778b6f0768aa9592baf9530b461f9106187b",
+      "runtimeCeiling": "1024x1024",
+      "sourceMasterPolicy": "The optimized WebP is the only runtime copy shipped in public/.",
+      "projection": "artistic-top-down-galactic-exterior",
+      "northPoleConvention": "galactic-north-up visual context",
+      "primeMeridianVerified": false,
+      "representationType": "generated-context-reconstruction"
     }
   ]
 }

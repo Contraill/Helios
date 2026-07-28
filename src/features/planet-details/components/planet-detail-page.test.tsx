@@ -30,7 +30,7 @@ describe("PlanetDetailPage", () => {
 
     expect(screen.queryByText("Jump to human scale")).not.toBeInTheDocument();
     expect(document.querySelector("#human-scale")).toBeNull();
-    expect(screen.getByText("Jump to sources")).toHaveAttribute(
+    expect(screen.getByText("Method and sources")).toHaveAttribute(
       "href",
       "#sources",
     );
@@ -45,7 +45,7 @@ describe("PlanetDetailPage", () => {
       />,
     );
 
-    const visual = document.querySelector('[data-planet="earth"]');
+    const visual = document.querySelector('[role="img"][data-planet="earth"]');
     expect(visual).toHaveStyle({
       "--planet-editorial-texture": 'url("/textures/planets/earth.webp")',
     });

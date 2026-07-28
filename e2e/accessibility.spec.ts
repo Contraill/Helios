@@ -53,7 +53,7 @@ test("system reduced motion removes continuous scene motion", async ({
 
   await expect(
     page.getByRole("region", {
-      name: "Static exploration-scale model of the Sun and the eight planets",
+      name: "Static exploration-scale model of the Solar System",
     }),
   ).toBeVisible({ timeout: 30_000 });
   await expect(page.locator(".solar-canvas-shell")).toHaveAttribute(
@@ -123,10 +123,18 @@ test("changing language preserves focus and announces the update", async ({
   await turkish.focus();
   await turkish.click();
 
-  await expect(turkish).toBeFocused();
-  await expect(turkish).toHaveAttribute("aria-pressed", "true");
+  const updatedLanguageGroup = page.getByRole("group", {
+    name: "Arayüz dili",
+  });
+  const updatedTurkish = updatedLanguageGroup.getByRole("button", {
+    name: "TR",
+  });
+  await expect(updatedTurkish).toBeFocused();
+  await expect(updatedTurkish).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("html")).toHaveAttribute("lang", "tr-TR");
-  await expect(languageGroup.getByRole("status")).toContainText(/Türkçe|dil/i);
+  await expect(updatedLanguageGroup.getByRole("status")).toContainText(
+    /Türkçe|dil/i,
+  );
 });
 
 test.describe("200 percent layout equivalent", () => {

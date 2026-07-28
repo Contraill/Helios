@@ -42,7 +42,9 @@ describe("data presentation primitives", () => {
       </>,
     );
 
-    const sections = screen.getAllByRole("region", { name: "Sources" });
+    const sections = screen.getAllByRole("region", {
+      name: "Sources and provenance",
+    });
     expect(sections).toHaveLength(2);
     expect(sections[0]).not.toHaveAttribute(
       "aria-labelledby",

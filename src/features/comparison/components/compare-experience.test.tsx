@@ -78,9 +78,11 @@ describe("CompareExperience", () => {
     searchState.value = "a=earth&b=earth";
     render(<CompareExperience planets={comparisonPlanets} />);
 
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "You selected the same world twice",
-    );
+    expect(
+      screen.getByText(/You selected the same world twice/, {
+        selector: '[role="status"]',
+      }),
+    ).toBeVisible();
     expect(
       screen.getAllByRole("link", { name: "Open Earth page" }),
     ).toHaveLength(2);

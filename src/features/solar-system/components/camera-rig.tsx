@@ -224,7 +224,12 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
 
     const transitionTargetReady =
       liveSelectedBodyId === null ||
-      Boolean(selectedObject && metadata && policy);
+      Boolean(
+        selectedObject &&
+        metadata &&
+        metadata.scaleMode === liveScaleMode &&
+        policy,
+      );
     const transitionNeedsInitialization =
       liveMode === "transition" &&
       (activeTransitionVersion.current !== liveVersion ||
@@ -324,6 +329,24 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
         targetSettleTolerance.current = 0.3;
         orbitControls.minDistance = liveProfile.camera.minimumDistance;
         lastMinimumDistance.current = liveProfile.camera.minimumDistance;
+      }
+
+      if (scaleChanged) {
+        // Explore and Scientific use different coordinate mappings. Flying the
+        // camera through the numerical gap between them can pass close to an
+        // unrelated body and make it look like the selected object has left
+        // its orbit. Reframe the same selection atomically in the new profile;
+        // ordinary body-to-body transitions remain animated.
+        camera.position.copy(desiredPosition.current);
+        currentTarget.current.copy(desiredTarget.current);
+        camera.lookAt(currentTarget.current);
+        orbitControls.target.copy(currentTarget.current);
+        trackedBodyId.current = liveSelectedBodyId;
+        settleCamera(
+          liveSelectedBodyId,
+          liveVersion,
+          liveSelectedBodyId === null ? "overview" : "focus",
+        );
       }
     }
 

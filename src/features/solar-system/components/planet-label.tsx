@@ -76,6 +76,21 @@ function createLabelTexture(
     const textX = centerX + labelX;
     const textY = centerY + labelY;
 
+    context.fillStyle = "rgba(3, 5, 10, 0.88)";
+    context.beginPath();
+    context.arc(centerX, centerY, selected ? 8 : 7, 0, Math.PI * 2);
+    context.fill();
+    context.strokeStyle = color;
+    context.globalAlpha = selected ? 0.94 : 0.72;
+    context.lineWidth = selected ? 3 : 2;
+    context.beginPath();
+    context.arc(centerX, centerY, selected ? 5 : 4.5, 0, Math.PI * 2);
+    context.stroke();
+    context.fillStyle = color;
+    context.beginPath();
+    context.arc(centerX, centerY, selected ? 1.8 : 1.4, 0, Math.PI * 2);
+    context.fill();
+
     context.strokeStyle = color;
     context.globalAlpha = selected ? 0.82 : 0.46;
     context.lineWidth = selected ? 3 : 2;

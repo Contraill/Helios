@@ -20,10 +20,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function MissionsPage() {
-  const locale = await getRequestLocale();
   return (
     <MissionsExperience
-      initialLocale={locale}
       missions={MISSION_CATALOGUE}
       planetCount={MISSION_PLANET_COUNT}
     />

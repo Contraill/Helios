@@ -96,6 +96,8 @@ export function SolarSystemScene({
   const [catalogueRequest] = useState(visualCatalogueRequest);
   const localSceneVisible = galacticContextPhase !== "galactic";
   const localAnnotationsVisible = galacticContextPhase === "local";
+  const localScientificView =
+    profile.id === "scientific" && galacticContextPhase !== "galactic";
 
   if (catalogueRequest) {
     return (
@@ -166,7 +168,10 @@ export function SolarSystemScene({
           scaleMode={profile.id}
         />
       </group>
-      <ExploreBloom enabled strength={profile.effects.bloomStrength} />
+      <ExploreBloom
+        enabled
+        strength={localScientificView ? 0 : profile.effects.bloomStrength}
+      />
     </>
   );
 }

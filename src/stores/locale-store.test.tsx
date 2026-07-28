@@ -43,4 +43,20 @@ describe("locale provider", () => {
     act(() => screen.getByRole("button").click());
     expect(screen.getByLabelText("current locale")).toHaveTextContent("en");
   });
+
+  it("adopts a refreshed request locale without an effect-driven state update", () => {
+    const { rerender } = render(
+      <LocaleProvider initialLocale="en">
+        <LocaleProbe />
+      </LocaleProvider>,
+    );
+
+    rerender(
+      <LocaleProvider initialLocale="tr">
+        <LocaleProbe />
+      </LocaleProvider>,
+    );
+
+    expect(screen.getByLabelText("current locale")).toHaveTextContent("tr");
+  });
 });

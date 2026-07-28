@@ -226,9 +226,7 @@ test("camera, selection and gestures share one ownership model", async ({
   );
 
   await activate(page.getByRole("tab", { name: "View" }));
-  await activate(
-    page.getByRole("button", { name: "Exploration", exact: true }),
-  );
+  await activate(page.getByRole("button", { name: "Explore", exact: true }));
   await waitForCameraMode(page, "focus");
   await openNavigatorCategory(page, /Comets/i);
   await selectNavigatorBody(page, "Tempel 1");
@@ -240,7 +238,17 @@ test("camera, selection and gestures share one ownership model", async ({
   );
 
   await activate(page.getByRole("tab", { name: "View" }));
-  await activate(page.getByRole("button", { name: "Scientific", exact: true }));
+  const scientificButton = page.getByRole("button", {
+    name: "Scientific",
+    exact: true,
+  });
+  await activate(scientificButton);
+  await expect(scientificButton).toHaveAttribute("aria-pressed", "true");
+  await expect
+    .poll(async () => (await snapshot(page)).camera?.distanceToTarget, {
+      timeout: 45_000,
+    })
+    .toBeLessThan(0.00001);
   await waitForCameraMode(page, "focus");
   const tempelScientific = await snapshot(page);
   expect(tempelScientific.camera?.selectedBodyId).toBe("tempel-1");
@@ -254,9 +262,17 @@ test("camera, selection and gestures share one ownership model", async ({
   expect(tempelScientific.camera?.distanceToTarget).toBeLessThan(0.00001);
 
   await activate(page.getByRole("tab", { name: "View" }));
-  await activate(
-    page.getByRole("button", { name: "Exploration", exact: true }),
-  );
+  const exploreButton = page.getByRole("button", {
+    name: "Explore",
+    exact: true,
+  });
+  await activate(exploreButton);
+  await expect(exploreButton).toHaveAttribute("aria-pressed", "true");
+  await expect
+    .poll(async () => (await snapshot(page)).camera?.distanceToTarget, {
+      timeout: 45_000,
+    })
+    .toBeGreaterThan(tempelScientific.camera?.distanceToTarget ?? 0);
   await waitForCameraMode(page, "focus");
   const tempelExploreAgain = await snapshot(page);
   expect(tempelExploreAgain.camera?.targetBodyId).toBe("tempel-1");

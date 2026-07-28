@@ -49,7 +49,7 @@ describe("official celestial runtime importer contract", () => {
       expect(asset.projection).toBe("equirectangular");
       expect(asset.sourceId).toMatch(/^official-derived-/);
       expect(asset.orientationSourceId).toBe(asset.sourceId);
-      expect(asset.visualCalibrationNote).toMatch(/manual GPU/i);
+      expect(asset.visualCalibrationNote).toMatch(/device-dependent/i);
     }
   });
 });

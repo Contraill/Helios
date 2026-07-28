@@ -228,7 +228,9 @@ test("data route retains verified fallback without static-to-dynamic client fail
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/data");
-  await expect(page.getByRole("heading", { name: "Data" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Data", exact: true }),
+  ).toBeVisible();
   await expect(page.getByText(/GIBS|Earth observation/i).first()).toBeVisible();
   expect(
     errors.filter((message) => /static to dynamic/i.test(message)),

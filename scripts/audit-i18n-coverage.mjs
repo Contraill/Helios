@@ -265,16 +265,9 @@ if (
 }
 
 const layout = fs.readFileSync(path.join(root, "src/app/layout.tsx"), "utf8");
-const localeStore = fs.readFileSync(
-  path.join(root, "src/stores/locale-store.tsx"),
-  "utf8",
-);
-if (
-  !layout.includes("<LocaleProvider initialLocale={locale}>") ||
-  !localeStore.includes("useState(initialLocale)")
-) {
+if (!layout.includes("<LocaleProvider initialLocale={locale}>")) {
   errors.push(
-    "Request locale is not available to client surfaces on the first render.",
+    "Request locale is not passed from the root layout to client surfaces.",
   );
 }
 if (

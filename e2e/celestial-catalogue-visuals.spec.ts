@@ -255,6 +255,12 @@ test("featured moon selection preserves tidal orientation, orbit and camera owne
             ?.tidalFacingDot ?? 0,
       )
       .toBeGreaterThan(0.995);
+    await expect
+      .poll(
+        async () =>
+          (await celestialProbeSnapshot(page))?.orbits[id]?.emphasis ?? null,
+      )
+      .toBe("selected");
     const orbit = (await celestialProbeSnapshot(page))?.orbits[id];
     expect(orbit?.closed).toBe(true);
     expect(orbit?.dashed).toBe(false);

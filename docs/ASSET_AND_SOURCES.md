@@ -60,14 +60,14 @@ A partial import reports failures in `test-artifacts/celestial-official-asset-im
 
 ## Galactic context surface
 
-`public/textures/context/milky-way-exterior-v1.webp` is a 1254 × 1254,
-78 KB reference-guided generative surface, not an observation of the Milky Way
-from outside. Its production prompt constrained the image to the NASA/JPL
-barred-spiral concept: two dominant stellar arms, two weaker gas-rich arms,
-an elongated central bar, restrained blue star-forming regions and dark dust
-lanes. The runtime keeps the scientific structure and the Solar System marker
-separate from the image: code enforces the arm-count contract and places the
-warm marker on the Orion Spur at a 26,000-light-year galactocentric distance.
+`public/textures/context/milky-way-exterior-v1.webp` is a 1024 × 1024,
+44 KB reference-guided illustrative surface, not an observation of the Milky
+Way from outside. Its composition follows the NASA/JPL barred-spiral concept:
+two dominant stellar arms, two weaker gas-rich arms, an elongated central bar,
+restrained blue star-forming regions and dark dust lanes. The runtime keeps the
+scientific structure and the Solar System marker separate from the image: code
+enforces the arm-count contract and places the warm marker on the Orion Spur at
+a 26,000-light-year galactocentric distance.
 
 Model references:
 

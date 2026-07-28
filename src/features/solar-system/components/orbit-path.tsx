@@ -1,14 +1,22 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { Color, Vector3 } from "three";
+import { Color, Matrix4, Vector3, type Object3D } from "three";
 import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry.js";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial.js";
 
 import type { OrbitEmphasis } from "@/features/solar-system/lib/orbit-visibility-policy";
 import { orbitPathDiagnosticsFromFlatPositions } from "@/features/solar-system/lib/orbit-path-diagnostics";
+import { SCENE_FRAME_PRIORITY } from "@/features/solar-system/lib/scene-frame-runtime";
 import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
 
 export type OrbitAcceptanceClass = "planet" | "moon" | "extended";
@@ -25,6 +33,7 @@ interface OrbitPathProps {
   segments: number;
   semiMajorAxis: number;
   semiMinorAxis: number;
+  trackedObjectRef?: RefObject<Object3D | null>;
 }
 
 function ellipsePositions(
@@ -111,6 +120,40 @@ function contextOpacity(orbitClass?: OrbitAcceptanceClass): number {
   }
 }
 
+function closestSegmentIndex(
+  positions: readonly number[],
+  point: Vector3,
+  segment: Vector3,
+  pointDelta: Vector3,
+): number {
+  let closestIndex = 0;
+  let closestDistanceSquared = Number.POSITIVE_INFINITY;
+  for (let index = 0; index + 5 < positions.length; index += 3) {
+    const startX = positions[index] ?? 0;
+    const startY = positions[index + 1] ?? 0;
+    const startZ = positions[index + 2] ?? 0;
+    const endX = positions[index + 3] ?? 0;
+    const endY = positions[index + 4] ?? 0;
+    const endZ = positions[index + 5] ?? 0;
+    segment.set(endX - startX, endY - startY, endZ - startZ);
+    pointDelta.set(point.x - startX, point.y - startY, point.z - startZ);
+    const denominator = segment.lengthSq();
+    const progress =
+      denominator > 0
+        ? Math.max(0, Math.min(1, pointDelta.dot(segment) / denominator))
+        : 0;
+    const distanceSquared =
+      (point.x - (startX + segment.x * progress)) ** 2 +
+      (point.y - (startY + segment.y * progress)) ** 2 +
+      (point.z - (startZ + segment.z * progress)) ** 2;
+    if (distanceSquared < closestDistanceSquared) {
+      closestDistanceSquared = distanceSquared;
+      closestIndex = index;
+    }
+  }
+  return closestIndex;
+}
+
 export function OrbitPath({
   active = false,
   bodyId,
@@ -122,11 +165,17 @@ export function OrbitPath({
   segments,
   semiMajorAxis,
   semiMinorAxis,
+  trackedObjectRef,
 }: OrbitPathProps) {
   const size = useThree((state) => state.size);
   const camera = useThree((state) => state.camera);
   const worldPosition = useRef(new Vector3());
+  const localTrackedPosition = useRef(new Vector3());
+  const inverseOrbitMatrix = useRef(new Matrix4());
+  const anchorSegment = useRef(new Vector3());
+  const anchorPointDelta = useRef(new Vector3());
   const lineRef = useRef<Line2 | null>(null);
+  const anchorRef = useRef<Line2 | null>(null);
   const boundsRadiusRef = useRef(1);
   const [line] = useState(() => {
     const geometry = new LineGeometry();
@@ -145,6 +194,26 @@ export function OrbitPath({
     next.frustumCulled = true;
     next.renderOrder = -1;
     next.raycast = () => undefined;
+    return next;
+  });
+  const [anchor] = useState(() => {
+    const geometry = new LineGeometry();
+    const material = new LineMaterial({
+      alphaToCoverage: false,
+      color: new Color(color),
+      depthTest: true,
+      depthWrite: false,
+      dashed: false,
+      opacity: 0.92,
+      transparent: true,
+      linewidth: lineWidth * 1.9,
+      worldUnits: false,
+    });
+    const next = new Line2(geometry, material);
+    next.frustumCulled = false;
+    next.renderOrder = 4;
+    next.raycast = () => undefined;
+    next.visible = false;
     return next;
   });
 
@@ -177,12 +246,21 @@ export function OrbitPath({
       diagnostics.maxChordToBoundsRatio;
     lineNode.userData.testOrbitMaxToMedianSegmentRatio =
       diagnostics.maxToMedianSegmentRatio;
+    const anchorNode = anchorRef.current;
+    if (anchorNode) {
+      anchorNode.userData.testOrbitAnchorBodyId = bodyId;
+      anchorNode.userData.testOrbitAnchorForCurrentPosition = true;
+    }
   }, [bodyId, color, orbitClass, positions]);
 
   useEffect(() => {
     const lineNode = lineRef.current;
     if (!lineNode) return;
     lineNode.material.resolution.set(
+      Math.max(1, size.width),
+      Math.max(1, size.height),
+    );
+    anchorRef.current?.material.resolution.set(
       Math.max(1, size.width),
       Math.max(1, size.height),
     );
@@ -199,7 +277,13 @@ export function OrbitPath({
     lineNode.userData.testOrbitEmphasis = emphasis;
     lineNode.userData.testGeometryUuid = lineNode.geometry.uuid;
     lineNode.userData.testMaterialUuid = lineNode.material.uuid;
-  }, [emphasis, lineWidth, orbitClass]);
+    const anchorNode = anchorRef.current;
+    if (anchorNode) {
+      anchorNode.material.color.set(color);
+      anchorNode.material.linewidth = lineWidth * 1.9;
+      anchorNode.visible = emphasis === "selected" && Boolean(trackedObjectRef);
+    }
+  }, [color, emphasis, lineWidth, orbitClass, trackedObjectRef]);
 
   useFrame(() => {
     const lineNode = lineRef.current;
@@ -219,15 +303,62 @@ export function OrbitPath({
     lineNode.material.opacity =
       (emphasis === "selected" ? 0.78 : contextOpacity(orbitClass)) *
       distanceFactor;
-  });
+
+    const anchorNode = anchorRef.current;
+    const trackedObject = trackedObjectRef?.current;
+    if (!anchorNode || emphasis !== "selected" || !trackedObject) {
+      if (anchorNode) anchorNode.visible = false;
+      return;
+    }
+
+    trackedObject.getWorldPosition(worldPosition.current);
+    lineNode.updateWorldMatrix(true, false);
+    localTrackedPosition.current
+      .copy(worldPosition.current)
+      .applyMatrix4(
+        inverseOrbitMatrix.current.copy(lineNode.matrixWorld).invert(),
+      );
+    const startIndex = closestSegmentIndex(
+      positions,
+      localTrackedPosition.current,
+      anchorSegment.current,
+      anchorPointDelta.current,
+    );
+    anchorNode.position.copy(localTrackedPosition.current);
+    anchorNode.geometry.setPositions([
+      (positions[startIndex] ?? 0) - localTrackedPosition.current.x,
+      (positions[startIndex + 1] ?? 0) - localTrackedPosition.current.y,
+      (positions[startIndex + 2] ?? 0) - localTrackedPosition.current.z,
+      0,
+      0,
+      0,
+      (positions[startIndex + 3] ?? 0) - localTrackedPosition.current.x,
+      (positions[startIndex + 4] ?? 0) - localTrackedPosition.current.y,
+      (positions[startIndex + 5] ?? 0) - localTrackedPosition.current.z,
+    ]);
+    anchorNode.computeLineDistances();
+    anchorNode.updateMatrixWorld();
+    anchorNode.visible = true;
+    anchorNode.userData.testOrbitAnchorWorldPosition = [
+      worldPosition.current.x,
+      worldPosition.current.y,
+      worldPosition.current.z,
+    ];
+  }, SCENE_FRAME_PRIORITY.visual);
 
   useEffect(() => {
-    const lineNode = lineRef.current;
     return () => {
-      lineNode?.geometry.dispose();
-      lineNode?.material.dispose();
+      line.geometry.dispose();
+      line.material.dispose();
+      anchor.geometry.dispose();
+      anchor.material.dispose();
     };
-  }, []);
+  }, [anchor, line]);
 
-  return <primitive ref={lineRef} object={line} />;
+  return (
+    <>
+      <primitive ref={lineRef} object={line} />
+      <primitive ref={anchorRef} object={anchor} />
+    </>
+  );
 }

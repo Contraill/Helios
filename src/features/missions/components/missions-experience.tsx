@@ -17,12 +17,17 @@ interface MissionsExperienceProps {
 }
 
 export function MissionsExperience({
-  initialLocale = "en",
-  ...props
+  missions,
+  planetCount,
 }: MissionsExperienceProps) {
-  const storeLocale = useLocaleStore((state) => state.locale);
-  const locale = storeLocale === initialLocale ? storeLocale : initialLocale;
-  return <MissionsPresentation {...props} locale={locale} />;
+  const locale = useLocaleStore((state) => state.locale);
+  return (
+    <MissionsPresentation
+      locale={locale}
+      missions={missions}
+      planetCount={planetCount}
+    />
+  );
 }
 
 export function MissionsPresentation({

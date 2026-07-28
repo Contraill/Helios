@@ -3,6 +3,7 @@ import type { Object3D } from "three";
 import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
 import type { CameraMode } from "@/stores/exploration-store";
 import type { CameraTargetMetadata } from "@/features/solar-system/types/camera-target";
+import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 
 const targetMetadata = new WeakMap<Object3D, CameraTargetMetadata>();
 
@@ -11,6 +12,9 @@ export interface CameraRuntimeSnapshot {
   selectedBodyId: CelestialBodyId | null;
   targetBodyId: CelestialBodyId | null;
   transitionVersion: number;
+  scaleMode: ScaleMode;
+  targetScaleMode: ScaleMode | null;
+  desiredDistance: number | null;
   position: [number, number, number];
   target: [number, number, number];
   distanceToTarget: number;

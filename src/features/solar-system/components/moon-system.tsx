@@ -136,6 +136,7 @@ function MoonObject({
     node.userData.cameraFocusRadius = cameraFocusRadius;
     setCameraTargetMetadata(node, {
       bodyId: moon.id,
+      scaleMode,
       targetKind: "body",
       renderRadius,
       collisionRadius: renderRadius,
@@ -147,7 +148,7 @@ function MoonObject({
     return () => {
       objectRegistry.delete(moon.id);
     };
-  }, [cameraFocusRadius, moon, planetObjects, renderRadius]);
+  }, [cameraFocusRadius, moon, planetObjects, renderRadius, scaleMode]);
 
   useFrame(() => {
     const node = groupRef.current;

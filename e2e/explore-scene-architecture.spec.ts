@@ -514,6 +514,7 @@ test.describe("loaded responsive scene ownership", () => {
   for (const entry of responsiveCases) {
     test(`${entry.name} remains functional`, async ({ page }, testInfo) => {
       test.setTimeout(90_000);
+      await page.emulateMedia({ reducedMotion: "reduce" });
       await page.setViewportSize({ width: entry.width, height: entry.height });
       await page.goto("/explore");
       await waitForLoadedScene(page);

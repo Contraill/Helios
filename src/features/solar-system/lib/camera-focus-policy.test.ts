@@ -8,6 +8,7 @@ import { sceneProfileFor } from "./scene-profiles";
 
 const body = {
   bodyId: "earth" as const,
+  scaleMode: "exploration" as const,
   targetKind: "body" as const,
   renderRadius: 1,
   collisionRadius: 1,
@@ -41,6 +42,7 @@ describe("camera focus policy", () => {
       fovDegrees: 46,
       metadata: {
         bodyId: "oort-cloud",
+        scaleMode: "exploration",
         targetKind: "region",
         renderRadius: 1,
         collisionRadius: 42,
@@ -54,6 +56,7 @@ describe("camera focus policy", () => {
       fovDegrees: 46,
       metadata: {
         bodyId: "moon-jupiter-europa",
+        scaleMode: "scientific",
         targetKind: "body",
         renderRadius: 0.001,
         collisionRadius: 0.001,
@@ -90,6 +93,7 @@ describe("camera focus policy", () => {
             fovDegrees: 46,
             metadata: {
               bodyId: extendedBody.id,
+              scaleMode: mode,
               targetKind: isDwarfSystemParentId(extendedBody.id)
                 ? "system"
                 : "body",

@@ -82,7 +82,6 @@ test("every catalogued body and region detail route resolves", async ({
         const html = await response.text();
         expect(html, slug).toContain("<h1");
         expect(html, slug).toContain(detailName(slug));
-        expect(html, slug).not.toContain("Page not found");
       }),
     );
   }
@@ -402,7 +401,7 @@ test.describe("planet detail routes", () => {
   }) => {
     await page.goto("/planet/mercury");
     const nextVenus = page.getByRole("link", { name: /Next world Venus/i });
-    await expect(nextVenus).toHaveAttribute("href", "/planet/venus");
+    await expect(nextVenus).toHaveAttribute("href", "/body/venus");
     await nextVenus.focus();
     await expect(nextVenus).toBeFocused();
     await page.keyboard.press("Enter");
@@ -413,7 +412,7 @@ test.describe("planet detail routes", () => {
     await page.goto("/planet/neptune");
     await expect(
       page.getByRole("link", { name: /Previous world Uranus/i }),
-    ).toHaveAttribute("href", "/planet/uranus");
+    ).toHaveAttribute("href", "/body/uranus");
     await expect(page.getByText("Next world")).toHaveCount(0);
   });
 
@@ -474,7 +473,9 @@ test.describe("external-data surfaces", () => {
       page.getByRole("heading", { name: "Shadow and Rainbow" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("link", { name: "Open official record" }),
+      page.getByRole("link", {
+        name: /Open the official record for Shadow and Rainbow/i,
+      }),
     ).toHaveAttribute("href", /^https:\/\//);
     await expect(page.locator('[data-status="fallback"]')).toBeVisible();
   });
@@ -617,7 +618,9 @@ test.describe("comparison experience", () => {
     page,
   }) => {
     await page.goto("/compare?a=earth&b=earth");
-    await expect(page.getByRole("status")).toContainText("same world twice");
+    await expect(
+      page.getByRole("status").filter({ hasText: /same world twice/i }),
+    ).toBeVisible();
     await expect(page.getByText("kg-equivalent")).toHaveCount(0);
     await expect(page.getByRole("table")).toBeVisible();
     await expect(

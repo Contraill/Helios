@@ -23,12 +23,19 @@ interface HomeExperienceProps {
 }
 
 export function HomeExperience({
-  initialLocale = "en",
-  ...props
+  metadata,
+  records,
+  status,
 }: HomeExperienceProps) {
-  const storeLocale = useLocaleStore((state) => state.locale);
-  const locale = storeLocale === initialLocale ? storeLocale : initialLocale;
-  return <HomePresentation {...props} locale={locale} />;
+  const locale = useLocaleStore((state) => state.locale);
+  return (
+    <HomePresentation
+      locale={locale}
+      metadata={metadata}
+      records={records}
+      status={status}
+    />
+  );
 }
 
 export function HomePresentation({

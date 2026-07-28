@@ -237,6 +237,7 @@ export function Sun({
     node.userData.renderRadius = radius;
     setCameraTargetMetadata(node, {
       bodyId: "sun",
+      scaleMode,
       targetKind: "body",
       renderRadius: radius,
       collisionRadius: radius,
@@ -248,7 +249,7 @@ export function Sun({
     return () => {
       registry.delete(sun.id);
     };
-  }, [planetObjects, radius, sun.id]);
+  }, [planetObjects, radius, scaleMode, sun.id]);
 
   useEffect(() => {
     if (surfaceRef.current) surfaceRef.current.rotation.y = 0;
@@ -364,6 +365,18 @@ export function Sun({
         distance={profile.camera.maximumDistance * 0.86}
         intensity={1_450}
       />
+      {scaleMode === "scientific" ? (
+        <pointLight
+          color="#fff4df"
+          decay={0}
+          distance={0}
+          intensity={1.1}
+          userData={{
+            testScientificExposureCompensation: true,
+            visualLayer: "scientific-solar-exposure-compensation",
+          }}
+        />
+      ) : null}
     </group>
   );
 }

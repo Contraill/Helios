@@ -33,19 +33,36 @@ export function LocaleProvider({
   readonly children: ReactNode;
   readonly initialLocale: Locale;
 }) {
-  const [locale, setLocaleState] = useState(initialLocale);
+  const [providerLocale, setProviderLocale] = useState(() => ({
+    locale: initialLocale,
+    requestLocale: initialLocale,
+  }));
+  const locale =
+    providerLocale.requestLocale === initialLocale
+      ? providerLocale.locale
+      : initialLocale;
 
   useEffect(() => {
-    setLocaleState(initialLocale);
-    useFallbackLocaleStore.getState().setLocale(initialLocale);
-    document.documentElement.lang = localeTag(initialLocale);
-  }, [initialLocale]);
+    useFallbackLocaleStore.getState().setLocale(locale);
+    document.documentElement.lang = localeTag(locale);
+  }, [locale]);
 
-  const setLocale = useCallback((nextLocale: Locale) => {
-    setLocaleState(nextLocale);
-    useFallbackLocaleStore.getState().setLocale(nextLocale);
-    document.documentElement.lang = localeTag(nextLocale);
-  }, []);
+  useEffect(
+    () => () => {
+      useFallbackLocaleStore.getState().setLocale(DEFAULT_LOCALE);
+    },
+    [],
+  );
+
+  const setLocale = useCallback(
+    (nextLocale: Locale) => {
+      setProviderLocale({
+        locale: nextLocale,
+        requestLocale: initialLocale,
+      });
+    },
+    [initialLocale],
+  );
 
   const value = useMemo(() => ({ locale, setLocale }), [locale, setLocale]);
 

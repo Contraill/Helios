@@ -312,6 +312,7 @@ export function CelestialVisualSurface({
         ringOuterRadius: profile.ring?.outerRadius ?? 0,
         ringParentTransform: profile.ring ? "surface-equatorial" : null,
         rotationKind: profile.rotation.kind,
+        testSurfaceRootBodyId: bodyId,
         testTexturePromoted: promoted,
         testSurfaceReadiness: readiness,
         texturePath: profile.surface.assetPath,

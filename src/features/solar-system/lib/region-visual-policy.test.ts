@@ -151,6 +151,7 @@ describe("region visual policy", () => {
         fovDegrees: 46,
         metadata: {
           bodyId: "oort-cloud",
+          scaleMode: mode,
           targetKind: "region",
           renderRadius: profile.camera.framingExtent,
           collisionRadius: profile.collisionRadius,
@@ -194,6 +195,7 @@ describe("region visual policy", () => {
         fovDegrees: 46,
         metadata: {
           bodyId: "heliosphere",
+          scaleMode: mode,
           targetKind: "region",
           renderRadius: profile.camera.framingExtent,
           collisionRadius: profile.collisionRadius,
