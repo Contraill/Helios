@@ -44,9 +44,28 @@ globalThis.ResizeObserver = class {
   observe() {}
   disconnect() {}
 };
+const localStorageStub = {
+  clear() {},
+  getItem() {
+    return null;
+  },
+  key() {
+    return null;
+  },
+  removeItem() {},
+  setItem() {},
+  get length() {
+    return 0;
+  },
+};
+globalThis.localStorage = localStorageStub;
 dom.window.requestAnimationFrame = globalThis.requestAnimationFrame;
 dom.window.cancelAnimationFrame = globalThis.cancelAnimationFrame;
 dom.window.ResizeObserver = globalThis.ResizeObserver;
+Object.defineProperty(dom.window, "localStorage", {
+  configurable: true,
+  value: localStorageStub,
+});
 
 require.extensions[".css"] = (module) => {
   module.exports = new Proxy({}, { get: (_, key) => String(key) });
@@ -67,7 +86,7 @@ const jiti = createJiti(
   },
 );
 
-const { act, cleanup, fireEvent, render, screen } =
+const { act, cleanup, fireEvent, render, screen, waitFor } =
   await import("@testing-library/react");
 
 function fail(message) {
@@ -79,6 +98,12 @@ const { LocaleProvider, resetLocaleStore } = jiti(
 );
 const { LocaleSwitcher } = jiti(
   path.join(ROOT, "src/components/layout/locale-switcher.tsx"),
+);
+const { CelestialNavigator } = jiti(
+  path.join(
+    ROOT,
+    "src/features/solar-system/components/celestial-navigator.tsx",
+  ),
 );
 
 render(
@@ -106,7 +131,7 @@ if (!screen.getByRole("status").textContent?.trim()) {
 cleanup();
 resetLocaleStore();
 
-const { resetExploreSceneUiStore, useExploreSceneUiStore } = jiti(
+const { resetExploreSceneUiStore } = jiti(
   path.join(ROOT, "src/stores/explore-scene-ui-store.ts"),
 );
 const { ExploreSceneDock } = jiti(
@@ -123,23 +148,71 @@ globalThis.getComputedStyle = () => ({
 dom.window.getComputedStyle = globalThis.getComputedStyle;
 resetExploreSceneUiStore();
 render(
-  React.createElement(ExploreSceneDock, {
-    navigator: React.createElement("p", null, "Navigator content"),
-    scaleNotice: "Exploration scale",
-    selection: React.createElement(
-      "h2",
-      { "data-selection-summary-heading": true, tabIndex: -1 },
-      "Ceres",
-    ),
-    time: React.createElement("p", null, "Time content"),
-    view: React.createElement("p", null, "View content"),
-  }),
+  React.createElement(
+    LocaleProvider,
+    { initialLocale: "en" },
+    React.createElement(ExploreSceneDock, {
+      navigator: React.createElement(CelestialNavigator, {
+        planetSummaries: [
+          {
+            accentColor: "#4f8cff",
+            gravityMS2: 9.8,
+            id: "earth",
+            kind: "planet",
+            moonCount: 1,
+            moonCountAsOf: "source date unavailable",
+            name: "Earth",
+            orbitalPeriodEarthDays: 365.25,
+            orderFromSun: 3,
+            sunlightTravelMinutes: 8.3,
+            tagline: "A sourced planet summary.",
+          },
+        ],
+        sceneSun: {
+          id: "sun",
+          name: "Sun",
+          radiusSourceId: "test-sun-radius",
+          scales: {
+            exploration: 1,
+            scientific: 1,
+          },
+        },
+      }),
+      scaleNotice: "Exploration scale",
+      selection: React.createElement(
+        "h2",
+        { "data-selection-summary-heading": true, tabIndex: -1 },
+        "Ceres",
+      ),
+      time: React.createElement("p", null, "Time content"),
+      view: React.createElement("p", null, "View content"),
+    }),
+  ),
 );
-act(() => useExploreSceneUiStore.getState().openSelectionPanel());
-const selectedHeading = screen.getByRole("heading", { name: "Ceres" });
-if (document.activeElement !== selectedHeading) {
-  fail("Opening the selection panel did not move focus to its summary.");
+const navigatorCategoryButton = document.querySelector(
+  "button[data-navigator-item]",
+);
+if (!navigatorCategoryButton) {
+  fail("Navigator category button is missing from the accessibility audit.");
 }
+act(() => {
+  fireEvent.click(navigatorCategoryButton);
+});
+const navigatorBodyButton = document.querySelector(
+  "button[data-navigator-item]",
+);
+if (!navigatorBodyButton) {
+  fail("Navigator body button is missing from the accessibility audit.");
+}
+act(() => {
+  fireEvent.click(navigatorBodyButton);
+});
+const selectedHeading = await screen.findByRole("heading", { name: "Ceres" });
+await waitFor(() => {
+  if (document.activeElement !== selectedHeading) {
+    fail("Opening the selection panel did not move focus to its summary.");
+  }
+});
 cleanup();
 resetExploreSceneUiStore();
 globalThis.getComputedStyle = originalGetComputedStyle;
