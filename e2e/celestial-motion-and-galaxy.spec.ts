@@ -125,36 +125,36 @@ async function screenStability(page: Page, bodyId: string) {
   }, bodyId);
 }
 
-test("all comets remain camera-stable on their orbit during accelerated scientific playback", async ({
-  page,
-}) => {
-  test.setTimeout(210_000);
-  const pageErrors: string[] = [];
-  const consoleErrors: string[] = [];
-  page.on("pageerror", (error) => pageErrors.push(error.message));
-  page.on("console", (message) => {
-    if (
-      message.type() === "error" &&
-      !message.text().includes("ERR_BLOCKED_BY_CLIENT")
-    ) {
-      consoleErrors.push(message.text());
-    }
-  });
+for (const [name, id] of COMETS) {
+  test(`${name} remains camera-stable on its orbit during accelerated scientific playback`, async ({
+    page,
+  }) => {
+    test.setTimeout(120_000);
+    const pageErrors: string[] = [];
+    const consoleErrors: string[] = [];
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+    page.on("console", (message) => {
+      if (
+        message.type() === "error" &&
+        !message.text().includes("ERR_BLOCKED_BY_CLIENT")
+      ) {
+        consoleErrors.push(message.text());
+      }
+    });
 
-  await page.addInitScript(() => localStorage.clear());
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/explore?sceneTest=1&at=2026-07-27T00%3A00%3A00.000Z");
-  await waitForScene(page);
+    await page.addInitScript(() => localStorage.clear());
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/explore?sceneTest=1&at=2026-07-27T00%3A00%3A00.000Z");
+    await waitForScene(page);
 
-  await page.getByRole("tab", { name: "View" }).click();
-  await page.getByRole("button", { name: "Scientific", exact: true }).click();
-  await expect(
-    page.getByRole("button", { name: "Scientific", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("tab", { name: "Time" }).click();
-  await page.getByRole("button", { name: "1 year / sec" }).click();
+    await page.getByRole("tab", { name: "View" }).click();
+    await page.getByRole("button", { name: "Scientific", exact: true }).click();
+    await expect(
+      page.getByRole("button", { name: "Scientific", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await page.getByRole("tab", { name: "Time" }).click();
+    await page.getByRole("button", { name: "1 year / sec" }).click();
 
-  for (const [name, id] of COMETS) {
     await selectComet(page, name, id);
     const stability = await screenStability(page, id);
     expect(stability.count).toBeGreaterThanOrEqual(12);
@@ -172,11 +172,11 @@ test("all comets remain camera-stable on their orbit during accelerated scientif
       "data-galactic-context",
       "local",
     );
-  }
 
-  expect(pageErrors).toEqual([]);
-  expect(consoleErrors).toEqual([]);
-});
+    expect(pageErrors).toEqual([]);
+    expect(consoleErrors).toEqual([]);
+  });
+}
 
 test("scientific profile changes reframe a selected comet in the new coordinate system", async ({
   page,
@@ -219,18 +219,18 @@ test("scientific profile changes reframe a selected comet in the new coordinate 
   ).toBeLessThanOrEqual(0.5);
 });
 
-test("all main-belt worlds sit on their rendered scientific orbit while focused", async ({
-  page,
-}) => {
-  test.setTimeout(150_000);
-  await page.addInitScript(() => localStorage.clear());
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto("/explore?sceneTest=1&at=2026-07-27T00%3A00%3A00.000Z");
-  await waitForScene(page);
-  await page.getByRole("tab", { name: "View" }).click();
-  await page.getByRole("button", { name: "Scientific", exact: true }).click();
+for (const [name, id] of MAIN_BELT_WORLDS) {
+  test(`${name} sits on its rendered scientific orbit while focused`, async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    await page.addInitScript(() => localStorage.clear());
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/explore?sceneTest=1&at=2026-07-27T00%3A00%3A00.000Z");
+    await waitForScene(page);
+    await page.getByRole("tab", { name: "View" }).click();
+    await page.getByRole("button", { name: "Scientific", exact: true }).click();
 
-  for (const [name, id] of MAIN_BELT_WORLDS) {
     await selectMainBeltWorld(page, name, id);
     const scene = await snapshot(page);
     expect(scene.orbitResources[id]?.visible).toBe(true);
@@ -238,8 +238,8 @@ test("all main-belt worlds sit on their rendered scientific orbit while focused"
       0.5,
     );
     expect(scene.orbitMembership[id]?.worldDistance).toBeLessThanOrEqual(1e-9);
-  }
-});
+  });
+}
 
 test("distant dwarf and Kuiper worlds retain scientific surface exposure", async ({
   page,

@@ -11,6 +11,15 @@ const CATALOGUE = {
   comets: { count: 6, pages: 1 },
 } as const;
 
+const FEATURED_MOONS = [
+  ["Earth", "Moon", "moon-earth-moon"],
+  ["Mars", "Phobos", "moon-mars-phobos"],
+  ["Jupiter", "Europa", "moon-jupiter-europa"],
+  ["Saturn", "Titan", "moon-saturn-titan"],
+  ["Uranus", "Miranda", "moon-uranus-miranda"],
+  ["Neptune", "Triton", "moon-neptune-triton"],
+] as const;
+
 type CatalogueMode = keyof typeof CATALOGUE;
 
 function watchRuntime(page: Page) {
@@ -204,25 +213,15 @@ test("catalogue completeness and object-local surface contracts", async ({
   await expectCleanRuntime(audit);
 });
 
-test("featured moon selection preserves tidal orientation, orbit and camera ownership", async ({
-  page,
-}) => {
-  test.setTimeout(180_000);
-  const audit = watchRuntime(page);
-  await page.addInitScript(() => localStorage.clear());
-  await page.goto("/explore?sceneTest=1&at=2026-07-21T12%3A00%3A00.000Z");
-  await waitForScene(page);
-
-  const representatives = [
-    ["Earth", "Moon", "moon-earth-moon"],
-    ["Mars", "Phobos", "moon-mars-phobos"],
-    ["Jupiter", "Europa", "moon-jupiter-europa"],
-    ["Saturn", "Titan", "moon-saturn-titan"],
-    ["Uranus", "Miranda", "moon-uranus-miranda"],
-    ["Neptune", "Triton", "moon-neptune-triton"],
-  ] as const;
-
-  for (const [parent, name, id] of representatives) {
+for (const [parent, name, id] of FEATURED_MOONS) {
+  test(`featured moon ${name} preserves tidal orientation, orbit and camera ownership`, async ({
+    page,
+  }) => {
+    test.setTimeout(90_000);
+    const audit = watchRuntime(page);
+    await page.addInitScript(() => localStorage.clear());
+    await page.goto("/explore?sceneTest=1&at=2026-07-21T12%3A00%3A00.000Z");
+    await waitForScene(page);
     await selectMoon(page, parent, name);
     await expect
       .poll(async () => (await sceneSnapshot(page))?.camera?.targetBodyId)
@@ -269,25 +268,25 @@ test("featured moon selection preserves tidal orientation, orbit and camera owne
     expect(orbit?.maxToMedianSegmentRatio).toBeLessThan(2.6);
     const surface = (await celestialProbeSnapshot(page))?.catalogueBodies[id];
     expect(surface?.fallbackVisible || surface?.finalSurfaceVisible).toBe(true);
-  }
 
-  const canvas = page.locator("canvas");
-  const box = await canvas.boundingBox();
-  expect(box).not.toBeNull();
-  if (box) {
-    const x = box.x + box.width * 0.5;
-    const y = box.y + box.height * 0.5;
-    await page.mouse.move(x, y);
-    await page.mouse.down();
-    await page.mouse.move(x + 80, y + 30, { steps: 8 });
-    await page.mouse.up();
-    await page.mouse.wheel(0, -240);
-  }
-  await expect
-    .poll(async () => (await sceneSnapshot(page))?.camera?.targetBodyId)
-    .toBe("moon-neptune-triton");
-  await expectCleanRuntime(audit);
-});
+    const canvas = page.locator("canvas");
+    const box = await canvas.boundingBox();
+    expect(box).not.toBeNull();
+    if (box) {
+      const x = box.x + box.width * 0.5;
+      const y = box.y + box.height * 0.5;
+      await page.mouse.move(x, y);
+      await page.mouse.down();
+      await page.mouse.move(x + 80, y + 30, { steps: 8 });
+      await page.mouse.up();
+      await page.mouse.wheel(0, -240);
+    }
+    await expect
+      .poll(async () => (await sceneSnapshot(page))?.camera?.targetBodyId)
+      .toBe(id);
+    await expectCleanRuntime(audit);
+  });
+}
 
 test("the featured moon catalogue is paged and labelled", async ({
   page,

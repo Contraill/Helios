@@ -75,6 +75,9 @@ importers:
       eslint-config-prettier:
         specifier: ^10.1.8
         version: 10.1.8(eslint@9.39.5(jiti@2.7.0))
+      jiti:
+        specifier: 2.7.0
+        version: 2.7.0
       jsdom:
         specifier: ^29.1.1
         version: 29.1.1
