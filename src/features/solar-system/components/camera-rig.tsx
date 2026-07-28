@@ -462,6 +462,9 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
           ? liveSelectedBodyId
           : null,
       transitionVersion: liveVersion,
+      scaleMode: liveScaleMode,
+      targetScaleMode: metadata?.scaleMode ?? null,
+      desiredDistance: policy?.desiredDistance ?? null,
       position: [camera.position.x, camera.position.y, camera.position.z],
       target: [
         currentTarget.current.x,
