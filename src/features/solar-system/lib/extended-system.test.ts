@@ -40,7 +40,7 @@ describe("extended Solar System catalog and orbital preview", () => {
     );
   });
 
-  it("separates directly published JPL samples from accepted fallback previews", () => {
+  it("separates directly published JPL samples from reference fallback previews", () => {
     for (const id of ["ceres", "pallas", "halley", "encke"] as const) {
       expect(EXTENDED_BODY_BY_ID[id].representation).toMatchObject({
         provider: "NASA/JPL Solar System Dynamics",
@@ -49,12 +49,12 @@ describe("extended Solar System catalog and orbital preview", () => {
       });
     }
     expect(EXTENDED_BODY_BY_ID.vesta.representation).toMatchObject({
-      provider: "Helios accepted catalogue fallback",
-      sourceId: "helios-accepted-orbital-fallback",
+      provider: "Helios reference orbit fallback",
+      sourceId: "helios-reference-orbit-fallback",
       representationType: "verified-fallback",
     });
     expect(EXTENDED_BODY_BY_ID.vesta.representation.fallbackReason).toMatch(
-      /fresh SBDB payload was unavailable/i,
+      /fresh SBDB response was unavailable/i,
     );
   });
 

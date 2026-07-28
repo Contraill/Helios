@@ -20,11 +20,35 @@ describe("data presentation primitives", () => {
     render(<SourceAttribution sources={[source]} />);
 
     expect(screen.getByText("Reference")).toBeVisible();
-    expect(screen.getByRole("link", { name: "Mars: Facts" })).toHaveAttribute(
-      "href",
-      source.url,
+    expect(
+      screen.getByRole("link", {
+        name: "Mars: Facts (opens in a new tab)",
+      }),
+    ).toHaveAttribute("href", source.url);
+    expect(screen.getByText(/Accessed Jul 17, 2026/)).toBeVisible();
+  });
+
+  it("keeps repeated source sections uniquely labelled and localizes month precision", () => {
+    const monthSource = {
+      ...source,
+      accessedAt: "2026-07",
+      id: "nasa-mars-month",
+    };
+
+    render(
+      <>
+        <SourceAttribution sources={[source]} />
+        <SourceAttribution sources={[monthSource]} />
+      </>,
     );
-    expect(screen.getByText(/Accessed 2026-07-17/)).toBeVisible();
+
+    const sections = screen.getAllByRole("region", { name: "Sources" });
+    expect(sections).toHaveLength(2);
+    expect(sections[0]).not.toHaveAttribute(
+      "aria-labelledby",
+      sections[1]?.getAttribute("aria-labelledby"),
+    );
+    expect(screen.getByText(/Accessed July 2026/)).toBeVisible();
   });
 
   it("renders methodology as a labelled complementary explanation", () => {

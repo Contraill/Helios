@@ -13,18 +13,30 @@ import {
   loadNearEarth,
 } from "@/lib/data/external/providers/space-data.server";
 import { preferFreshestResult } from "@/lib/data/external/prefer-result";
+import { dataPageCopy } from "@/lib/i18n/data-page-copy";
+import { localeTag, type Locale } from "@/lib/i18n/locale";
+import { getRequestLocale } from "@/lib/i18n/request-locale.server";
+import { createPageMetadata } from "@/lib/metadata/page-metadata";
+import { siteCopy } from "@/lib/i18n/site-copy";
 
 import styles from "./data.module.css";
 
-export const metadata: Metadata = {
-  title: "Data",
-  description:
-    "A dated, sourced view of solar activity, near-Earth space, Earth observation and the Mars archive.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  return createPageMetadata({
+    canonical: "/data",
+    description: dataPageCopy[locale].metadataDescription,
+    locale,
+    title: dataPageCopy[locale].hero.title,
+  });
+}
 
 export const revalidate = 60;
 
 export default async function DataPage() {
+  const locale = await getRequestLocale();
+  const copy = dataPageCopy[locale];
+  const statusCopy = siteCopy[locale].dataState.labels;
   const [apod, donki, neows, cad, epic, eonet, insight, fireballs, gibs] =
     await Promise.all([
       loadApodArchive(),
@@ -45,7 +57,7 @@ export default async function DataPage() {
     apod,
     donki,
     neows,
-    ...(approaches === cad ? [cad] : []),
+    cad,
     epic,
     eonet,
     gibs,
@@ -57,146 +69,180 @@ export default async function DataPage() {
     <article className={styles.page}>
       <header className={styles.hero}>
         <div>
-          <p className={styles.kicker}>Observation, archive, reference</p>
-          <h1>Data</h1>
+          <p className={styles.kicker}>{copy.hero.kicker}</p>
+          <h1>{copy.hero.title}</h1>
         </div>
-        <p>
-          Helios keeps separate clocks separate. An observation time describes
-          when an instrument or service recorded something. Retrieval time
-          describes when Helios obtained the record. A fallback is identified as
-          a fallback rather than quietly presented as current.
-        </p>
+        <div className={styles.heroCopy}>
+          <p>{copy.hero.body}</p>
+          <nav className={styles.sectionNav} aria-label={copy.hero.navLabel}>
+            <a href="#solar-activity">{copy.hero.nav.solar}</a>
+            <a href="#near-earth">{copy.hero.nav.nearEarth}</a>
+            <a href="#earth-observation">{copy.hero.nav.earth}</a>
+            <a href="#mars-archive">{copy.hero.nav.mars}</a>
+            <a href="#provenance">{copy.hero.nav.provenance}</a>
+          </nav>
+        </div>
       </header>
 
+      <section className={styles.legend} aria-labelledby="status-legend-title">
+        <div>
+          <p className={styles.kicker}>{copy.legend.kicker}</p>
+          <h2 id="status-legend-title">{copy.legend.title}</h2>
+        </div>
+        <dl>
+          {copy.legend.items.map(([term, description]) => (
+            <div key={term}>
+              <dt>{term}</dt>
+              <dd>{description}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+
       <DataSection
+        id="solar-activity"
         number="01"
-        title="Solar activity"
-        intro="DONKI records solar and geospace events. Helios shows a restrained timeline instead of exposing the provider's raw payload."
+        title={copy.solar.title}
+        intro={copy.solar.intro}
       >
         {donki.data?.length ? (
           <div className={styles.timeline}>
             {donki.data.slice(0, 8).map((event) => (
               <article key={event.id}>
                 <span className={styles.eventType}>{event.eventType}</span>
-                <strong>{event.title}</strong>
+                <h3>{event.title}</h3>
                 <time dateTime={event.startAt}>
-                  {formatDate(event.startAt)}
+                  {formatDate(event.startAt, locale)}
                 </time>
                 {event.classOrIntensity ? (
                   <small>{event.classOrIntensity}</small>
                 ) : null}
-                <a href={event.sourceUrl} rel="noreferrer" target="_blank">
-                  Official event record
-                </a>
+                <ExternalSourceLink
+                  href={event.sourceUrl}
+                  label={copy.solar.official}
+                  accessibleLabel={copy.solar.officialLabel(event.title)}
+                  copy={copy.opensNewTab}
+                />
               </article>
             ))}
           </div>
         ) : (
-          <Empty />
+          <Empty copy={copy.empty} />
         )}
         <DataState metadata={donki.metadata} status={donki.status} />
       </DataSection>
 
       <DataSection
+        id="near-earth"
         number="02"
-        title="Near-Earth space"
-        intro="NeoWs provides object properties. JPL CNEOS provides close-approach and historical fireball tables. The same approach is not duplicated as two competing cards."
+        title={copy.nearEarth.title}
+        intro={copy.nearEarth.intro}
       >
         {approaches.data?.length ? (
           <div className={styles.approachList}>
             {approaches.data.slice(0, 8).map((item) => (
               <article key={`${item.id}-${item.approachAt}`}>
-                <strong>{item.name}</strong>
+                <h3>{item.name}</h3>
                 <time dateTime={item.approachAt}>
-                  {formatDate(item.approachAt)} {item.timeScale}
+                  {formatDate(item.approachAt, locale)} {item.timeScale}
                 </time>
                 <div className={styles.approachMetrics}>
                   <span>
-                    {Math.round(item.missDistanceKm).toLocaleString()} km miss
+                    {copy.nearEarth.miss(
+                      formatNumber(item.missDistanceKm, locale, 0),
+                    )}
                   </span>
                   <span>
-                    {Math.round(item.relativeVelocityKph).toLocaleString()} km/h
+                    {copy.nearEarth.velocity(
+                      formatNumber(item.relativeVelocityKph, locale, 0),
+                    )}
                   </span>
                   <span>
                     {item.diameterMinM !== undefined &&
                     item.diameterMaxM !== undefined
-                      ? `${Math.round(item.diameterMinM)}–${Math.round(item.diameterMaxM)} m`
-                      : "Diameter unavailable"}
+                      ? `${formatNumber(item.diameterMinM, locale, 0)}–${formatNumber(item.diameterMaxM, locale, 0)} m`
+                      : copy.nearEarth.diameterUnavailable}
                   </span>
                 </div>
                 <small>
                   {item.potentiallyHazardous === true
-                    ? "Potentially hazardous classification"
+                    ? copy.nearEarth.hazardTrue
                     : item.potentiallyHazardous === false
-                      ? "Not classified as potentially hazardous"
-                      : "Potentially hazardous classification unknown"}
+                      ? copy.nearEarth.hazardFalse
+                      : copy.nearEarth.hazardUnknown}
                 </small>
-                <a href={item.sourceUrl} rel="noreferrer" target="_blank">
-                  Object/source record
-                </a>
+                <ExternalSourceLink
+                  href={item.sourceUrl}
+                  label={copy.nearEarth.objectRecord}
+                  accessibleLabel={copy.nearEarth.objectLabel(item.name)}
+                  copy={copy.opensNewTab}
+                />
               </article>
             ))}
           </div>
         ) : (
-          <Empty />
+          <Empty copy={copy.empty} />
         )}
         {hasPotentiallyHazardousApproach ? (
           <p className={styles.hazardNote}>
-            <strong>Potentially hazardous</strong> describes an object’s size
-            and orbit relative to Earth. It does not mean the object is
-            predicted to collide with Earth.
+            <strong>{copy.nearEarth.hazardStrong}</strong>{" "}
+            {copy.nearEarth.hazardNote}
           </p>
         ) : null}
         <DataState metadata={approaches.metadata} status={approaches.status} />
-        <h3>Historical atmospheric fireballs</h3>
+        <h3>{copy.nearEarth.fireballs}</h3>
         {fireballs.data?.length ? (
           <ul className={styles.fireballs}>
             {fireballs.data.slice(0, 6).map((event) => (
               <li key={event.date}>
-                <time dateTime={event.date}>{formatDate(event.date)}</time>
+                <time dateTime={event.date}>
+                  {formatDate(event.date, locale)}
+                </time>
                 {event.radiatedEnergy10e10J !== undefined ? (
                   <span>
-                    {event.radiatedEnergy10e10J.toFixed(2)} × 10¹⁰ J total
-                    radiated energy
+                    {copy.nearEarth.radiated(
+                      formatNumber(event.radiatedEnergy10e10J, locale, 2),
+                    )}
                   </span>
                 ) : null}
                 {event.estimatedImpactEnergyKt !== undefined ? (
                   <span>
-                    {event.estimatedImpactEnergyKt.toFixed(2)} kt estimated
-                    impact energy
+                    {copy.nearEarth.impact(
+                      formatNumber(event.estimatedImpactEnergyKt, locale, 2),
+                    )}
                   </span>
                 ) : null}
               </li>
             ))}
           </ul>
         ) : (
-          <Empty />
+          <Empty copy={copy.empty} />
         )}
       </DataSection>
 
       <DataSection
+        id="earth-observation"
         number="03"
-        title="Earth in observation"
-        intro="EPIC, EONET and GIBS answer different questions. Their status is shown together, but their observations are not collapsed into one false present moment."
+        title={copy.earth.title}
+        intro={copy.earth.intro}
       >
         <div className={styles.observationBand}>
           <article>
             <span className={styles.metricLabel}>EPIC</span>
-            <h3>{epic.data?.[0]?.caption ?? "Earth image unavailable"}</h3>
+            <h3>{epic.data?.[0]?.caption ?? copy.earth.imageUnavailable}</h3>
             <p>
               {epic.data?.[0]
-                ? `Captured ${formatDate(epic.data[0].capturedAt)} from DSCOVR's L1 perspective.`
-                : "The Earth page remains available without the remote image."}
+                ? copy.earth.captured(
+                    formatDate(epic.data[0].capturedAt, locale),
+                  )
+                : copy.earth.noImage}
             </p>
             <DataState compact metadata={epic.metadata} status={epic.status} />
           </article>
           <article>
             <span className={styles.metricLabel}>EONET</span>
-            <h3>{eonet.data?.length ?? 0} curated event records</h3>
-            <p>
-              Wildfires, storms, volcanoes, floods, ice, dust and haze are
-              filtered on the Earth page.
-            </p>
+            <h3>{copy.earth.curated(eonet.data?.length ?? 0)}</h3>
+            <p>{copy.earth.curatedBody}</p>
             <DataState
               compact
               metadata={eonet.metadata}
@@ -205,54 +251,53 @@ export default async function DataPage() {
           </article>
           <article>
             <span className={styles.metricLabel}>GIBS</span>
-            <h3>{gibs.data?.length ?? 0} selected imagery layers</h3>
-            <p>
-              Layer ID, instrument, observation date, color mode and latency
-              remain visible.
-            </p>
+            <h3>{copy.earth.layers(gibs.data?.length ?? 0)}</h3>
+            <p>{copy.earth.layersBody}</p>
             <DataState compact metadata={gibs.metadata} status={gibs.status} />
           </article>
         </div>
       </DataSection>
 
       <DataSection
+        id="mars-archive"
         number="04"
-        title="Mars archive"
-        intro="InSight measured one location at Elysium Planitia. The record is historical and is never labelled as Mars's current weather."
+        title={copy.mars.title}
+        intro={copy.mars.intro}
       >
         {insight.data ? (
           <dl className={styles.marsRecord}>
             <div>
-              <dt>Sol</dt>
+              <dt>{copy.mars.sol}</dt>
               <dd>{insight.data.sol}</dd>
             </div>
             <div>
-              <dt>Mean temperature</dt>
+              <dt>{copy.mars.temperature}</dt>
               <dd>
                 {insight.data.temperatureC
-                  ? `${insight.data.temperatureC.average.toFixed(1)} °C`
-                  : "Unavailable"}
+                  ? `${formatNumber(insight.data.temperatureC.average, locale, 1)} °C`
+                  : copy.mars.unavailable}
               </dd>
             </div>
             <div>
-              <dt>Mean pressure</dt>
+              <dt>{copy.mars.pressure}</dt>
               <dd>
                 {insight.data.pressurePa
-                  ? `${insight.data.pressurePa.average.toFixed(1)} Pa`
-                  : "Unavailable"}
+                  ? `${formatNumber(insight.data.pressurePa.average, locale, 1)} Pa`
+                  : copy.mars.unavailable}
               </dd>
             </div>
           </dl>
         ) : (
-          <Empty />
+          <Empty copy={copy.empty} />
         )}
         <DataState metadata={insight.metadata} status={insight.status} />
       </DataSection>
 
       <DataSection
+        id="provenance"
         number="05"
-        title="Provenance and service health"
-        intro="This is a user-facing account of what is current, historical, cached or unavailable—not a technical log."
+        title={copy.provenance.title}
+        intro={copy.provenance.intro}
       >
         <div className={styles.statusGrid}>
           {services.map((service) => (
@@ -263,90 +308,106 @@ export default async function DataPage() {
               <span className={styles.statusName}>
                 {service.metadata.provider}
               </span>
-              <strong>{service.status.replaceAll("-", " ")}</strong>
-              <p>{service.metadata.notes ?? service.metadata.attribution}</p>
-              <a
+              <h3>{service.metadata.sourceTitle}</h3>
+              <strong className={styles.statusValue}>
+                {statusCopy[service.status]}
+              </strong>
+              <p>
+                {copy.provenance.serviceNotes[
+                  service.metadata
+                    .provider as keyof typeof copy.provenance.serviceNotes
+                ] ?? service.metadata.attribution}
+              </p>
+              <ExternalSourceLink
                 href={service.metadata.sourceUrl}
-                rel="noreferrer"
-                target="_blank"
-              >
-                Source
-              </a>
+                label={copy.provenance.sourceRecord}
+                accessibleLabel={copy.provenance.sourceLabel(
+                  service.metadata.sourceTitle,
+                )}
+                copy={copy.opensNewTab}
+              />
             </article>
           ))}
         </div>
         <div className={styles.ledger}>
-          <article>
-            <h3>Observed versus retrieved</h3>
-            <p>
-              Observed time belongs to the event, image or measurement.
-              Retrieved time belongs to the Helios request or bundled snapshot.
-            </p>
-          </article>
-          <article>
-            <h3>Fallback chain</h3>
-            <p>
-              Provider response → verified snapshot → static explanation →
-              unavailable. A snapshot never inherits a current label.
-            </p>
-          </article>
-          <article>
-            <h3>Scientific limits</h3>
-            <p>
-              Planetary reference values are not local weather. One lander
-              record is not a global Mars state. Event trackers are not
-              emergency alert services.
-            </p>
-          </article>
-          <article>
-            <h3>Cache</h3>
-            <p>
-              Each provider has its own revalidation policy. Serverless process
-              memory is not treated as durable cache.
-            </p>
-          </article>
+          {copy.provenance.ledgers.map(([title, body]) => (
+            <article key={title}>
+              <h3>{title}</h3>
+              <p>{body}</p>
+            </article>
+          ))}
         </div>
       </DataSection>
     </article>
   );
 }
 
+function ExternalSourceLink({
+  href,
+  label,
+  accessibleLabel,
+  copy = "opens in a new tab",
+}: {
+  readonly href: string;
+  readonly label: string;
+  readonly accessibleLabel: string;
+  readonly copy?: string;
+}) {
+  return (
+    <a
+      aria-label={`${accessibleLabel} (${copy})`}
+      href={href}
+      rel="noopener noreferrer"
+      target="_blank"
+    >
+      {label}
+      <span aria-hidden="true"> ↗</span>
+    </a>
+  );
+}
+
 function DataSection({
+  id,
   number,
   title,
   intro,
   children,
 }: {
+  readonly id: string;
   readonly number: string;
   readonly title: string;
   readonly intro: string;
   readonly children: React.ReactNode;
 }) {
+  const headingId = `${id}-title`;
   return (
-    <section className={styles.section}>
+    <section className={styles.section} id={id} aria-labelledby={headingId}>
       <header className={styles.sectionHeader}>
         <span className={styles.sectionNumber}>{number}</span>
-        <h2>{title}</h2>
+        <h2 id={headingId}>{title}</h2>
         <p>{intro}</p>
       </header>
       <div>{children}</div>
     </section>
   );
 }
-function Empty() {
-  return (
-    <p className={styles.empty}>
-      No usable record is available for this source.
-    </p>
-  );
+function Empty({ copy }: { readonly copy: string }) {
+  return <p className={styles.empty}>{copy}</p>;
 }
-function formatDate(value: string) {
+function formatDate(value: string, locale: Locale) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : new Intl.DateTimeFormat("en", {
+    : new Intl.DateTimeFormat(localeTag(locale), {
         dateStyle: "medium",
         timeStyle: "short",
         timeZone: "UTC",
       }).format(date);
+}
+
+function formatNumber(value: number, locale: Locale, digits: number) {
+  return new Intl.NumberFormat(localeTag(locale), {
+    maximumFractionDigits: digits,
+    minimumFractionDigits: digits,
+  }).format(value);
 }

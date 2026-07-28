@@ -145,8 +145,13 @@
   aspect-ratio: 2.8;
   border: 1px solid rgb(255 255 255 / 0.14);
   border-radius: 50%;
+  background: none;
   opacity: 0;
   transform: rotate(-12deg);
+}
+
+.visual[data-planet="saturn"] .visualRing {
+  opacity: 0.82;
 }
 
 .visualOrb {
@@ -179,6 +184,47 @@
 .visualOrb::after {
   border: 1px solid color-mix(in srgb, var(--planet-accent), transparent 58%);
   box-shadow: 0 0 2rem color-mix(in srgb, var(--planet-accent), transparent 72%);
+}
+
+.visualTexture {
+  position: absolute;
+  z-index: 0;
+  top: -2%;
+  left: -54%;
+  width: 208%;
+  height: 104%;
+  border-radius: inherit;
+  background-image: var(--planet-editorial-texture);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  mix-blend-mode: soft-light;
+  opacity: 0.72;
+  transform: translate3d(-4%, 0, 0);
+  animation: planetPortraitDrift 48s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.visualOrb::before,
+.visualOrb::after {
+  z-index: 1;
+}
+
+.visual[data-planet="earth"] .visualTexture,
+.visual[data-planet="mars"] .visualTexture,
+.visual[data-planet="mercury"] .visualTexture {
+  mix-blend-mode: normal;
+  opacity: 0.68;
+}
+
+@keyframes planetPortraitDrift {
+  from {
+    transform: translate3d(-4%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(4%, 0, 0);
+  }
 }
 
 .heroIndex {
@@ -734,11 +780,22 @@
 .visual[data-planet="saturn"] .visualRing {
   z-index: 2;
   width: min(52vw, 46rem);
-  border: 1.1rem double rgb(222 207 170 / 0.45);
+  border: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0 43%,
+    rgb(98 88 68 / 0.2) 43.5% 46%,
+    rgb(226 211 175 / 0.56) 46.5% 49%,
+    rgb(128 113 84 / 0.3) 49.5% 53%,
+    rgb(236 225 199 / 0.48) 53.5% 57%,
+    rgb(91 82 67 / 0.24) 57.5% 61%,
+    rgb(201 184 147 / 0.42) 61.5% 67%,
+    rgb(111 99 78 / 0.2) 67.5% 72%,
+    rgb(224 211 180 / 0.32) 72.5% 76%,
+    transparent 76.5%
+  );
   opacity: 1;
-  box-shadow:
-    0 0 0 0.35rem rgb(177 158 116 / 0.18),
-    0 0 3rem rgb(216 193 138 / 0.12);
+  box-shadow: 0 0 3rem rgb(216 193 138 / 0.12);
   transform: rotate(-14deg);
 }
 
@@ -953,5 +1010,11 @@
 @media (prefers-reduced-motion: reduce) {
   .heroLinks a {
     transition: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visualTexture {
+    animation: none;
   }
 }

@@ -14,20 +14,13 @@ import type {
   ExternalMetadata,
   ExternalDataStatus,
 } from "@/lib/data/external/types";
+import type { Locale } from "@/lib/i18n/locale";
+import { localeTag } from "@/lib/i18n/locale";
+import { spaceDataCopy } from "@/lib/i18n/space-data-copy";
 
 import { DataState } from "./data-state";
 import { RemoteMedia } from "./remote-media";
 import styles from "./space-data.module.css";
-
-const categoryLabels: Record<EonetCategory | "all", string> = {
-  all: "All selected events",
-  wildfires: "Wildfires",
-  severeStorms: "Severe storms",
-  volcanoes: "Volcanoes",
-  floods: "Floods",
-  seaLakeIce: "Sea and lake ice",
-  dustHaze: "Dust and haze",
-};
 
 interface Feed<T> {
   readonly data: readonly T[];
@@ -36,18 +29,22 @@ interface Feed<T> {
 }
 
 export function EarthObservatory({
+  locale = "en",
   epic,
   eonet,
   gibs,
   donki,
   nearEarth,
 }: {
+  readonly locale?: Locale;
   readonly epic: Feed<EpicRecord>;
   readonly eonet: Feed<EonetEvent>;
   readonly gibs: Feed<GibsLayer>;
   readonly donki: Feed<DonkiEvent>;
   readonly nearEarth: Feed<NearEarthApproach>;
 }) {
+  const copy = spaceDataCopy[locale].earth;
+  const categoryLabels = spaceDataCopy[locale].categories;
   const [category, setCategory] = useState<EonetCategory | "all">("all");
   const events = useMemo(
     () =>
@@ -66,35 +63,29 @@ export function EarthObservatory({
       >
         <div className={styles.observatoryMedia}>
           <RemoteMedia
-            alt="Earth seen by DSCOVR EPIC"
-            fallbackLabel="EPIC image unavailable"
+            alt={copy.imageAlt}
+            fallbackLabel={copy.imageFallback}
             src={earth?.imageUrl}
           />
         </div>
         <div>
-          <p className={styles.eyebrow}>Earth in observation</p>
-          <h2 id="earth-now-heading">One planet, several clocks</h2>
-          <p>
-            EPIC sees the sunlit disk from DSCOVR. EONET gathers event records
-            from contributing sources. GIBS serves dated imagery layers. Their
-            timestamps are related, but they are not one synchronized camera.
-          </p>
+          <p className={styles.eyebrow}>{copy.eyebrow}</p>
+          <h2 id="earth-now-heading">{copy.title}</h2>
+          <p>{copy.intro}</p>
           {earth ? (
             <dl className={styles.miniLedger}>
               <div>
-                <dt>Capture</dt>
-                <dd>{formatDate(earth.capturedAt)}</dd>
+                <dt>{copy.capture}</dt>
+                <dd>{formatDate(earth.capturedAt, locale)}</dd>
               </div>
               <div>
-                <dt>Color</dt>
+                <dt>{copy.color}</dt>
                 <dd>
-                  {earth.type === "natural"
-                    ? "Natural-color composite"
-                    : "Enhanced color"}
+                  {earth.type === "natural" ? copy.natural : copy.enhanced}
                 </dd>
               </div>
               <div>
-                <dt>Centroid</dt>
+                <dt>{copy.centroid}</dt>
                 <dd>
                   {earth.centroid.latitude.toFixed(1)}°,{" "}
                   {earth.centroid.longitude.toFixed(1)}°
@@ -102,7 +93,7 @@ export function EarthObservatory({
               </div>
             </dl>
           ) : (
-            <p className={styles.empty}>No EPIC image is available.</p>
+            <p className={styles.empty}>{copy.noEpic}</p>
           )}
           <DataState compact metadata={epic.metadata} status={epic.status} />
         </div>
@@ -110,11 +101,11 @@ export function EarthObservatory({
 
       <section className={styles.eventSection} aria-labelledby="events-heading">
         <header>
-          <p className={styles.eyebrow}>Natural events</p>
-          <h3 id="events-heading">Read the event, then read its source</h3>
+          <p className={styles.eyebrow}>{copy.eventsEyebrow}</p>
+          <h3 id="events-heading">{copy.eventsTitle}</h3>
         </header>
         <label className={styles.filterLabel}>
-          Category
+          {copy.category}
           <select
             value={category}
             onChange={(event) =>
@@ -135,38 +126,41 @@ export function EarthObservatory({
                 <span>{categoryLabels[event.category]}</span>
                 <strong>{event.title}</strong>
                 <time dateTime={event.observedAt}>
-                  {formatDate(event.observedAt)}
+                  {formatDate(event.observedAt, locale)}
                 </time>
                 <small>
                   {event.status} · {event.geometryType} ·{" "}
                   {event.coordinates[1].toFixed(2)}°,{" "}
                   {event.coordinates[0].toFixed(2)}°
                 </small>
-                <a href={event.sourceUrl} rel="noreferrer" target="_blank">
-                  Event source
+                <a
+                  aria-label={copy.eventSourceLabel(event.title)}
+                  href={event.sourceUrl}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  {copy.eventSource} <span aria-hidden="true">↗</span>
                 </a>
               </li>
             ))}
           </ul>
         ) : (
-          <p className={styles.empty}>
-            No events match this category in the current record.
-          </p>
+          <p className={styles.empty}>{copy.noEvents}</p>
         )}
         <DataState compact metadata={eonet.metadata} status={eonet.status} />
       </section>
 
       <section className={styles.layerSection} aria-labelledby="layers-heading">
         <header>
-          <p className={styles.eyebrow}>Earthdata layers</p>
-          <h3 id="layers-heading">Curated imagery, not a layer catalogue</h3>
+          <p className={styles.eyebrow}>{copy.layersEyebrow}</p>
+          <h3 id="layers-heading">{copy.layersTitle}</h3>
         </header>
         <div className={styles.layerGrid}>
           {gibs.data.map((layer) => (
             <article key={layer.id}>
               <RemoteMedia
                 alt={layer.title}
-                fallbackLabel="GIBS layer preview unavailable"
+                fallbackLabel={copy.layerFallback}
                 src={layer.imageUrl}
               />
               <h4>{layer.title}</h4>
@@ -187,59 +181,55 @@ export function EarthObservatory({
         aria-labelledby="space-environment-heading"
       >
         <div>
-          <p className={styles.eyebrow}>Space environment</p>
-          <h3 id="space-environment-heading">
-            The Sun does not stop at the sky
-          </h3>
-          <p>
-            DONKI records are kept as separate observations unless official
-            activity IDs prove a relationship.
-          </p>
+          <p className={styles.eyebrow}>{copy.environmentEyebrow}</p>
+          <h3 id="space-environment-heading">{copy.environmentTitle}</h3>
+          <p>{copy.environmentIntro}</p>
           {donki.data.length ? (
             <ol>
               {donki.data.slice(0, 4).map((event) => (
                 <li key={event.id}>
                   <strong>{event.eventType}</strong> · {event.title}{" "}
                   <time dateTime={event.startAt}>
-                    {formatDate(event.startAt)}
+                    {formatDate(event.startAt, locale)}
                   </time>
                 </li>
               ))}
             </ol>
           ) : (
-            <p className={styles.empty}>No space-weather event is available.</p>
+            <p className={styles.empty}>{copy.noSpaceWeather}</p>
           )}
           <DataState compact metadata={donki.metadata} status={donki.status} />
           {donki.metadata.failedEndpoints?.length ? (
             <p className={styles.contextNote}>
-              Unavailable DONKI families:{" "}
-              {donki.metadata.failedEndpoints.join(", ")}. Other event families
-              remain current.
+              {copy.failedFamilies}: {donki.metadata.failedEndpoints.join(", ")}
+              . {copy.remainingCurrent}
             </p>
           ) : null}
         </div>
         <div className={styles.approachCard}>
-          <p className={styles.eyebrow}>Near-Earth space</p>
+          <p className={styles.eyebrow}>{copy.nearEarth}</p>
           {approach ? (
             <>
               <h4>{approach.name}</h4>
               <p>
-                {Math.round(approach.missDistanceKm).toLocaleString()} km miss
-                distance
+                {Math.round(approach.missDistanceKm).toLocaleString(
+                  localeTag(locale),
+                )}{" "}
+                {copy.missDistance}
               </p>
               <p>
-                {Math.round(approach.relativeVelocityKph).toLocaleString()} km/h
-                relative velocity
+                {Math.round(approach.relativeVelocityKph).toLocaleString(
+                  localeTag(locale),
+                )}{" "}
+                {copy.velocity}
               </p>
             </>
           ) : (
-            <p className={styles.empty}>No close approach is available.</p>
+            <p className={styles.empty}>{copy.noApproach}</p>
           )}
           {approach?.potentiallyHazardous ? (
             <p className={styles.contextNote}>
-              <strong>Potentially hazardous</strong> is an orbital
-              classification. It is not a prediction that an object will strike
-              Earth.
+              <strong>{copy.hazardousTitle}</strong> {copy.hazardousBody}
             </p>
           ) : null}
           <DataState
@@ -253,11 +243,11 @@ export function EarthObservatory({
   );
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string, locale: Locale): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : new Intl.DateTimeFormat("en", {
+    : new Intl.DateTimeFormat(localeTag(locale), {
         dateStyle: "medium",
         timeStyle: "short",
         timeZone: "UTC",

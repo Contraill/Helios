@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   cameraPoseHasSettled,
+  cameraSettlementTolerance,
   focusCameraOffset,
   illuminatedFocusCameraOffset,
   overviewCameraPosition,
@@ -79,5 +80,23 @@ describe("camera poses", () => {
   it("only settles inside both position and target thresholds", () => {
     expect(cameraPoseHasSettled(0.08, 0.04)).toBe(true);
     expect(cameraPoseHasSettled(0.2, 0.04)).toBe(false);
+
+    const tinyTarget = cameraSettlementTolerance(0.000004, 0.000001);
+    expect(
+      cameraPoseHasSettled(
+        0.0001,
+        0.0001,
+        tinyTarget.position,
+        tinyTarget.target,
+      ),
+    ).toBe(false);
+    expect(
+      cameraPoseHasSettled(
+        (tinyTarget.position * 0.5) ** 2,
+        (tinyTarget.target * 0.5) ** 2,
+        tinyTarget.position,
+        tinyTarget.target,
+      ),
+    ).toBe(true);
   });
 });

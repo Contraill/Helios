@@ -46,7 +46,7 @@ interface SourceResearchArtifact {
   }[];
 }
 
-const GATE3B_BODY_IDS = visualRegistryIds;
+const CELESTIAL_BODY_IDS = visualRegistryIds;
 
 function artifact(): SourceResearchArtifact {
   return JSON.parse(
@@ -57,14 +57,14 @@ function artifact(): SourceResearchArtifact {
   ) as SourceResearchArtifact;
 }
 
-describe("Gate 3B official-source research and import ledger", () => {
-  it("covers the complete Gate 3B visual registry with an official-domain candidate or explicit retained fallback", () => {
+describe("official-source research and import ledger", () => {
+  it("covers the complete visual registry with an official-domain candidate or explicit retained fallback", () => {
     const result = artifact();
     expect(result.schemaVersion).toBe(2);
     expect(result.policy).toMatch(/not classified/i);
     expect(
       new Set(result.candidates.map((candidate) => candidate.bodyId)),
-    ).toEqual(new Set(GATE3B_BODY_IDS));
+    ).toEqual(new Set(CELESTIAL_BODY_IDS));
 
     for (const candidate of result.candidates) {
       const hostname = new URL(candidate.sourceUrl).hostname;

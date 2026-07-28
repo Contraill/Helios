@@ -95,9 +95,29 @@ export function transitionAlpha(
   return 1 - Math.exp(-5.8 * deltaSeconds);
 }
 
+export interface CameraSettlementTolerance {
+  readonly position: number;
+  readonly target: number;
+}
+
+export function cameraSettlementTolerance(
+  desiredDistance: number,
+  framingRadius: number,
+): CameraSettlementTolerance {
+  assertPositiveFinite(desiredDistance, "Desired camera distance");
+  assertPositiveFinite(framingRadius, "Camera framing radius");
+
+  const reference = Math.max(desiredDistance, framingRadius);
+  return {
+    position: Math.min(0.14, Math.max(0.0000005, reference * 0.08)),
+    target: Math.min(0.09, Math.max(0.00000025, reference * 0.045)),
+  };
+}
 export function cameraPoseHasSettled(
   positionDistanceSquared: number,
   targetDistanceSquared: number,
+  positionTolerance = 0.4,
+  targetTolerance = 0.3,
 ): boolean {
   if (
     !Number.isFinite(positionDistanceSquared) ||
@@ -109,5 +129,10 @@ export function cameraPoseHasSettled(
       "Camera distances must be non-negative finite values.",
     );
   }
-  return positionDistanceSquared < 0.16 && targetDistanceSquared < 0.09;
+  assertPositiveFinite(positionTolerance, "Camera position tolerance");
+  assertPositiveFinite(targetTolerance, "Camera target tolerance");
+  return (
+    positionDistanceSquared < positionTolerance ** 2 &&
+    targetDistanceSquared < targetTolerance ** 2
+  );
 }

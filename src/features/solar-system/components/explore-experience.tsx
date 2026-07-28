@@ -11,7 +11,8 @@ import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
 import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
 import { useHydrateExperienceSettings } from "@/hooks/use-hydrate-experience-settings";
 import { useReducedMotionPreference } from "@/hooks/use-reduced-motion-preference";
-import { uiStrings } from "@/lib/i18n/ui-strings";
+import { getExplorePageCopy } from "@/lib/i18n/explore-page-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
 
@@ -34,7 +35,8 @@ export function ExploreExperience({
   scenePlanets,
   sceneSun,
 }: ExploreExperienceProps) {
-  const copy = uiStrings.pages.explore;
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExplorePageCopy(locale);
   const settingsHydrated = useHydrateExperienceSettings();
   const ephemerisController = useEphemerisController();
   const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
@@ -55,8 +57,8 @@ export function ExploreExperience({
   const reducedMotion = useReducedMotionPreference();
   const currentView = currentNavigatorView(navigator);
   const registry = useMemo(
-    () => createCelestialRegistry(planetSummaries, sceneSun),
-    [planetSummaries, sceneSun],
+    () => createCelestialRegistry(planetSummaries, sceneSun, locale),
+    [locale, planetSummaries, sceneSun],
   );
 
   const focusNavigatorButton = useCallback((bodyId: string) => {

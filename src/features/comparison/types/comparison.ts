@@ -4,6 +4,7 @@ export interface ComparePlanet {
   readonly id: PlanetId;
   readonly name: string;
   readonly accentColor: string;
+  readonly texturePath: string;
   readonly kind: "terrestrial" | "gas-giant" | "ice-giant";
   readonly radiusKm: number;
   readonly diameterKm: number;
@@ -14,6 +15,7 @@ export interface ComparePlanet {
   readonly semiMajorAxisAu: number;
   readonly orbitalPeriodDays: number;
   readonly siderealRotationHours: number;
+  readonly retrograde: boolean;
   readonly solarDayHours?: number;
   readonly axialTiltDeg: number;
   readonly temperatureC: number;

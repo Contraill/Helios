@@ -1,6 +1,6 @@
 # Celestial Model
 
-## Gate 3B catalogue
+## Celestial visual catalogue
 
 The visual registry contains 48 non-Sun/non-planet bodies:
 
@@ -22,7 +22,7 @@ Rotation is typed as `periodic`, `tidally-locked` or `fixed-unknown`.
 
 ## Scale and framing
 
-`test-artifacts/gate3b-scale-audit.json` is the machine-readable audit. Each row records:
+`test-artifacts/celestial-scale-audit.json` is the machine-readable audit. Each row records:
 
 - body and parent IDs;
 - physical radius;
@@ -33,6 +33,12 @@ Rotation is typed as `periodic`, `tidally-locked` or `fixed-unknown`.
 - representation status and flags.
 
 Scientific body radius amplification must be 1. Dwarf-system satellite metrics are shared between renderer and audit, preventing the diagnostic table from drifting from runtime math. A row fails when values are non-finite, geometry reaches the parent origin or focus distance is inside the geometry. Procedural surfaces remain `review` until manual GPU acceptance.
+
+## Camera focus contract
+
+Guided focus is initialised only after the selected target, world transform and camera metadata are registered. A scale-profile change is treated as a new framing request even when the selected body does not change, so a distance chosen in Exploration is not reused in Scientific mode.
+
+Scientific geometry remains physically scaled. The camera may approach small bodies to a bounded precision floor so comets and other compact targets stay inspectable without inflating their rendered radius. Camera focus policy is audited for every selectable target in both scale profiles at representative desktop and mobile aspect ratios.
 
 ## Representation labels
 
@@ -49,7 +55,7 @@ The catalogue exposes `orbitPlaneStatus`, `orbitPlaneReference`, `orbitPlaneSour
 
 ## Comet appearance
 
-Comet motion and activity remain driven by the shared timestamp and anti-solar direction evaluator. Visual tails use deterministic soft particle volumes: a broad irregular dust population, a narrow ion population and a nucleus-centred coma with radial falloff. Tail extent is excluded from camera focus bounds. Cone geometry and hard transparent coma shells are not accepted runtime representations.
+Comet motion and activity remain driven by the shared timestamp and anti-solar direction evaluator. Visual tails use deterministic soft particle volumes: a broad irregular dust population, a narrow ion population and a nucleus-centred coma with radial falloff. Tail extent is excluded from camera focus bounds. Cone geometry and hard transparent coma shells are not supported runtime representations.
 
 ## Orbit geometry and date-position accuracy
 
@@ -60,7 +66,7 @@ Rendered orbit paths and time propagation share the same orbital element model, 
 - this prevents highly eccentric comet paths from becoming long straight perihelion or closure chords under the non-linear Explore distance scale;
 - every orbit remains a solid line. Selection changes opacity and width; it does not switch to dashed geometry.
 
-`test-artifacts/gate3b-orbit-accuracy-audit.json` covers all 56 moving bodies and 82 mode-specific path rows. It records closure, finite coordinates, maximum chord ratio, segment uniformity and distance from the date-evaluated position to the rendered curve.
+`test-artifacts/orbit-accuracy-audit.json` covers all 56 moving bodies and 82 mode-specific path rows. It records closure, finite coordinates, maximum chord ratio, segment uniformity and distance from the date-evaluated position to the rendered curve.
 
 Accuracy claims remain deliberately narrower than geometry acceptance:
 

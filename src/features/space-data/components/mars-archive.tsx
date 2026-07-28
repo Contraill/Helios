@@ -4,20 +4,26 @@ import type {
   MissionMediaRecord,
   TrekRegion,
 } from "@/lib/data/external/models";
+import type { Locale } from "@/lib/i18n/locale";
+import { localeTag } from "@/lib/i18n/locale";
+import { spaceDataCopy } from "@/lib/i18n/space-data-copy";
 
 import { DataState } from "./data-state";
 import { RemoteMedia } from "./remote-media";
 import styles from "./space-data.module.css";
 
 export function MarsArchive({
+  locale = "en",
   weather,
   trek,
   media,
 }: {
+  readonly locale?: Locale;
   readonly weather: ExternalResult<InsightWeatherRecord>;
   readonly trek: ExternalResult<readonly TrekRegion[]>;
   readonly media: ExternalResult<readonly MissionMediaRecord[]>;
 }) {
+  const copy = spaceDataCopy[locale].mars;
   const record = weather.data;
   return (
     <div className={styles.marsArchive}>
@@ -26,16 +32,19 @@ export function MarsArchive({
         className={styles.weatherSection}
       >
         <header>
-          <p className={styles.eyebrow}>Historical field record</p>
+          <p className={styles.eyebrow}>{copy.historicalEyebrow}</p>
           <h2 id="insight-heading">
             {record?.archiveMatch === "on-this-day"
-              ? "On this day in the InSight archive"
-              : `Nearest archived observation to ${new Intl.DateTimeFormat("en", { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date())}`}
+              ? copy.onThisDay
+              : copy.nearest(
+                  new Intl.DateTimeFormat(localeTag(locale), {
+                    month: "long",
+                    day: "numeric",
+                    timeZone: "UTC",
+                  }).format(new Date()),
+                )}
           </h2>
-          <p>
-            InSight recorded this sol at one landing site. The date below is
-            historical—not “Mars today” and not a planet-wide forecast.
-          </p>
+          <p>{copy.intro}</p>
         </header>
         {record ? (
           <>
@@ -46,18 +55,18 @@ export function MarsArchive({
               </div>
               {record.temperatureC ? (
                 <div>
-                  <dt>Temperature °C</dt>
+                  <dt>{copy.temperature}</dt>
                   <dd>
                     {record.temperatureC.min.toFixed(1)} /{" "}
                     {record.temperatureC.average.toFixed(1)} /{" "}
                     {record.temperatureC.max.toFixed(1)}
                   </dd>
-                  <small>min / average / max</small>
+                  <small>{copy.minAvgMax}</small>
                 </div>
               ) : null}
               {record.pressurePa ? (
                 <div>
-                  <dt>Pressure Pa</dt>
+                  <dt>{copy.pressure}</dt>
                   <dd>
                     {record.pressurePa.min.toFixed(1)} /{" "}
                     {record.pressurePa.average.toFixed(1)} /{" "}
@@ -67,7 +76,7 @@ export function MarsArchive({
               ) : null}
               {record.windMps ? (
                 <div>
-                  <dt>Horizontal wind m/s</dt>
+                  <dt>{copy.wind}</dt>
                   <dd>
                     {record.windMps.min.toFixed(1)} /{" "}
                     {record.windMps.average.toFixed(1)} /{" "}
@@ -76,36 +85,32 @@ export function MarsArchive({
                 </div>
               ) : null}
               <div>
-                <dt>Common direction</dt>
+                <dt>{copy.direction}</dt>
                 <dd>{record.windDirection}</dd>
               </div>
               <div>
-                <dt>Samples</dt>
-                <dd>{record.sampleCount.toLocaleString()}</dd>
+                <dt>{copy.samples}</dt>
+                <dd>{record.sampleCount.toLocaleString(localeTag(locale))}</dd>
               </div>
             </dl>
             <p className={styles.archiveDates}>
-              <time dateTime={record.firstUtc}>{record.firstUtc}</time> to{" "}
-              <time dateTime={record.lastUtc}>{record.lastUtc}</time> · northern{" "}
-              {record.seasonNorthern} · southern {record.seasonSouthern}
+              <time dateTime={record.firstUtc}>{record.firstUtc}</time>{" "}
+              {copy.to} <time dateTime={record.lastUtc}>{record.lastUtc}</time>{" "}
+              · {copy.northern} {record.seasonNorthern} · {copy.southern}{" "}
+              {record.seasonSouthern}
             </p>
           </>
         ) : (
-          <p className={styles.empty}>
-            The historical InSight record is unavailable.
-          </p>
+          <p className={styles.empty}>{copy.unavailable}</p>
         )}
         <DataState metadata={weather.metadata} status={weather.status} />
       </section>
 
       <section aria-labelledby="trek-heading" className={styles.trekSection}>
         <header>
-          <p className={styles.eyebrow}>Surface context</p>
-          <h2 id="trek-heading">Three places, three ways to read relief</h2>
-          <p>
-            Mars Trek products are imagery and terrain layers. They do not
-            provide the planet’s orbital position.
-          </p>
+          <p className={styles.eyebrow}>{copy.trekEyebrow}</p>
+          <h2 id="trek-heading">{copy.trekTitle}</h2>
+          <p>{copy.trekIntro}</p>
         </header>
         <div className={styles.trekGrid}>
           {(trek.data ?? []).map((region) => (
@@ -121,8 +126,13 @@ export function MarsArchive({
               <small>
                 {region.resolution} · {region.representation}
               </small>
-              <a href={region.sourceUrl} rel="noreferrer" target="_blank">
-                Open Mars Trek
+              <a
+                aria-label={copy.trekLabel(region.title)}
+                href={region.sourceUrl}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {copy.trekOpen} <span aria-hidden="true">↗</span>
               </a>
             </article>
           ))}
@@ -135,17 +145,15 @@ export function MarsArchive({
         className={styles.mediaSection}
       >
         <header>
-          <p className={styles.eyebrow}>Mission media</p>
-          <h2 id="mars-media-heading">
-            The archive remembers where each image came from
-          </h2>
+          <p className={styles.eyebrow}>{copy.mediaEyebrow}</p>
+          <h2 id="mars-media-heading">{copy.mediaTitle}</h2>
         </header>
         <div className={styles.mediaGrid}>
           {(media.data ?? []).slice(0, 4).map((item) => (
             <article key={item.nasaId}>
               <RemoteMedia
                 alt={item.title}
-                fallbackLabel="Mission media unavailable"
+                fallbackLabel={copy.mediaFallback}
                 src={item.thumbnailUrl}
               />
               <h3>{item.title}</h3>
@@ -154,8 +162,13 @@ export function MarsArchive({
               </time>
               <p>{item.excerpt}</p>
               <small>{item.creator ?? item.center ?? "NASA"}</small>
-              <a href={item.sourceUrl} rel="noreferrer" target="_blank">
-                NASA media details
+              <a
+                aria-label={copy.mediaLabel(item.title)}
+                href={item.sourceUrl}
+                rel="noopener noreferrer"
+                target="_blank"
+              >
+                {copy.mediaDetails} <span aria-hidden="true">↗</span>
               </a>
             </article>
           ))}

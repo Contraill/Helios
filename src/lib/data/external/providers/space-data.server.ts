@@ -17,6 +17,7 @@ import {
 } from "@/content/snapshots/external-data";
 
 import { executeExternal, isProductionBuild } from "../execute.server";
+import { externalProviderContracts } from "../provider-contracts";
 import type {
   ApodRecord,
   DonkiEvent,
@@ -35,9 +36,13 @@ import {
   fetchExternalJson,
   fetchExternalText,
 } from "../request.server";
-import type { ExternalMetadata, ExternalResult, FetchPolicy } from "../types";
+import type {
+  ExternalMetadata,
+  ExternalResult,
+  FetchPolicy,
+  ProviderId,
+} from "../types";
 
-const MILLISECONDS_PER_DAY = 86_400_000;
 import type { PlanetId } from "@/lib/data/schemas/planet";
 
 const policies = {
@@ -70,12 +75,6 @@ const policies = {
     revalidateSeconds: 10800,
     timeoutMs: 5000,
     cacheTag: "neows-feed",
-  },
-  insight: {
-    providerId: "insight",
-    revalidateSeconds: 2592000,
-    timeoutMs: 5000,
-    cacheTag: "insight-historical",
   },
   images: {
     providerId: "nasa-images",
@@ -194,35 +193,6 @@ const neoFeedSchema = z.object({
   ),
 });
 
-const insightRawSchema = z
-  .object({
-    sol_keys: z.array(z.string()),
-  })
-  .passthrough();
-
-const insightMetricSchema = z.object({
-  mn: z.number(),
-  av: z.number(),
-  mx: z.number(),
-  ct: z.number(),
-});
-
-const insightSolSchema = z.object({
-  First_UTC: z.string(),
-  Last_UTC: z.string(),
-  Season: z.string().optional(),
-  Northern_season: z.string().optional(),
-  Southern_season: z.string().optional(),
-  AT: insightMetricSchema.optional(),
-  PRE: insightMetricSchema.optional(),
-  HWS: insightMetricSchema.optional(),
-  WD: z
-    .object({
-      most_common: z.object({ compass_point: z.string() }).optional(),
-    })
-    .optional(),
-});
-
 const imagesRawSchema = z.object({
   collection: z.object({
     items: z.array(
@@ -274,7 +244,7 @@ function excerpt(value: string, max = 230): string {
 }
 
 function metadata(
-  provider: string,
+  providerId: ProviderId,
   sourceTitle: string,
   sourceUrl: string,
   freshness: ExternalMetadata["freshness"],
@@ -282,13 +252,13 @@ function metadata(
   notes?: string,
 ): ExternalMetadata {
   return {
-    provider,
+    provider: externalProviderContracts[providerId].name,
     sourceTitle,
     sourceUrl,
     freshness,
     ...(observedAt ? { observedAt } : {}),
     retrievedAt: new Date().toISOString(),
-    attribution: provider,
+    attribution: externalProviderContracts[providerId].name,
     ...(notes ? { notes } : {}),
   };
 }
@@ -339,7 +309,7 @@ export async function loadApodArchive(): Promise<
     },
     metadata: (data) =>
       metadata(
-        "NASA APOD",
+        "apod",
         "Astronomy Picture of the Day",
         data[0]?.sourceUrl ?? "https://apod.nasa.gov/apod/",
         "latest-available",
@@ -380,7 +350,7 @@ export async function loadEpic(): Promise<
     },
     metadata: (data) =>
       metadata(
-        "NASA EPIC",
+        "epic",
         "DSCOVR EPIC Natural Color Archive",
         "https://epic.gsfc.nasa.gov/",
         "latest-available",
@@ -485,7 +455,7 @@ export async function loadEonet(): Promise<
     },
     metadata: (data) =>
       metadata(
-        "NASA EONET",
+        "eonet",
         "Earth Observatory Natural Event Tracker",
         "https://eonet.gsfc.nasa.gov/",
         "near-live",
@@ -593,7 +563,7 @@ export async function loadDonki(): Promise<
       status: failedEndpoints.length > 0 ? "partial" : "near-live",
       metadata: {
         ...metadata(
-          "NASA DONKI",
+          "donki",
           "Space Weather Database",
           "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
           "near-live",
@@ -660,7 +630,7 @@ export async function loadNearEarth(): Promise<
     },
     metadata: (data) =>
       metadata(
-        "NASA NeoWs",
+        "neows",
         "Near-Earth Object Web Service",
         "https://api.nasa.gov/",
         "latest-available",
@@ -673,102 +643,11 @@ export async function loadNearEarth(): Promise<
 export async function loadInsight(): Promise<
   ExternalResult<InsightWeatherRecord>
 > {
-  return executeExternal({
-    snapshot: insightSnapshot,
-    empty: (data) => !data.valid,
-    currentStatus: "historical",
-    fetchCurrent: async () => {
-      const raw = await fetchExternalJson({
-        path: "/insight_weather/",
-        params: { feedtype: "json", ver: "1.0" },
-        policy: policies.insight,
-      });
-      const parsed = insightRawSchema.parse(raw) as z.infer<
-        typeof insightRawSchema
-      > &
-        Record<string, unknown>;
-      const candidates = parsed.sol_keys.flatMap((key) => {
-        const result = insightSolSchema.safeParse(parsed[key]);
-        const firstAt = result.success
-          ? Date.parse(result.data.First_UTC)
-          : Number.NaN;
-        return result.success && Number.isFinite(firstAt)
-          ? [{ key, sol: result.data, firstAt }]
-          : [];
-      });
-      if (candidates.length === 0) {
-        throw new ExternalRequestError("empty", "InSight returned no sols.");
-      }
-      const today = new Date();
-      const targetMonth = today.getUTCMonth();
-      const targetDay = today.getUTCDate();
-      const exact = candidates.find(({ firstAt }) => {
-        const date = new Date(firstAt);
-        return (
-          date.getUTCMonth() === targetMonth && date.getUTCDate() === targetDay
-        );
-      });
-      const targetDayIndex =
-        Date.UTC(2000, targetMonth, targetDay) / MILLISECONDS_PER_DAY;
-      const selected =
-        exact ??
-        candidates.reduce((nearest, candidate) => {
-          const date = new Date(candidate.firstAt);
-          const dayIndex =
-            Date.UTC(2000, date.getUTCMonth(), date.getUTCDate()) /
-            MILLISECONDS_PER_DAY;
-          const distance = Math.abs(dayIndex - targetDayIndex);
-          const nearestDate = new Date(nearest.firstAt);
-          const nearestIndex =
-            Date.UTC(
-              2000,
-              nearestDate.getUTCMonth(),
-              nearestDate.getUTCDate(),
-            ) / MILLISECONDS_PER_DAY;
-          const nearestDistance = Math.abs(nearestIndex - targetDayIndex);
-          return Math.min(distance, 366 - distance) <
-            Math.min(nearestDistance, 366 - nearestDistance)
-            ? candidate
-            : nearest;
-        });
-      const { key, sol } = selected;
-      const metric = (
-        value: z.infer<typeof insightMetricSchema> | undefined,
-      ) =>
-        value ? { min: value.mn, average: value.av, max: value.mx } : undefined;
-      const counts = [sol.AT?.ct, sol.PRE?.ct, sol.HWS?.ct].filter(
-        (value): value is number => typeof value === "number",
-      );
-      const temperatureC = metric(sol.AT);
-      const pressurePa = metric(sol.PRE);
-      const windMps = metric(sol.HWS);
-      return {
-        sol: Number(key),
-        firstUtc: sol.First_UTC,
-        lastUtc: sol.Last_UTC,
-        ...(temperatureC ? { temperatureC } : {}),
-        ...(pressurePa ? { pressurePa } : {}),
-        ...(windMps ? { windMps } : {}),
-        windDirection: sol.WD?.most_common?.compass_point ?? "not recorded",
-        seasonNorthern: sol.Northern_season ?? sol.Season ?? "not recorded",
-        seasonSouthern: sol.Southern_season ?? "not recorded",
-        valid: counts.some((count) => count > 0),
-        sampleCount: counts.length > 0 ? Math.max(...counts) : 0,
-        archiveMatch: exact ? "on-this-day" : "nearest",
-      };
-    },
-    metadata: (data) =>
-      metadata(
-        "NASA InSight",
-        "InSight Mars Weather Service",
-        "https://api.nasa.gov/insight_weather/",
-        "historical",
-        data.lastUtc,
-        data.archiveMatch === "on-this-day"
-          ? "Historical observation matching today's UTC month and day at Elysium Planitia."
-          : `Nearest archived observation to ${new Intl.DateTimeFormat("en", { month: "long", day: "numeric", timeZone: "UTC" }).format(new Date())}; not current Mars weather.`,
-      ),
-  });
+  return {
+    data: insightSnapshot.data,
+    status: "historical",
+    metadata: insightSnapshot.metadata,
+  };
 }
 
 const missionMediaQueries: Readonly<Record<PlanetId, string>> = {
@@ -872,7 +751,7 @@ export async function loadMissionMedia(
     },
     metadata: (data) =>
       metadata(
-        "NASA Image and Video Library",
+        "nasa-images",
         "NASA Images",
         "https://images.nasa.gov/",
         "latest-available",
@@ -921,7 +800,9 @@ export async function loadCneosCad(): Promise<
           policy: policies.cad,
         }),
       );
-      return tableRows(raw, ["1.5"])
+      return tableRows(raw, [
+        externalProviderContracts["cneos-cad"].expectedApiVersion,
+      ])
         .map((row, index): NearEarthApproach => {
           const diameterM =
             row.diameter === null ? null : Number(row.diameter) * 1000;
@@ -946,7 +827,7 @@ export async function loadCneosCad(): Promise<
     },
     metadata: (data) =>
       metadata(
-        "JPL CNEOS",
+        "cneos-cad",
         "Close-Approach Data",
         "https://ssd-api.jpl.nasa.gov/doc/cad.html",
         "latest-available",
@@ -970,7 +851,9 @@ export async function loadFireballs(): Promise<
           policy: policies.fireball,
         }),
       );
-      return tableRows(raw, ["1.2"]).flatMap((row): FireballRecord[] => {
+      return tableRows(raw, [
+        externalProviderContracts["cneos-fireball"].expectedApiVersion,
+      ]).flatMap((row): FireballRecord[] => {
         const date = String(row.date ?? "");
         const radiatedEnergy = row.energy === null ? null : Number(row.energy);
         const impactEnergy =
@@ -1008,7 +891,7 @@ export async function loadFireballs(): Promise<
     },
     metadata: (data) =>
       metadata(
-        "JPL CNEOS",
+        "cneos-fireball",
         "Fireball and Bolide Data",
         "https://ssd-api.jpl.nasa.gov/doc/fireball.html",
         "historical",
@@ -1142,7 +1025,7 @@ export async function loadGibsLayers(): Promise<
       purpose: "Verified dated GIBS preview fallback.",
       data: gibsLayers,
       metadata: {
-        provider: "NASA EOSDIS GIBS",
+        provider: externalProviderContracts.gibs.name,
         sourceTitle: "Global Imagery Browse Services",
         sourceUrl:
           "https://www.earthdata.nasa.gov/eosdis/science-system-description/eosdis-components/gibs",
@@ -1159,7 +1042,7 @@ export async function loadGibsLayers(): Promise<
     fetchCurrent: loadCurrentGibsLayers,
     metadata: (data) =>
       metadata(
-        "NASA EOSDIS GIBS",
+        "gibs",
         "Global Imagery Browse Services",
         "https://www.earthdata.nasa.gov/eosdis/science-system-description/eosdis-components/gibs",
         "latest-available",
@@ -1180,7 +1063,7 @@ export function loadTrekRegions(
     data,
     status: "latest-available",
     metadata: metadata(
-      `NASA ${world} Trek`,
+      world === "Mars" ? "mars-trek" : "mercury-trek",
       `${world} Trek curated regions`,
       world === "Mars"
         ? "https://trek.nasa.gov/mars/"

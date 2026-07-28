@@ -10,16 +10,18 @@ import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
 import type { CelestialBodyId } from "@/features/solar-system/types/celestial-body";
 import { useExplorationStore } from "@/stores/exploration-store";
+import { useGalacticContextStore } from "@/stores/galactic-context-store";
 import { useSimulationStore } from "@/stores/simulation-store";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 
 import { CameraRig } from "./camera-rig";
 import { ExploreBloom } from "./explore-bloom";
 import { ExtendedSolarSystem } from "./extended-solar-system";
-import { Gate3BSceneProbe } from "./gate3b-scene-probe";
+import { CelestialSceneProbe } from "./celestial-scene-probe";
 import { PlanetSystem } from "./planet-system";
 import { SceneTestProbe } from "./scene-test-probe";
 import { SceneReadinessReporter } from "./scene-readiness-reporter";
+import { SimulationFrameClock } from "./simulation-frame-clock";
 import { Sun } from "./sun";
 import { TexturePreloader } from "./texture-preloader";
 import { UniverseBackdrop } from "./universe-backdrop";
@@ -83,6 +85,7 @@ export function SolarSystemScene({
   const scaleMode = useExplorationStore((state) => state.scaleMode);
   const orbitsVisible = useSceneVisibilityStore((state) => state.orbitsVisible);
   const labelsVisible = useSceneVisibilityStore((state) => state.labelsVisible);
+  const galacticContextPhase = useGalacticContextStore((state) => state.phase);
   const isPaused = useSimulationStore((state) => state.isPaused);
   const timeScale = useSimulationStore((state) => state.timeScale);
   const resetVersion = useSimulationStore((state) => state.resetVersion);
@@ -91,13 +94,16 @@ export function SolarSystemScene({
   const simulationMotionEnabled = !isPaused && !reducedMotion;
   const visualMotionScale = 1 + Math.log10(timeScale);
   const [catalogueRequest] = useState(visualCatalogueRequest);
+  const localSceneVisible = galacticContextPhase !== "galactic";
+  const localAnnotationsVisible = galacticContextPhase === "local";
 
   if (catalogueRequest) {
     return (
       <>
         <color attach="background" args={["#03050a"]} />
+        <SimulationFrameClock />
         <SceneTestProbe />
-        <Gate3BSceneProbe />
+        <CelestialSceneProbe />
         <VisualTestCatalogue
           evidenceGroup={catalogueRequest.evidenceGroup}
           mode={catalogueRequest.mode}
@@ -112,9 +118,10 @@ export function SolarSystemScene({
       <color attach="background" args={["#03050a"]} />
       <RendererProfileSettings exposure={profile.effects.exposure} />
       <SceneReadinessReporter />
+      <SimulationFrameClock />
       <CameraRig planetObjects={planetObjects} reducedMotion={reducedMotion} />
       <SceneTestProbe />
-      <Gate3BSceneProbe />
+      <CelestialSceneProbe />
       <ambientLight color="#a8b0bf" intensity={0.22} />
       <UniverseBackdrop
         motionEnabled={simulationMotionEnabled}
@@ -125,35 +132,40 @@ export function SolarSystemScene({
         timeScale={visualMotionScale}
       />
       <TexturePreloader />
-      <Sun
-        labelsVisible={labelsVisible}
-        motionEnabled={simulationMotionEnabled}
-        planetObjects={planetObjects}
-        quality={quality}
-        resetVersion={resetVersion}
-        scaleMode={profile.id}
-        sun={sceneSun}
-        timeScale={visualMotionScale}
-      />
-      {scenePlanets.map((planet) => (
-        <PlanetSystem
-          key={planet.id}
-          labelsVisible={labelsVisible}
-          orbitsVisible={orbitsVisible}
-          planet={planet}
+      <group
+        userData={{ visualLayer: "local-solar-system" }}
+        visible={localSceneVisible}
+      >
+        <Sun
+          labelsVisible={labelsVisible && localAnnotationsVisible}
+          motionEnabled={simulationMotionEnabled}
           planetObjects={planetObjects}
           quality={quality}
           resetVersion={resetVersion}
           scaleMode={profile.id}
+          sun={sceneSun}
+          timeScale={visualMotionScale}
         />
-      ))}
-      <ExtendedSolarSystem
-        labelsVisible={labelsVisible}
-        orbitsVisible={orbitsVisible}
-        planetObjects={planetObjects}
-        quality={quality}
-        scaleMode={profile.id}
-      />
+        {scenePlanets.map((planet) => (
+          <PlanetSystem
+            key={planet.id}
+            labelsVisible={labelsVisible && localAnnotationsVisible}
+            orbitsVisible={orbitsVisible && localAnnotationsVisible}
+            planet={planet}
+            planetObjects={planetObjects}
+            quality={quality}
+            resetVersion={resetVersion}
+            scaleMode={profile.id}
+          />
+        ))}
+        <ExtendedSolarSystem
+          labelsVisible={labelsVisible && localAnnotationsVisible}
+          orbitsVisible={orbitsVisible && localAnnotationsVisible}
+          planetObjects={planetObjects}
+          quality={quality}
+          scaleMode={profile.id}
+        />
+      </group>
       <ExploreBloom enabled strength={profile.effects.bloomStrength} />
     </>
   );

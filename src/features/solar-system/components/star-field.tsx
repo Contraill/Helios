@@ -4,9 +4,14 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type { Points, PointsMaterial } from "three";
 
+import { cameraRuntimeSnapshot } from "@/features/solar-system/lib/camera-runtime";
+import { SCENE_FRAME_PRIORITY } from "@/features/solar-system/lib/scene-frame-runtime";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import { createStarPositions } from "@/features/solar-system/lib/star-field";
-import { universeLayerOpacities } from "@/features/solar-system/lib/universe-backdrop";
+import {
+  galacticContextDistance,
+  universeLayerOpacities,
+} from "@/features/solar-system/lib/universe-backdrop";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 
 interface StarFieldProps {
@@ -37,16 +42,31 @@ export function StarField({
 
   useFrame(({ camera }, delta) => {
     if (materialRef.current) {
+      const runtime = cameraRuntimeSnapshot();
+      const contextDistance = galacticContextDistance(
+        {
+          cameraMode: runtime?.mode ?? null,
+          cameraPosition: [
+            camera.position.x,
+            camera.position.y,
+            camera.position.z,
+          ],
+          cameraTarget: runtime?.target ?? [0, 0, 0],
+          selectedBodyId: runtime?.selectedBodyId ?? null,
+        },
+        profile,
+      );
       const localStars = universeLayerOpacities(
-        camera.position.length(),
+        contextDistance,
         profile,
       ).localStars;
-      materialRef.current.opacity = Math.max(0.28, localStars) * 0.72;
+      materialRef.current.opacity = localStars * 0.72;
+      materialRef.current.visible = localStars > 0.002;
     }
     if (motionEnabled && pointsRef.current) {
       pointsRef.current.rotation.y += delta * 0.002 * timeScale;
     }
-  });
+  }, SCENE_FRAME_PRIORITY.backdrop);
 
   return (
     <points

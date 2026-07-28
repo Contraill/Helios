@@ -23,6 +23,10 @@ import {
 import { planetOrbitVisibility } from "@/features/solar-system/lib/orbit-visibility-policy";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import {
+  SCENE_FRAME_PRIORITY,
+  sceneFrameTimeMs,
+} from "@/features/solar-system/lib/scene-frame-runtime";
+import {
   sceneScaleFor,
   type ScenePlanet,
 } from "@/features/solar-system/lib/scene-planets";
@@ -41,14 +45,12 @@ import {
   ephemerisOrbitScenePoints,
   type MutableScenePosition,
 } from "@/lib/data/ephemeris/positions";
-import { uiStrings } from "@/lib/i18n/ui-strings";
+import { getExplorePageCopy } from "@/lib/i18n/explore-page-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 import { useEphemerisStore } from "@/stores/ephemeris-store";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
-import {
-  currentSimulationTimeMs,
-  useSimulationStore,
-} from "@/stores/simulation-store";
+import { useSimulationStore } from "@/stores/simulation-store";
 
 import { AtmosphereShell } from "./atmosphere-shell";
 import { EarthCityLights } from "./earth-city-lights";
@@ -93,6 +95,8 @@ export function PlanetSystem({
   resetVersion,
   scaleMode,
 }: PlanetSystemProps) {
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExplorePageCopy(locale);
   const bodyRef = useRef<Group>(null);
   const scenePositionRef = useRef<MutableScenePosition>([0, 0, 0]);
   const surfaceRef = useRef<Mesh>(null);
@@ -240,8 +244,7 @@ export function PlanetSystem({
   useFrame(() => {
     if (!bodyRef.current || !surfaceRef.current) return;
 
-    const simulationState = useSimulationStore.getState();
-    const currentTimeMs = currentSimulationTimeMs(simulationState);
+    const currentTimeMs = sceneFrameTimeMs();
     if (evaluateScenePosition) {
       const position = evaluateScenePosition(
         currentTimeMs,
@@ -255,7 +258,7 @@ export function PlanetSystem({
       planet.siderealRotationHours,
       planet.retrogradeRotation,
     );
-  });
+  }, SCENE_FRAME_PRIORITY.primaryBodies);
 
   const handlePointerOver = (event: ThreeEvent<PointerEvent>) => {
     if (!visible) return;
@@ -417,8 +420,8 @@ export function PlanetSystem({
               priority={labelPriority}
               positionCaption={
                 selected
-                  ? uiStrings.pages.explore.scientificSelectedMarkerCaption
-                  : uiStrings.pages.explore.scientificMarkerCaption
+                  ? copy.scientificSelectedMarkerCaption
+                  : copy.scientificMarkerCaption
               }
               selected={selected}
               text={planet.name}

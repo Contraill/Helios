@@ -209,7 +209,7 @@ function rotationFor(
   return {
     kind: "fixed-unknown",
     sourceId: `helios-rotation-unknown-${id}`,
-    note: "No source-backed rotation period is asserted by the accepted visual catalogue; orientation remains fixed.",
+    note: "No source-backed rotation period is asserted by the documented visual catalogue; orientation remains fixed.",
   };
 }
 
@@ -247,7 +247,7 @@ function profile(definition: VisualDefinition): CelestialVisualProfile {
       coverage,
       note:
         runtimeOverride?.surfaceNote ??
-        "Deterministic visual reconstruction based on cited mission references; not a reproduced source raster.",
+        "Reference-guided visual reconstruction based on cited mission records; no source raster is reproduced.",
       fallbackColor: definition.fallbackColor,
       roughness: definition.roughness ?? 0.9,
       emissiveIntensity: 0,

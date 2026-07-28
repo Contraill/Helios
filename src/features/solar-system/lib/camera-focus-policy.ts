@@ -4,6 +4,7 @@ import type { CameraTargetMetadata } from "@/features/solar-system/types/camera-
 const BODY_SAFETY_MULTIPLIER = 1.35;
 const REGION_SAFETY_MULTIPLIER = 1.08;
 const FRAME_PADDING = 1.22;
+const SCIENTIFIC_BODY_FOCUS_FLOOR = 0.000002;
 
 export interface CameraFocusPolicyInput {
   readonly aspect: number;
@@ -61,7 +62,7 @@ export function cameraFocusPolicy({
       : BODY_SAFETY_MULTIPLIER;
   const profileFloor =
     profile.id === "scientific"
-      ? Math.max(0.00005, profile.body.moonMinimumVisualRadius * 0.75)
+      ? SCIENTIFIC_BODY_FOCUS_FLOOR
       : Math.max(0.12, profile.camera.minimumDistance * 0.02);
   const minimumDistance = Math.max(
     collisionRadius * safetyMultiplier,

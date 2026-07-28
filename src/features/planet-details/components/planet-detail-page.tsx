@@ -16,7 +16,8 @@ import {
   formatOneDecimal,
   formatZeroDecimals,
 } from "@/lib/i18n/formatters";
-import { uiStrings } from "@/lib/i18n/ui-strings";
+import type { Locale } from "@/lib/i18n/locale";
+import { planetPageCopy } from "@/lib/i18n/planet-page-copy";
 
 import { PlanetAdjacentNav } from "./planet-adjacent-nav";
 import { PlanetEditorialVisual } from "./planet-editorial-visual";
@@ -26,24 +27,26 @@ import styles from "./planet-detail.module.css";
 
 export function PlanetDetailPage({
   content,
+  locale = "en",
   model,
   supplement,
   showHumanScale = true,
 }: {
   readonly content: PlanetDetailContent;
+  readonly locale?: Locale;
   readonly model: PlanetDetailModel;
   readonly supplement?: ReactNode;
   readonly showHumanScale?: boolean;
 }) {
-  const copy = uiStrings.pages.planet.detail;
+  const copy = planetPageCopy[locale].detail;
   const blocks: Record<string, ReactNode> = {
     metrics: (
       <MetricGrid key="metrics">
         <MetricCard
-          context={`${formatZeroDecimals(model.equatorialDiameterKm)} km equatorial diameter`}
+          context={`${formatZeroDecimals(model.equatorialDiameterKm, locale)} km equatorial diameter`}
           label={copy.metrics.radius}
           unit="km"
-          value={formatOneDecimal(model.meanRadiusKm)}
+          value={formatOneDecimal(model.meanRadiusKm, locale)}
         />
         <MetricCard
           context={
@@ -52,7 +55,7 @@ export function PlanetDetailPage({
           label={copy.metrics.solarDay}
           value={
             model.solarDayHours
-              ? formatHoursAsClockDuration(model.solarDayHours)
+              ? formatHoursAsClockDuration(model.solarDayHours, locale)
               : "—"
           }
         />
@@ -62,7 +65,7 @@ export function PlanetDetailPage({
           }
           label={copy.metrics.temperature}
           unit="°C"
-          value={formatZeroDecimals(model.averageTemperatureC)}
+          value={formatZeroDecimals(model.averageTemperatureC, locale)}
         />
       </MetricGrid>
     ),
@@ -106,6 +109,7 @@ export function PlanetDetailPage({
           gravityDefinition={model.gravityDefinition}
           gravityEarthRatio={model.gravityEarthRatio}
           gravityMS2={model.gravityMS2}
+          locale={locale}
           planetName={model.name}
           sunlightTravelMinutes={model.sunlightTravelMinutes}
           title={content.humanScale.title}
@@ -132,22 +136,22 @@ export function PlanetDetailPage({
         </div>
         <dl className={styles.referenceLedger}>
           <div>
-            <dt>Axial tilt</dt>
-            <dd>{formatOneDecimal(model.axialTiltDeg)}°</dd>
+            <dt>{copy.ledger.axialTilt}</dt>
+            <dd>{formatOneDecimal(model.axialTiltDeg, locale)}°</dd>
           </div>
           <div>
-            <dt>Recognized moons</dt>
+            <dt>{copy.ledger.recognizedMoons}</dt>
             <dd>
               {model.moonCount}
               {model.moonCountAsOf ? ` · ${model.moonCountAsOf}` : ""}
             </dd>
           </div>
           <div>
-            <dt>Rings</dt>
+            <dt>{copy.ledger.rings}</dt>
             <dd>{model.ringsDescription}</dd>
           </div>
           <div>
-            <dt>Atmosphere</dt>
+            <dt>{copy.ledger.atmosphere}</dt>
             <dd>{model.atmosphereComponents.join(" · ")}</dd>
           </div>
         </dl>
@@ -200,7 +204,9 @@ export function PlanetDetailPage({
             className={styles.heroLinks}
           >
             <Link href="/explore">{copy.backToExplore}</Link>
-            <a href="#human-scale">{copy.jumpToHumanScale}</a>
+            {showHumanScale ? (
+              <a href="#human-scale">{copy.jumpToHumanScale}</a>
+            ) : null}
             <a href="#sources">{copy.jumpToSources}</a>
           </nav>
         </div>
@@ -228,7 +234,7 @@ export function PlanetDetailPage({
       <div className={styles.content}>
         {content.layout.map((block) => blocks[block])}
         {supplement}
-        <PlanetAdjacentNav model={model} />
+        <PlanetAdjacentNav locale={locale} model={model} />
       </div>
     </article>
   );

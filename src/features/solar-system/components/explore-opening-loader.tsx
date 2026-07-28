@@ -4,10 +4,14 @@ import { useEffect } from "react";
 
 import { useAssetLoadingSnapshot } from "@/features/solar-system/lib/asset-loading-lifecycle";
 import { isVisualCatalogueEvidenceRequest } from "@/features/solar-system/lib/scene-test-readiness";
+import { getExplorePageCopy } from "@/lib/i18n/explore-page-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 
-import gateStyles from "./explore-scene-gate.module.css";
+import controlStyles from "./explore-scene-controls.module.css";
 
 export function ExploreOpeningLoader() {
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExplorePageCopy(locale).loader;
   const snapshot = useAssetLoadingSnapshot();
   const catalogueEvidenceReady = isVisualCatalogueEvidenceRequest(
     typeof window === "undefined" ? "" : window.location.search,
@@ -27,29 +31,29 @@ export function ExploreOpeningLoader() {
   const sunReady =
     snapshot.statusByPath["/textures/planets/sun.webp"] === "ready";
   const label = !snapshot.rendererReady
-    ? "Preparing the renderer"
+    ? copy.renderer
     : !sunReady
-      ? "Preparing the Sun"
+      ? copy.sun
       : snapshot.planetReadyCount < snapshot.planetTotal
-        ? "Preparing the planets"
-        : "Preparing final layers";
+        ? copy.planets
+        : copy.finalLayers;
 
   return (
     <div
-      aria-label="Solar System loading progress"
+      aria-label={copy.ariaLabel}
       aria-live="polite"
       aria-valuemax={snapshot.planetTotal}
       aria-valuemin={0}
       aria-valuenow={snapshot.planetReadyCount}
-      aria-valuetext={`${label}. ${snapshot.planetReadyCount} of ${snapshot.planetTotal} planets ready.`}
-      className={gateStyles.openingLoader}
+      aria-valuetext={`${label}. ${copy.progress(snapshot.planetReadyCount, snapshot.planetTotal)}.`}
+      className={controlStyles.openingLoader}
       data-testid="explore-opening-loader"
       role="progressbar"
     >
-      <span className={gateStyles.openingLoaderOrb} aria-hidden="true" />
+      <span className={controlStyles.openingLoaderOrb} aria-hidden="true" />
       <p>{label}</p>
       <strong>
-        {snapshot.planetReadyCount} / {snapshot.planetTotal} planets ready
+        {copy.progress(snapshot.planetReadyCount, snapshot.planetTotal)}
       </strong>
     </div>
   );

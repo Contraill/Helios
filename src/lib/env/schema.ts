@@ -6,6 +6,20 @@ const serverEnvSchema = z.object({
     .string()
     .min(1, "must be a non-empty string when set")
     .optional(),
+  SITE_URL: z
+    .string()
+    .url("must be an absolute URL when set")
+    .refine((value) => ["http:", "https:"].includes(new URL(value).protocol), {
+      message: "must use http or https",
+    })
+    .refine(
+      (value) => {
+        const url = new URL(value);
+        return url.pathname === "/" && !url.search && !url.hash;
+      },
+      { message: "must be an origin without a path, query or hash" },
+    )
+    .optional(),
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

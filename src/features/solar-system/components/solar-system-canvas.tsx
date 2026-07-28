@@ -13,8 +13,10 @@ import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
 import type { SceneSun } from "@/features/solar-system/lib/scene-sun";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import { useReducedMotionPreference } from "@/hooks/use-reduced-motion-preference";
-import { uiStrings } from "@/lib/i18n/ui-strings";
+import { getExplorePageCopy } from "@/lib/i18n/explore-page-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 import { useExplorationStore } from "@/stores/exploration-store";
+import { useGalacticContextStore } from "@/stores/galactic-context-store";
 
 import { ExploreOpeningLoader } from "./explore-opening-loader";
 import { SceneErrorBoundary } from "./scene-error-boundary";
@@ -46,10 +48,12 @@ export function SolarSystemCanvas({
   const clearSelection = useExplorationStore((state) => state.clearSelection);
   const cameraMode = useExplorationStore((state) => state.cameraMode);
   const hoveredBodyId = useExplorationStore((state) => state.hoveredBodyId);
+  const galacticContextPhase = useGalacticContextStore((state) => state.phase);
   const scaleMode = useExplorationStore((state) => state.scaleMode);
   const bootstrap = useAssetLoadingSnapshot();
   const profile = sceneProfileFor(scaleMode);
-  const copy = uiStrings.pages.explore;
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExplorePageCopy(locale);
   const [webglAvailable, setWebglAvailable] = useState<boolean | null>(
     cachedWebGLAvailability,
   );
@@ -90,6 +94,7 @@ export function SolarSystemCanvas({
       data-scene-profile={profile.id}
       data-secondary-stage={bootstrap.secondaryStageStarted}
       data-visual-contract="high"
+      data-galactic-context={galacticContextPhase}
     >
       {webglAvailable === null ? (
         <div className="scene-loading" role="status">
@@ -134,6 +139,17 @@ export function SolarSystemCanvas({
       ) : (
         <SceneFallback />
       )}
+      {galacticContextPhase !== "local" ? (
+        <aside
+          aria-live="polite"
+          className="galactic-context-notice"
+          data-phase={galacticContextPhase}
+        >
+          <span>{copy.galactic.marker}</span>
+          <strong>{copy.galactic.title}</strong>
+          <p>{copy.galactic.description}</p>
+        </aside>
+      ) : null}
       <ExploreOpeningLoader />
       <SecondaryAssetScheduler />
     </div>

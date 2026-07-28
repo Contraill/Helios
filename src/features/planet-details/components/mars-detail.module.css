@@ -172,14 +172,44 @@
   transform: rotate(-9deg);
 }
 
+.marsTexture {
+  position: absolute;
+  z-index: 0;
+  top: -2%;
+  left: -54%;
+  width: 208%;
+  height: 104%;
+  border-radius: inherit;
+  background-image: var(--mars-editorial-texture);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  opacity: 0.72;
+  transform: translate3d(-4%, 0, 0);
+  animation: marsPortraitDrift 48s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes marsPortraitDrift {
+  from {
+    transform: translate3d(-4%, 0, 0);
+  }
+
+  to {
+    transform: translate3d(4%, 0, 0);
+  }
+}
+
 .marsOrb::before,
 .marsOrb::after {
+  z-index: 2;
   position: absolute;
   border-radius: 50%;
   content: "";
 }
 
 .marsOrb::before {
+  z-index: 1;
   inset: 7% 10% 55% 45%;
   background:
     radial-gradient(
@@ -202,6 +232,7 @@
 }
 
 .marsOrb::after {
+  z-index: 2;
   inset: -2%;
   border: 1px solid rgb(255 165 112 / 0.28);
   box-shadow: 0 0 2.2rem rgb(221 98 61 / 0.22);
@@ -533,6 +564,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .marsTexture {
+    animation: none;
+  }
   .heroLinks a {
     transition: none;
   }

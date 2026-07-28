@@ -17,11 +17,13 @@ import {
 import { markCelestialCameraGesture } from "@/features/solar-system/lib/pointer-interaction";
 import { regionFocusAnchorOffset } from "@/features/solar-system/lib/region-visual-policy";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
+import { SCENE_FRAME_PRIORITY } from "@/features/solar-system/lib/scene-frame-runtime";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { useExplorationStore } from "@/stores/exploration-store";
 
 import {
   cameraPoseHasSettled,
+  cameraSettlementTolerance,
   illuminatedFocusCameraOffset,
   overviewCameraPosition,
   transitionAlpha,
@@ -82,6 +84,9 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
   const isDragging = useRef(false);
   const lastMinimumDistance = useRef(profile.camera.minimumDistance);
   const previousStableMode = useRef<"overview" | "focus" | "free">("overview");
+  const transitionScaleMode = useRef(scaleMode);
+  const positionSettleTolerance = useRef(0.4);
+  const targetSettleTolerance = useRef(0.3);
 
   useEffect(() => {
     invalidate();
@@ -190,6 +195,13 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
     const liveMode = liveState.cameraMode;
     const liveSelectedBodyId = liveState.selectedBodyId;
     const liveVersion = liveState.cameraTransitionVersion;
+    const liveScaleMode = liveState.scaleMode;
+    const liveProfile = sceneProfileFor(liveScaleMode);
+    const liveOverviewPosition = overviewCameraPosition(
+      Math.max(width, 1),
+      Math.max(height, 1),
+      liveScaleMode,
+    );
     const selectedObject = liveSelectedBodyId
       ? planetObjects.current.get(liveSelectedBodyId)
       : undefined;
@@ -200,17 +212,29 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
         ? camera.fov
         : 46;
     const policy = metadata
-      ? cameraFocusPolicy({ aspect, fovDegrees: fov, metadata, profile })
+      ? cameraFocusPolicy({
+          aspect,
+          fovDegrees: fov,
+          metadata,
+          profile: liveProfile,
+        })
       : null;
 
-    orbitControls.maxDistance = profile.camera.maximumDistance;
+    orbitControls.maxDistance = liveProfile.camera.maximumDistance;
 
-    if (
+    const transitionTargetReady =
+      liveSelectedBodyId === null ||
+      Boolean(selectedObject && metadata && policy);
+    const transitionNeedsInitialization =
       liveMode === "transition" &&
-      activeTransitionVersion.current !== liveVersion
-    ) {
+      (activeTransitionVersion.current !== liveVersion ||
+        activeTransitionBodyId.current !== liveSelectedBodyId);
+
+    if (transitionNeedsInitialization && transitionTargetReady) {
       activeTransitionVersion.current = liveVersion;
       activeTransitionBodyId.current = liveSelectedBodyId;
+      const scaleChanged = transitionScaleMode.current !== liveScaleMode;
+      transitionScaleMode.current = liveScaleMode;
 
       if (selectedObject && metadata && policy) {
         selectedObject.getWorldPosition(worldPosition.current);
@@ -232,7 +256,11 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
         const guidedRegionTransition =
           Boolean(metadata.regionPresentation) &&
           previousStableMode.current === "free";
-        if ((sameTarget || cameraMode === "free") && !guidedRegionTransition) {
+        if (
+          (sameTarget || previousStableMode.current === "free") &&
+          !guidedRegionTransition &&
+          !scaleChanged
+        ) {
           relativeOffset.current.subVectors(
             camera.position,
             currentTarget.current,
@@ -268,7 +296,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
               ],
               policy.framingRadius,
               Math.max(aspect, 0.1),
-              scaleMode,
+              liveScaleMode,
             );
             canonicalOffset.current.set(...offset);
           }
@@ -280,14 +308,22 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
             .copy(desiredTarget.current)
             .add(canonicalOffset.current);
         }
+        const settleTolerance = cameraSettlementTolerance(
+          policy.desiredDistance,
+          policy.framingRadius,
+        );
+        positionSettleTolerance.current = settleTolerance.position;
+        targetSettleTolerance.current = settleTolerance.target;
         orbitControls.minDistance = policy.minimumDistance;
         lastMinimumDistance.current = policy.minimumDistance;
       } else {
         desiredTarget.current.set(0, 0, 0);
-        desiredPosition.current.set(...overviewPosition);
+        desiredPosition.current.set(...liveOverviewPosition);
         previousWorldPosition.current.set(0, 0, 0);
-        orbitControls.minDistance = profile.camera.minimumDistance;
-        lastMinimumDistance.current = profile.camera.minimumDistance;
+        positionSettleTolerance.current = 0.4;
+        targetSettleTolerance.current = 0.3;
+        orbitControls.minDistance = liveProfile.camera.minimumDistance;
+        lastMinimumDistance.current = liveProfile.camera.minimumDistance;
       }
     }
 
@@ -303,28 +339,46 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       );
       desiredTarget.current.add(targetDelta.current);
       desiredPosition.current.add(targetDelta.current);
+      // Move the in-flight camera pose into the body's current reference frame
+      // before easing. Otherwise fast simulation rates leave the camera
+      // perpetually chasing the previous frame and it can never settle.
+      currentTarget.current.add(targetDelta.current);
+      camera.position.add(targetDelta.current);
       previousWorldPosition.current.copy(worldPosition.current);
     }
 
     if (liveMode === "transition") {
-      orbitControls.enabled = false;
-      const alpha = transitionAlpha(delta, reducedMotion);
-      camera.position.lerp(desiredPosition.current, alpha);
-      currentTarget.current.lerp(desiredTarget.current, alpha);
-      camera.lookAt(currentTarget.current);
-      if (
-        cameraPoseHasSettled(
-          camera.position.distanceToSquared(desiredPosition.current),
-          currentTarget.current.distanceToSquared(desiredTarget.current),
-        )
-      ) {
-        trackedBodyId.current = liveSelectedBodyId;
-        orbitControls.target.copy(currentTarget.current);
-        settleCamera(
-          liveSelectedBodyId,
-          liveVersion,
-          liveSelectedBodyId === null ? "overview" : "focus",
-        );
+      const transitionIsActive =
+        activeTransitionVersion.current === liveVersion &&
+        activeTransitionBodyId.current === liveSelectedBodyId;
+      orbitControls.enabled = !transitionIsActive;
+      if (transitionIsActive) {
+        const alpha = transitionAlpha(delta, reducedMotion);
+        camera.position.lerp(desiredPosition.current, alpha);
+        currentTarget.current.lerp(desiredTarget.current, alpha);
+        camera.lookAt(currentTarget.current);
+        if (
+          cameraPoseHasSettled(
+            camera.position.distanceToSquared(desiredPosition.current),
+            currentTarget.current.distanceToSquared(desiredTarget.current),
+            positionSettleTolerance.current,
+            targetSettleTolerance.current,
+          )
+        ) {
+          camera.position.copy(desiredPosition.current);
+          currentTarget.current.copy(desiredTarget.current);
+          camera.lookAt(currentTarget.current);
+          trackedBodyId.current = liveSelectedBodyId;
+          orbitControls.target.copy(currentTarget.current);
+          settleCamera(
+            liveSelectedBodyId,
+            liveVersion,
+            liveSelectedBodyId === null ? "overview" : "focus",
+          );
+        }
+      } else {
+        orbitControls.update();
+        currentTarget.current.copy(orbitControls.target);
       }
     } else if (liveMode === "focus" && selectedObject && metadata && policy) {
       selectedObject.getWorldPosition(worldPosition.current);
@@ -361,7 +415,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       if (liveMode === "overview") trackedBodyId.current = null;
       orbitControls.minDistance =
         liveMode === "overview"
-          ? profile.camera.minimumDistance
+          ? liveProfile.camera.minimumDistance
           : lastMinimumDistance.current;
       orbitControls.enabled = true;
       orbitControls.update();
@@ -398,7 +452,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
       controlsEnabled: orbitControls.enabled,
       isDragging: isDragging.current,
     });
-  });
+  }, SCENE_FRAME_PRIORITY.camera);
 
   return null;
 }

@@ -79,7 +79,7 @@ export const mercuryDetailContent: PlanetDetailContent = Object.freeze({
   ]),
   methodology: Object.freeze({
     title: "A mean is not a forecast",
-    body: "Mercury's temperature reference is a planetary surface mean. It does not describe the sunlit maximum, night-side minimum or a current local condition. The hero is an editorial diagram; numerical values remain tied to the source registry.",
+    body: "Mercury's temperature reference is a planetary surface mean. It does not describe the sunlit maximum, night-side minimum or a current local condition. The hero is an editorial diagram; numerical values remain tied to the cited references.",
   }),
   sourceIds: Object.freeze(["nasa-messenger-mission"]),
 });

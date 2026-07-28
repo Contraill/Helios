@@ -19,7 +19,8 @@ import {
   MAX_PROPAGATION_DAYS,
   ephemerisBundleSchema,
 } from "@/lib/data/ephemeris/models";
-import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { getExploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 import { useEphemerisStore } from "@/stores/ephemeris-store";
 import {
   currentSimulationTimeMs,
@@ -71,6 +72,10 @@ export function yearOffsetFromAnchor(
   );
 }
 
+function currentCopy() {
+  return getExploreSceneCopy(useLocaleStore.getState().locale);
+}
+
 function requestErrorMessage(raw: unknown): string {
   if (
     typeof raw === "object" &&
@@ -80,7 +85,7 @@ function requestErrorMessage(raw: unknown): string {
   ) {
     return raw.error;
   }
-  return exploreSceneCopy.ephemeris.requestFailed;
+  return currentCopy().ephemeris.requestFailed;
 }
 
 const initialSnapshot: EphemerisControllerSnapshot = Object.freeze({
@@ -173,7 +178,7 @@ export function useEphemerisController(): EphemerisControllerApi {
       if (!isWithinSimulationRange(timestamp, simulationState.range)) {
         useEphemerisStore
           .getState()
-          .setError(exploreSceneCopy.ephemeris.chooseInsideRange);
+          .setError(currentCopy().ephemeris.chooseInsideRange);
         return Promise.resolve();
       }
 
@@ -237,7 +242,7 @@ export function useEphemerisController(): EphemerisControllerApi {
             .setError(
               error instanceof Error
                 ? error.message
-                : exploreSceneCopy.ephemeris.requestFailed,
+                : currentCopy().ephemeris.requestFailed,
             );
         } finally {
           if (inFlightRequest.current?.key === requestKey) {

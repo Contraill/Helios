@@ -43,15 +43,18 @@ import {
 } from "@/features/solar-system/lib/region-visual-policy";
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
+import {
+  SCENE_FRAME_PRIORITY,
+  sceneFrameTimeMs,
+} from "@/features/solar-system/lib/scene-frame-runtime";
 import { isDwarfSystemParentId } from "@/features/solar-system/types/celestial-body";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
+import { getExploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
 import { useExplorationStore } from "@/stores/exploration-store";
+import { useLocaleStore } from "@/stores/locale-store";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
-import {
-  currentSimulationTimeMs,
-  useSimulationStore,
-} from "@/stores/simulation-store";
+import { useSimulationStore } from "@/stores/simulation-store";
 
 import { CelestialVisualSurface } from "./celestial-visual-surface";
 import { CometTailVolume } from "./comet-tail-volume";
@@ -477,6 +480,8 @@ function ExtendedBodyObject({
   quality: SceneQuality;
   scaleMode: ScaleMode;
 }) {
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExploreSceneCopy(locale);
   const groupRef = useRef<Group>(null);
   const surfaceRef = useRef<Group>(null);
   const tailRef = useRef<Group>(null);
@@ -597,7 +602,7 @@ function ExtendedBodyObject({
   useFrame(() => {
     const node = groupRef.current;
     if (!node) return;
-    const now = currentSimulationTimeMs(useSimulationStore.getState());
+    const now = sceneFrameTimeMs();
     const position = extendedBodyPosition(
       body,
       now,
@@ -635,7 +640,7 @@ function ExtendedBodyObject({
       tailRef.current.userData.tailAnchorDistance =
         tailRef.current.position.length();
     }
-  });
+  }, SCENE_FRAME_PRIORITY.primaryBodies);
 
   const pointerOver = (event: ThreeEvent<PointerEvent>) => {
     if (!visible) return;
@@ -771,7 +776,9 @@ function ExtendedBodyObject({
               placement="north"
               priority={labelPriority}
               positionCaption={
-                isComet ? "ANTI-SOLAR TAIL" : "REPRESENTATIVE ORBIT"
+                isComet
+                  ? copy.labels.antiSolarTail
+                  : copy.labels.representativeOrbit
               }
               selected={selected}
               text={extendedBodySceneLabel(body)}

@@ -6,6 +6,36 @@ export interface SolarProminenceShape {
   readonly spanRadians: number;
 }
 
+function smoothstep(start: number, end: number, value: number): number {
+  const normalized = Math.min(1, Math.max(0, (value - start) / (end - start)));
+  return normalized * normalized * (3 - 2 * normalized);
+}
+
+/**
+ * A deterministic emergence/decay envelope. The loop spends most of its cycle
+ * visible, while the short dark interval prevents every prominence from
+ * reading as a permanently welded tube.
+ */
+export function solarProminenceEnvelope(
+  elapsedSeconds: number,
+  phase: number,
+  cycleSeconds: number,
+): number {
+  if (
+    !Number.isFinite(elapsedSeconds) ||
+    !Number.isFinite(phase) ||
+    !Number.isFinite(cycleSeconds) ||
+    cycleSeconds <= 0
+  ) {
+    throw new RangeError("Solar prominence timing values must be finite.");
+  }
+
+  const normalized = (((elapsedSeconds / cycleSeconds + phase) % 1) + 1) % 1;
+  const emerge = smoothstep(0.02, 0.16, normalized);
+  const decay = 1 - smoothstep(0.76, 0.98, normalized);
+  return Math.min(emerge, decay);
+}
+
 /**
  * Builds a prominence loop whose two anchors intersect the solar surface while
  * its midpoint rises above the corona. Unlike a torus segment, the curve does

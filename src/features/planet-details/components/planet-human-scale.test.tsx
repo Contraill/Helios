@@ -71,6 +71,6 @@ describe("PlanetHumanScale", () => {
     fireEvent.change(input, { target: { value: "1001" } });
 
     expect(input).toHaveAttribute("aria-invalid", "true");
-    expect(screen.getByText(/from 0 to 1,000/i)).toBeInTheDocument();
+    expect(screen.getByRole("alert")).toHaveTextContent(/from 0 to 1,000/i);
   });
 });

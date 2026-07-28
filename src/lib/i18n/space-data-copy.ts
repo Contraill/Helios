@@ -1,0 +1,186 @@
+import type { Locale } from "./locale";
+
+export const spaceDataCopy = {
+  en: {
+    categories: {
+      all: "All selected events",
+      wildfires: "Wildfires",
+      severeStorms: "Severe storms",
+      volcanoes: "Volcanoes",
+      floods: "Floods",
+      seaLakeIce: "Sea and lake ice",
+      dustHaze: "Dust and haze",
+    },
+    earth: {
+      imageAlt: "Earth seen by DSCOVR EPIC",
+      imageFallback: "EPIC image unavailable",
+      eyebrow: "Earth in observation",
+      title: "One planet, several clocks",
+      intro:
+        "EPIC sees the sunlit disk from DSCOVR. EONET gathers event records from contributing sources. GIBS serves dated imagery layers. Their timestamps are related, but they are not one synchronized camera.",
+      capture: "Capture",
+      color: "Color",
+      natural: "Natural-color composite",
+      enhanced: "Enhanced color",
+      centroid: "Centroid",
+      noEpic: "No EPIC image is available.",
+      eventsEyebrow: "Natural events",
+      eventsTitle: "Read the event, then read its source",
+      category: "Category",
+      eventSource: "Event source",
+      eventSourceLabel: (title: string) =>
+        `Open the source for ${title} (opens in a new tab)`,
+      noEvents: "No events match this category in the current record.",
+      layersEyebrow: "Earthdata layers",
+      layersTitle: "Curated imagery, not a layer catalogue",
+      layerFallback: "GIBS layer preview unavailable",
+      environmentEyebrow: "Space environment",
+      environmentTitle: "The Sun does not stop at the sky",
+      environmentIntro:
+        "DONKI records are kept as separate observations unless official activity IDs prove a relationship.",
+      noSpaceWeather: "No space-weather event is available.",
+      failedFamilies: "Unavailable DONKI families",
+      remainingCurrent: "Other event families remain current.",
+      nearEarth: "Near-Earth space",
+      missDistance: "km miss distance",
+      velocity: "km/h relative velocity",
+      noApproach: "No close approach is available.",
+      hazardousTitle: "Potentially hazardous",
+      hazardousBody:
+        "is an orbital classification. It is not a prediction that an object will strike Earth.",
+    },
+    mars: {
+      historicalEyebrow: "Historical field record",
+      onThisDay: "On this day in the InSight archive",
+      nearest: (date: string) => `Nearest archived observation to ${date}`,
+      intro:
+        "InSight recorded this sol at one landing site. The date below is historical—not “Mars today” and not a planet-wide forecast.",
+      temperature: "Temperature °C",
+      pressure: "Pressure Pa",
+      wind: "Horizontal wind m/s",
+      minAvgMax: "min / average / max",
+      direction: "Common direction",
+      samples: "Samples",
+      to: "to",
+      northern: "northern",
+      southern: "southern",
+      unavailable: "The historical InSight record is unavailable.",
+      trekEyebrow: "Surface context",
+      trekTitle: "Three places, three ways to read relief",
+      trekIntro:
+        "Mars Trek products are imagery and terrain layers. They do not provide the planet’s orbital position.",
+      trekOpen: "Open Mars Trek",
+      trekLabel: (title: string) =>
+        `Open Mars Trek for ${title} (opens in a new tab)`,
+      mediaEyebrow: "Mission media",
+      mediaTitle: "The archive remembers where each image came from",
+      mediaFallback: "Mission media unavailable",
+      mediaDetails: "NASA media details",
+      mediaLabel: (title: string) =>
+        `Open NASA media details for ${title} (opens in a new tab)`,
+    },
+    mission: {
+      eyebrow: "NASA mission media",
+      title: (planet: string) => `${planet}, through a mission archive`,
+      intro: (planet: string) =>
+        `Every preview comes from the reviewed NASA media list for that world. A failed request can only fall back to media curated for ${planet}.`,
+      fallback: "Mission media unavailable",
+      details: "NASA media details",
+      detailsLabel: (title: string) =>
+        `Open NASA media details for ${title} (opens in a new tab)`,
+      empty: (planet: string) =>
+        `No verified ${planet} mission preview is available.`,
+    },
+  },
+  tr: {
+    categories: {
+      all: "Seçilen bütün olaylar",
+      wildfires: "Orman yangınları",
+      severeStorms: "Şiddetli fırtınalar",
+      volcanoes: "Volkanlar",
+      floods: "Seller",
+      seaLakeIce: "Deniz ve göl buzu",
+      dustHaze: "Toz ve pus",
+    },
+    earth: {
+      imageAlt: "DSCOVR EPIC tarafından görülen Dünya",
+      imageFallback: "EPIC görseline ulaşılamıyor",
+      eyebrow: "Gözlem altındaki Dünya",
+      title: "Tek gezegen, birden fazla saat",
+      intro:
+        "EPIC, DSCOVR konumundan Güneş alan diski görür. EONET katkı sağlayan kaynakların olay kayıtlarını toplar. GIBS tarihli görüntü katmanları sunar. Zamanları ilişkilidir, ancak tek eşzamanlı kamera değildir.",
+      capture: "Çekim",
+      color: "Renk",
+      natural: "Doğal renk bileşimi",
+      enhanced: "Geliştirilmiş renk",
+      centroid: "Merkez noktası",
+      noEpic: "EPIC görseli bulunmuyor.",
+      eventsEyebrow: "Doğal olaylar",
+      eventsTitle: "Önce olayı, sonra kaynağını oku",
+      category: "Kategori",
+      eventSource: "Olay kaynağı",
+      eventSourceLabel: (title: string) =>
+        `${title} olayının kaynağını aç (yeni sekmede açılır)`,
+      noEvents: "Güncel kayıtta bu kategoriyle eşleşen olay yok.",
+      layersEyebrow: "Earthdata katmanları",
+      layersTitle: "Katman kataloğu değil, seçilmiş görüntüler",
+      layerFallback: "GIBS katman önizlemesine ulaşılamıyor",
+      environmentEyebrow: "Uzay çevresi",
+      environmentTitle: "Güneş'in etkisi gökyüzünde bitmez",
+      environmentIntro:
+        "DONKI kayıtları resmî etkinlik kimlikleri ilişkiyi kanıtlamadıkça ayrı gözlemler olarak tutulur.",
+      noSpaceWeather: "Uzay hava olayı bulunmuyor.",
+      failedFamilies: "Kullanılamayan DONKI aileleri",
+      remainingCurrent: "Diğer olay aileleri güncelliğini koruyor.",
+      nearEarth: "Dünya'ya yakın uzay",
+      missDistance: "km geçiş uzaklığı",
+      velocity: "km/sa bağıl hız",
+      noApproach: "Yakın geçiş kaydı bulunmuyor.",
+      hazardousTitle: "Potansiyel olarak tehlikeli",
+      hazardousBody:
+        "bir yörünge sınıflandırmasıdır; cismin Dünya'ya çarpacağı tahmini değildir.",
+    },
+    mars: {
+      historicalEyebrow: "Tarihsel saha kaydı",
+      onThisDay: "InSight arşivinde bugün",
+      nearest: (date: string) => `${date} tarihine en yakın arşiv gözlemi`,
+      intro:
+        "InSight bu sol değerini tek iniş noktasında kaydetti. Aşağıdaki tarih tarihsel kayıttır; “bugünkü Mars” veya gezegen geneli tahmin değildir.",
+      temperature: "Sıcaklık °C",
+      pressure: "Basınç Pa",
+      wind: "Yatay rüzgâr m/sn",
+      minAvgMax: "en düşük / ortalama / en yüksek",
+      direction: "Yaygın yön",
+      samples: "Örnekler",
+      to: "–",
+      northern: "kuzey",
+      southern: "güney",
+      unavailable: "Tarihsel InSight kaydı kullanılamıyor.",
+      trekEyebrow: "Yüzey bağlamı",
+      trekTitle: "Üç yer, kabartıyı okumanın üç yolu",
+      trekIntro:
+        "Mars Trek ürünleri görüntü ve arazi katmanlarıdır; gezegenin yörünge konumunu sağlamaz.",
+      trekOpen: "Mars Trek'i aç",
+      trekLabel: (title: string) =>
+        `${title} için Mars Trek'i aç (yeni sekmede açılır)`,
+      mediaEyebrow: "Görev medyası",
+      mediaTitle: "Arşiv her görselin kaynağını korur",
+      mediaFallback: "Görev medyasına ulaşılamıyor",
+      mediaDetails: "NASA medya ayrıntıları",
+      mediaLabel: (title: string) =>
+        `${title} için NASA medya ayrıntılarını aç (yeni sekmede açılır)`,
+    },
+    mission: {
+      eyebrow: "NASA görev medyası",
+      title: (planet: string) => `Görev arşivinden ${planet}`,
+      intro: (planet: string) =>
+        `Her önizleme, o dünya için incelenmiş NASA medya listesinden gelir. Başarısız istek yalnızca ${planet} için seçilmiş medyaya dönebilir.`,
+      fallback: "Görev medyasına ulaşılamıyor",
+      details: "NASA medya ayrıntıları",
+      detailsLabel: (title: string) =>
+        `${title} için NASA medya ayrıntılarını aç (yeni sekmede açılır)`,
+      empty: (planet: string) =>
+        `${planet} için doğrulanmış görev önizlemesi bulunmuyor.`,
+    },
+  },
+} as const satisfies Record<Locale, object>;

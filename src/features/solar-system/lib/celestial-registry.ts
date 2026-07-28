@@ -1,3 +1,4 @@
+import { getPlanetById } from "@/content/planets";
 import {
   EXTENDED_BODIES,
   type ExtendedBody,
@@ -18,7 +19,9 @@ import {
   type SystemRegionId,
 } from "@/features/solar-system/types/celestial-body";
 import type { CelestialNavigatorCategory } from "@/features/solar-system/types/celestial-navigation";
-import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { EXTENDED_BODY_COPY_TR } from "@/features/body-details/lib/extended-body-copy.tr";
+import { getExploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import type { Locale } from "@/lib/i18n/locale";
 
 export type CelestialKind =
   | "star"
@@ -30,13 +33,11 @@ export type CelestialKind =
   | "kuiper-object"
   | "comet"
   | "region";
-
 export type SceneRepresentation =
   | "physical-surface"
   | "procedural-reference"
   | "representative-body"
   | "regional-context";
-
 export type OrbitPolicyClass =
   "planet-orbit" | "moon-orbit" | "small-body-orbit" | "no-individual-orbit";
 
@@ -64,32 +65,37 @@ type RegionRegistryMetadata = Pick<
   | "summary"
 >;
 
-const REGION_METADATA: Readonly<
-  Record<SystemRegionId, RegionRegistryMetadata>
-> = Object.freeze(
-  SYSTEM_REGION_IDS.reduce<Record<SystemRegionId, RegionRegistryMetadata>>(
-    (registry, id) => {
-      const copy = exploreSceneCopy.registry.regions[id];
-      registry[id] = {
-        displayName: copy.displayName,
-        navigatorCategory: "regions-context",
-        sceneRepresentation: "regional-context",
-        sourceIds:
-          id === "asteroid-belt" || id === "kuiper-belt"
-            ? ["jpl-small-body-database"]
-            : id === "oort-cloud"
-              ? ["nasa-oort-cloud-overview"]
-              : ["nasa-heliosphere-overview"],
-        summary: {
-          description: copy.description,
-          representationLabel: copy.representation,
-        },
-      };
-      return registry;
-    },
-    {} as Record<SystemRegionId, RegionRegistryMetadata>,
-  ),
-);
+function regionMetadataMap(
+  locale: Locale,
+): Readonly<Record<SystemRegionId, RegionRegistryMetadata>> {
+  const copy = getExploreSceneCopy(locale);
+  return Object.freeze(
+    SYSTEM_REGION_IDS.reduce<Record<SystemRegionId, RegionRegistryMetadata>>(
+      (registry, id) => {
+        const region = copy.registry.regions[id];
+        registry[id] = {
+          displayName: region.displayName,
+          navigatorCategory: "regions-context",
+          sceneRepresentation: "regional-context",
+          sourceIds:
+            id === "asteroid-belt"
+              ? ["nasa-asteroid-facts", "jpl-sbdb-orbital-elements"]
+              : id === "kuiper-belt"
+                ? ["nasa-kuiper-belt-facts", "jpl-sbdb-orbital-elements"]
+                : id === "oort-cloud"
+                  ? ["nasa-oort-cloud-facts"]
+                  : ["nasa-heliosphere-components"],
+          summary: {
+            description: region.description,
+            representationLabel: region.representation,
+          },
+        };
+        return registry;
+      },
+      {} as Record<SystemRegionId, RegionRegistryMetadata>,
+    ),
+  );
+}
 
 export function extendedBodyNavigatorCategory(
   body: Pick<ExtendedBody, "id" | "kind">,
@@ -99,10 +105,12 @@ export function extendedBodyNavigatorCategory(
   return "dwarf-kuiper";
 }
 
-function moonEntry(moon: Moon): CelestialRegistryEntry {
+function moonEntry(moon: Moon, locale: Locale): CelestialRegistryEntry {
+  const copy = getExploreSceneCopy(locale);
   return {
     id: moon.id,
-    displayName: moon.name,
+    displayName:
+      moon.id === "moon-earth-moon" && locale === "tr" ? "Ay" : moon.name,
     kind: "moon",
     navigatorCategory: "planetary-moons",
     orbitPolicyClass: "moon-orbit",
@@ -110,18 +118,21 @@ function moonEntry(moon: Moon): CelestialRegistryEntry {
     sceneRepresentation: "procedural-reference",
     sourceIds: moon.sourceIds,
     summary: {
-      description: exploreSceneCopy.registry.moonDescription(
-        exploreSceneCopy.registry.parentPlanetNames[moon.parentPlanetId],
+      description: copy.registry.moonDescription(
+        copy.registry.parentPlanetNames[moon.parentPlanetId],
       ),
       representationLabel:
         moon.representation.representationType === "horizons-window"
-          ? exploreSceneCopy.registry.moonHorizons
-          : exploreSceneCopy.registry.moonRepresentative,
+          ? copy.registry.moonHorizons
+          : copy.registry.moonRepresentative,
     },
   };
 }
 
-function dwarfSatelliteEntry(moon: DwarfSatellite): CelestialRegistryEntry {
+function dwarfSatelliteEntry(
+  moon: DwarfSatellite,
+  locale: Locale,
+): CelestialRegistryEntry {
   return {
     id: moon.id,
     displayName: moon.name,
@@ -132,13 +143,23 @@ function dwarfSatelliteEntry(moon: DwarfSatellite): CelestialRegistryEntry {
     sceneRepresentation: "procedural-reference",
     sourceIds: moon.sourceIds,
     summary: {
-      description: `Featured satellite in the ${moon.parentId} system.`,
-      representationLabel: "Representative dwarf-system context",
+      description:
+        locale === "tr"
+          ? `${moon.parentId} sisteminde öne çıkan uydu.`
+          : `Featured satellite in the ${moon.parentId} system.`,
+      representationLabel:
+        locale === "tr"
+          ? "Temsili cüce sistem bağlamı"
+          : "Representative dwarf-system context",
     },
   };
 }
 
-function extendedEntry(body: ExtendedBody): CelestialRegistryEntry {
+function extendedEntry(
+  body: ExtendedBody,
+  locale: Locale,
+): CelestialRegistryEntry {
+  const copy = getExploreSceneCopy(locale);
   return {
     id: body.id,
     displayName: body.name,
@@ -149,8 +170,11 @@ function extendedEntry(body: ExtendedBody): CelestialRegistryEntry {
     sceneRepresentation: "representative-body",
     sourceIds: [body.sourceUrl],
     summary: {
-      description: body.description,
-      representationLabel: exploreSceneCopy.registry.extendedRepresentation,
+      description:
+        locale === "tr"
+          ? EXTENDED_BODY_COPY_TR[body.id].description
+          : body.description,
+      representationLabel: copy.registry.extendedRepresentation,
     },
   };
 }
@@ -158,11 +182,14 @@ function extendedEntry(body: ExtendedBody): CelestialRegistryEntry {
 export function createCelestialRegistry(
   planetSummaries: readonly ExplorePlanetSummary[],
   sceneSun: SceneSun,
+  locale: Locale = "en",
 ): ReadonlyMap<CelestialBodyId, CelestialRegistryEntry> {
+  const copy = getExploreSceneCopy(locale);
+  const regions = regionMetadataMap(locale);
   const entries: CelestialRegistryEntry[] = [
     {
       id: "sun",
-      displayName: sceneSun.name,
+      displayName: locale === "tr" ? "Güneş" : sceneSun.name,
       kind: "star",
       navigatorCategory: "sun-planets",
       orbitPolicyClass: "no-individual-orbit",
@@ -170,33 +197,36 @@ export function createCelestialRegistry(
       sceneRepresentation: "physical-surface",
       sourceIds: [sceneSun.radiusSourceId],
       summary: {
-        description: exploreSceneCopy.registry.sunDescription,
-        representationLabel: exploreSceneCopy.registry.sunRepresentation,
+        description: copy.registry.sunDescription,
+        representationLabel: copy.registry.sunRepresentation,
       },
     },
-    ...planetSummaries.map((planet): CelestialRegistryEntry => ({
-      id: planet.id,
-      displayName: planet.name,
-      kind: "planet",
-      navigatorCategory: "sun-planets",
-      orbitPolicyClass: "planet-orbit",
-      parentId: null,
-      sceneRepresentation: "physical-surface",
-      sourceIds: [`planet-catalogue:${planet.id}`],
-      summary: {
-        description: planet.tagline,
-        representationLabel: exploreSceneCopy.registry.planetRepresentation,
-      },
-    })),
-    ...FEATURED_MOONS.map(moonEntry),
-    ...DWARF_SATELLITES.map(dwarfSatelliteEntry),
-    ...EXTENDED_BODIES.map(extendedEntry),
+    ...planetSummaries.map((planet): CelestialRegistryEntry => {
+      const sourcePlanet = getPlanetById(planet.id);
+      return {
+        id: planet.id,
+        displayName: sourcePlanet?.name[locale] ?? planet.name,
+        kind: "planet",
+        navigatorCategory: "sun-planets",
+        orbitPolicyClass: "planet-orbit",
+        parentId: null,
+        sceneRepresentation: "physical-surface",
+        sourceIds: [`planet-catalogue:${planet.id}`],
+        summary: {
+          description: sourcePlanet?.tagline[locale] ?? planet.tagline,
+          representationLabel: copy.registry.planetRepresentation,
+        },
+      };
+    }),
+    ...FEATURED_MOONS.map((moon) => moonEntry(moon, locale)),
+    ...DWARF_SATELLITES.map((moon) => dwarfSatelliteEntry(moon, locale)),
+    ...EXTENDED_BODIES.map((body) => extendedEntry(body, locale)),
     ...SYSTEM_REGION_IDS.map((id): CelestialRegistryEntry => ({
       id,
       kind: "region",
       orbitPolicyClass: "no-individual-orbit",
       parentId: null,
-      ...REGION_METADATA[id],
+      ...regions[id],
     })),
   ];
   return new Map(entries.map((entry) => [entry.id, Object.freeze(entry)]));
@@ -211,6 +241,9 @@ export function entriesForCategory(
   );
 }
 
-export function regionMetadata(regionId: SystemRegionId) {
-  return REGION_METADATA[regionId];
+export function regionMetadata(
+  regionId: SystemRegionId,
+  locale: Locale = "en",
+): RegionRegistryMetadata {
+  return regionMetadataMap(locale)[regionId];
 }

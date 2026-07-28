@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import Link from "next/link";
 
-import { marsDetailContent } from "@/content/planet-details/mars";
+import { getPlanetDetailContent } from "@/content/planet-details";
 import {
   ContentSection,
   FactCard,
@@ -16,26 +16,35 @@ import {
   formatOneDecimal,
   formatZeroDecimals,
 } from "@/lib/i18n/formatters";
-import { uiStrings } from "@/lib/i18n/ui-strings";
+import type { Locale } from "@/lib/i18n/locale";
+import { planetPageCopy } from "@/lib/i18n/planet-page-copy";
 
 import { MarsHumanScale } from "./mars-human-scale";
 import { PlanetMissionList } from "./planet-mission-list";
 import styles from "./mars-detail.module.css";
 
 export function MarsDetailPage({
+  locale = "en",
   model,
   supplement,
 }: {
+  locale?: Locale;
   model: PlanetDetailModel;
   supplement?: ReactNode;
 }) {
-  const copy = uiStrings.pages.planet.mars;
-  const content = marsDetailContent;
+  const copy = planetPageCopy[locale].mars;
+  const detailCopy = planetPageCopy[locale].detail;
+  const content = getPlanetDetailContent("mars", locale);
 
   return (
     <article
       className={styles.page}
-      style={{ "--planet-accent": model.accentColor } as CSSProperties}
+      style={
+        {
+          "--planet-accent": model.accentColor,
+          "--mars-editorial-texture": 'url("/textures/planets/mars.webp")',
+        } as CSSProperties
+      }
     >
       <header className={styles.hero}>
         <div className={styles.heroCopy}>
@@ -57,7 +66,9 @@ export function MarsDetailPage({
         >
           <span aria-hidden="true" className={styles.orbitArc} />
           <span aria-hidden="true" className={styles.orbitArcSecondary} />
-          <div aria-hidden="true" className={styles.marsOrb} />
+          <div aria-hidden="true" className={styles.marsOrb}>
+            <span className={styles.marsTexture} />
+          </div>
           <span className={styles.heroIndex}>04 / 08</span>
           <p className={styles.heroCaption}>{content.heroCaption}</p>
           <dl className={styles.heroMeta}>
@@ -79,14 +90,14 @@ export function MarsDetailPage({
             context={copy.metrics.radiusContext}
             label={copy.metrics.radius}
             unit="km"
-            value={formatOneDecimal(model.meanRadiusKm)}
+            value={formatOneDecimal(model.meanRadiusKm, locale)}
           />
           <MetricCard
             context={copy.metrics.dayContext}
             label={copy.metrics.solarDay}
             value={
               model.solarDayHours
-                ? formatHoursAsClockDuration(model.solarDayHours)
+                ? formatHoursAsClockDuration(model.solarDayHours, locale)
                 : "—"
             }
           />
@@ -94,7 +105,7 @@ export function MarsDetailPage({
             context={copy.metrics.temperatureContext}
             label={copy.metrics.temperature}
             unit="°C"
-            value={formatZeroDecimals(model.averageTemperatureC)}
+            value={formatZeroDecimals(model.averageTemperatureC, locale)}
           />
         </MetricGrid>
 
@@ -131,6 +142,7 @@ export function MarsDetailPage({
             dayDifferenceMinutes={model.dayDifferenceMinutes ?? 0}
             gravityEarthRatio={model.gravityEarthRatio}
             gravityMS2={model.gravityMS2}
+            locale={locale}
             sunlightTravelMinutes={model.sunlightTravelMinutes}
           />
         </ContentSection>
@@ -144,7 +156,7 @@ export function MarsDetailPage({
             <FactCard
               accentColor={model.accentColor}
               body={copy.facts.gravityBody(
-                formatOneDecimal(model.gravityEarthRatio * 100),
+                formatOneDecimal(model.gravityEarthRatio * 100, locale),
               )}
               eyebrow={copy.facts.gravityEyebrow}
               title={copy.facts.gravityTitle}
@@ -152,8 +164,8 @@ export function MarsDetailPage({
             <FactCard
               accentColor={model.accentColor}
               body={copy.facts.yearBody(
-                formatOneDecimal(model.orbitalPeriodEarthDays),
-                formatOneDecimal(model.localDaysPerOrbit ?? 0),
+                formatOneDecimal(model.orbitalPeriodEarthDays, locale),
+                formatOneDecimal(model.localDaysPerOrbit ?? 0, locale),
               )}
               eyebrow={copy.facts.yearEyebrow}
               title={copy.facts.yearTitle}
@@ -171,9 +183,9 @@ export function MarsDetailPage({
         </ContentSection>
 
         <ContentSection
-          eyebrow={uiStrings.pages.planet.detail.sections.missionsEyebrow}
-          lede={uiStrings.pages.planet.detail.sections.missionsLede}
-          title={uiStrings.pages.planet.detail.sections.missionsTitle}
+          eyebrow={detailCopy.sections.missionsEyebrow}
+          lede={detailCopy.sections.missionsLede}
+          title={detailCopy.sections.missionsTitle}
         >
           <PlanetMissionList missions={content.missions} />
         </ContentSection>
@@ -198,7 +210,7 @@ export function MarsDetailPage({
 
         <nav aria-label={copy.adjacentPlanets} className={styles.planetNav}>
           {model.previous ? (
-            <Link href={`/planet/${model.previous.id}`}>
+            <Link href={`/body/${model.previous.id}`}>
               <span>{copy.previousPlanet}</span>
               <strong>{model.previous.name}</strong>
             </Link>
@@ -206,7 +218,7 @@ export function MarsDetailPage({
             <span />
           )}
           {model.next ? (
-            <Link href={`/planet/${model.next.id}`}>
+            <Link href={`/body/${model.next.id}`}>
               <span>{copy.nextPlanet}</span>
               <strong>{model.next.name}</strong>
             </Link>

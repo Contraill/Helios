@@ -57,9 +57,9 @@ const SOLAR_SYSTEM_SCOPE_LICENSE =
   "Creative Commons Attribution 4.0 International (CC BY 4.0). Helios resizes and converts the source assets to WebP.";
 const SOLAR_SYSTEM_SCOPE_URL = "https://www.solarsystemscope.com/textures/";
 const SOLAR_SYSTEM_SCOPE_ATTRIBUTION =
-  "Solar System Scope, based on NASA elevation and imagery data; colours are adjusted and unmapped gaps may contain corresponding fictional terrain";
+  "Solar System Scope, based on NASA elevation and imagery data; colours are adjusted and unmapped areas may include illustrative terrain";
 const SOURCE_MASTER_NOTE =
-  "The larger source master is attribution-only and is not shipped in public/ or the runtime bundle. The production derivative is capped at 2048×1024.";
+  "The original high-resolution source is documented for attribution and verification but is not included in the public application bundle. The display derivative is capped at 2048×1024.";
 
 function surfaceSource(
   bodyId: TextureBodyId,
@@ -130,7 +130,8 @@ export const planetTextureSources: Readonly<
     sourceUrl: "https://science.nasa.gov/photojournal/uranus/",
     provider: "NASA/JPL Voyager 2",
     license: NASA_MEDIA_LICENSE,
-    attribution: "NASA/JPL Voyager 2; Helios procedural simulation",
+    attribution:
+      "NASA/JPL Voyager 2; reference-guided atmospheric visualization prepared for Helios",
     representation: "simulation",
     colorSpace: "srgb",
     materialSlot: "map",
@@ -149,7 +150,8 @@ export const planetTextureSources: Readonly<
     sourceUrl: "https://science.nasa.gov/3d-resources/neptune/",
     provider: "NASA/JPL/Don Davis",
     license: NASA_MEDIA_LICENSE,
-    attribution: "NASA/JPL/Don Davis; NASA 3D Resources; simulated map",
+    attribution:
+      "NASA/JPL/Don Davis; NASA 3D Resources; reference-guided simulated map",
     representation: "simulation",
     colorSpace: "srgb",
     materialSlot: "map",
@@ -170,7 +172,7 @@ export const earthCloudTextureSource: PlanetTextureSource = Object.freeze({
   sourceUrl: SOLAR_SYSTEM_SCOPE_URL,
   provider: "Solar System Scope",
   license: SOLAR_SYSTEM_SCOPE_LICENSE,
-  attribution: `${SOLAR_SYSTEM_SCOPE_ATTRIBUTION}; converted to a transparent cloud shell by Helios`,
+  attribution: `${SOLAR_SYSTEM_SCOPE_ATTRIBUTION}; adapted as a transparent cloud layer for Helios`,
   representation: "simulation",
   colorSpace: "srgb",
   materialSlot: "map",
@@ -191,7 +193,7 @@ export const earthCityLightsTextureSource: PlanetTextureSource = Object.freeze({
   provider: "three-globe example assets",
   license: "MIT License; resized and converted to WebP by Helios.",
   attribution:
-    "three-globe Earth night example map; Helios isolates the warm light signal and applies a solar terminator in the shader",
+    "three-globe Earth night example map; processed to isolate warm night-light emissions and limited to the night side by the scene lighting",
   representation: "simulation",
   colorSpace: "srgb",
   materialSlot: "map",

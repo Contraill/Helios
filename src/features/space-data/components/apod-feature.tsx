@@ -2,6 +2,9 @@
 
 import { useState } from "react";
 
+import { siteCopy } from "@/lib/i18n/site-copy";
+import { useLocaleStore } from "@/stores/locale-store";
+
 import type { ApodRecord } from "@/lib/data/external/models";
 import type {
   ExternalMetadata,
@@ -22,22 +25,19 @@ export function ApodFeature({
   readonly status: ExternalDataStatus;
 }) {
   const [index, setIndex] = useState(0);
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = siteCopy[locale].apod;
   const record = records[index];
   if (!record) {
     return (
       <section className={styles.apod} aria-labelledby="apod-heading">
         <div className={styles.apodMedia}>
-          <RemoteMedia
-            alt="Astronomy Picture of the Day"
-            fallbackLabel="APOD media unavailable"
-          />
+          <RemoteMedia alt={copy.title} fallbackLabel={copy.mediaUnavailable} />
         </div>
         <div className={styles.apodCopy}>
-          <p className={styles.eyebrow}>Astronomy Picture of the Day</p>
-          <h2 id="apod-heading">No dated APOD record is available</h2>
-          <p className={styles.empty}>
-            The Helios home page remains available without the remote record.
-          </p>
+          <p className={styles.eyebrow}>{copy.title}</p>
+          <h2 id="apod-heading">{copy.emptyTitle}</h2>
+          <p className={styles.empty}>{copy.emptyBody}</p>
           <DataState compact metadata={metadata} status={status} />
         </div>
       </section>
@@ -50,15 +50,15 @@ export function ApodFeature({
       <div className={styles.apodMedia}>
         <RemoteMedia
           alt={record.title}
-          fallbackLabel="APOD media unavailable"
+          fallbackLabel={copy.mediaUnavailable}
           src={mediaSrc}
         />
         <span className={styles.mediaType}>
-          {record.mediaType === "video" ? "Video preview" : "Image"}
+          {record.mediaType === "video" ? copy.videoPreview : copy.image}
         </span>
       </div>
       <div className={styles.apodCopy}>
-        <p className={styles.eyebrow}>Astronomy Picture of the Day</p>
+        <p className={styles.eyebrow}>{copy.title}</p>
         <h2 id="apod-heading">{record.title}</h2>
         <time dateTime={record.date}>{record.date}</time>
         <p>{record.excerpt}</p>
@@ -70,23 +70,32 @@ export function ApodFeature({
               setIndex((value) => Math.min(records.length - 1, value + 1))
             }
           >
-            Previous day
+            {copy.previous}
           </button>
           <button
             type="button"
             disabled={index === 0}
             onClick={() => setIndex((value) => Math.max(0, value - 1))}
           >
-            Newer day
+            {copy.newer}
           </button>
-          <a href={record.sourceUrl} rel="noreferrer" target="_blank">
-            Open official record
+          <a
+            aria-label={copy.officialLabel(record.title)}
+            href={record.sourceUrl}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
+            {copy.official} <span aria-hidden="true">↗</span>
           </a>
         </div>
         {record.copyright ? (
-          <p className={styles.credit}>Copyright: {record.copyright}</p>
+          <p className={styles.credit}>
+            {copy.copyright}: {record.copyright}
+          </p>
         ) : null}
-        <p className={styles.credit}>Service {record.serviceVersion}</p>
+        <p className={styles.credit}>
+          {copy.service} {record.serviceVersion}
+        </p>
         <DataState compact metadata={metadata} status={status} />
       </div>
     </section>

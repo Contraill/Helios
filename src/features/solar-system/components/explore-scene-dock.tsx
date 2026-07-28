@@ -11,11 +11,12 @@ import {
   useState,
 } from "react";
 
-import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { getExploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 import type { ExploreDockPanel } from "@/stores/explore-scene-ui-store";
 import { useExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
 
-import gateStyles from "./explore-scene-gate.module.css";
+import controlStyles from "./explore-scene-controls.module.css";
 
 interface ExploreSceneDockProps {
   navigator: ReactNode;
@@ -25,7 +26,6 @@ interface ExploreSceneDockProps {
   view: ReactNode;
 }
 
-const PANEL_LABELS = exploreSceneCopy.dock.panelLabels;
 const PANEL_ORDER = [
   "selection",
   "navigator",
@@ -76,6 +76,9 @@ function useResponsiveShellMode(
 }
 
 function PanelTabs({ mobile = false }: { mobile?: boolean }) {
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExploreSceneCopy(locale);
+  const panelLabels = copy.dock.panelLabels;
   const active = useExploreSceneUiStore((state) => state.activeDockPanel);
   const setActive = useExploreSceneUiStore((state) => state.setActiveDockPanel);
   const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
@@ -101,8 +104,8 @@ function PanelTabs({ mobile = false }: { mobile?: boolean }) {
   };
   return (
     <div
-      aria-label={exploreSceneCopy.dock.tabsLabel}
-      className={gateStyles.panelTabs}
+      aria-label={copy.dock.tabsLabel}
+      className={controlStyles.panelTabs}
       onKeyDown={handleKeyDown}
       role="tablist"
     >
@@ -110,7 +113,9 @@ function PanelTabs({ mobile = false }: { mobile?: boolean }) {
         <button
           aria-controls={`explore-panel-${panel}`}
           aria-selected={active === panel}
-          className={active === panel ? gateStyles.panelTabActive : undefined}
+          className={
+            active === panel ? controlStyles.panelTabActive : undefined
+          }
           id={`explore-tab-${panel}`}
           key={panel}
           onClick={() => setActive(panel)}
@@ -119,8 +124,8 @@ function PanelTabs({ mobile = false }: { mobile?: boolean }) {
           type="button"
         >
           {mobile && panel === "selection"
-            ? exploreSceneCopy.dock.mobileSelectionLabel
-            : PANEL_LABELS[panel]}
+            ? copy.dock.mobileSelectionLabel
+            : panelLabels[panel]}
         </button>
       ))}
     </div>
@@ -128,6 +133,9 @@ function PanelTabs({ mobile = false }: { mobile?: boolean }) {
 }
 
 export function ExploreSceneDock(props: ExploreSceneDockProps) {
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExploreSceneCopy(locale);
+  const panelLabels = copy.dock.panelLabels;
   const rootRef = useRef<HTMLDivElement>(null);
   const shellMode = useResponsiveShellMode(rootRef);
   const active = useExploreSceneUiStore((state) => state.activeDockPanel);
@@ -135,6 +143,9 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
     (state) => state.desktopDockCollapsed,
   );
   const mobileOpen = useExploreSceneUiStore((state) => state.mobileDockOpen);
+  const selectionFocusRequest = useExploreSceneUiStore(
+    (state) => state.selectionFocusRequest,
+  );
   const openMobile = useExploreSceneUiStore((state) => state.openMobileDock);
   const closeMobile = useExploreSceneUiStore((state) => state.closeMobileDock);
   const toggleDesktopDock = useExploreSceneUiStore(
@@ -143,6 +154,7 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
+  const handledSelectionFocusRequest = useRef(0);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -163,28 +175,36 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
     if (shellMode !== "mobile" && mobileOpen) closeMobile();
   }, [closeMobile, mobileOpen, shellMode]);
 
+  useEffect(() => {
+    if (selectionFocusRequest === handledSelectionFocusRequest.current) return;
+    handledSelectionFocusRequest.current = selectionFocusRequest;
+    if (active !== "selection" || collapsed) return;
+    if (shellMode === "mobile" && !mobileOpen) return;
+    window.requestAnimationFrame(() => {
+      rootRef.current
+        ?.querySelector<HTMLElement>("[data-selection-summary-heading]")
+        ?.focus();
+    });
+  }, [active, collapsed, mobileOpen, selectionFocusRequest, shellMode]);
+
   return (
     <div
-      className={gateStyles.responsiveRoot}
+      className={controlStyles.responsiveRoot}
       data-shell-mode={shellMode}
       ref={rootRef}
     >
       {shellMode !== "mobile" ? (
         <aside
-          aria-label={exploreSceneCopy.dock.label}
-          className={gateStyles.desktopDock}
+          aria-label={copy.dock.label}
+          className={controlStyles.desktopDock}
           data-collapsed={collapsed ? "true" : "false"}
         >
-          <header className={gateStyles.dockHeader}>
-            <p className={gateStyles.scaleNotice}>{props.scaleNotice}</p>
+          <header className={controlStyles.dockHeader}>
+            <p className={controlStyles.scaleNotice}>{props.scaleNotice}</p>
             <button
               aria-expanded={!collapsed}
-              aria-label={
-                collapsed
-                  ? exploreSceneCopy.dock.expand
-                  : exploreSceneCopy.dock.minimize
-              }
-              className={gateStyles.collapseButton}
+              aria-label={collapsed ? copy.dock.expand : copy.dock.minimize}
+              className={controlStyles.collapseButton}
               onClick={toggleDesktopDock}
               type="button"
             >
@@ -196,7 +216,7 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
               <PanelTabs />
               <section
                 aria-labelledby={`explore-tab-${active}`}
-                className={gateStyles.panelBody}
+                className={controlStyles.panelBody}
                 id={`explore-panel-${active}`}
                 role="tabpanel"
               >
@@ -207,7 +227,7 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
         </aside>
       ) : (
         <>
-          <div className={gateStyles.mobileDockBar}>
+          <div className={controlStyles.mobileDockBar}>
             <span>{props.scaleNotice}</span>
             <button
               aria-expanded={mobileOpen}
@@ -216,12 +236,12 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
               ref={triggerRef}
               type="button"
             >
-              {exploreSceneCopy.dock.mobileOpen(PANEL_LABELS[active])}
+              {copy.dock.mobileOpen(panelLabels[active])}
             </button>
           </div>
           <dialog
             aria-labelledby={titleId}
-            className={gateStyles.bottomSheet}
+            className={controlStyles.bottomSheet}
             onCancel={(event) => {
               event.preventDefault();
               closeMobile();
@@ -237,15 +257,15 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
             onWheel={(event) => event.stopPropagation()}
             ref={dialogRef}
           >
-            <header className={gateStyles.sheetHeader}>
+            <header className={controlStyles.sheetHeader}>
               <div>
-                <p className={gateStyles.eyebrow}>
-                  {exploreSceneCopy.dock.mobileEyebrow}
+                <p className={controlStyles.eyebrow}>
+                  {copy.dock.mobileEyebrow}
                 </p>
-                <h2 id={titleId}>{PANEL_LABELS[active]}</h2>
+                <h2 id={titleId}>{panelLabels[active]}</h2>
               </div>
               <button
-                aria-label={exploreSceneCopy.dock.mobileClose}
+                aria-label={copy.dock.mobileClose}
                 onClick={closeMobile}
                 type="button"
               >
@@ -255,7 +275,7 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
             <PanelTabs mobile />
             <section
               aria-labelledby={`explore-tab-${active}`}
-              className={gateStyles.sheetScroller}
+              className={controlStyles.sheetScroller}
               id={`explore-panel-${active}`}
               role="tabpanel"
             >

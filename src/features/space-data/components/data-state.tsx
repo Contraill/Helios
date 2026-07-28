@@ -1,20 +1,14 @@
+"use client";
+
 import type {
   ExternalDataStatus,
   ExternalMetadata,
 } from "@/lib/data/external/types";
+import { localeTag } from "@/lib/i18n/locale";
+import { siteCopy } from "@/lib/i18n/site-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 
 import styles from "./space-data.module.css";
-
-const labels: Record<ExternalDataStatus, string> = {
-  current: "Current response",
-  "near-live": "Near-live source",
-  "latest-available": "Latest available",
-  historical: "Historical record",
-  partial: "Partial provider response",
-  stale: "Cached record",
-  fallback: "Verified fallback",
-  unavailable: "Unavailable",
-};
 
 export function DataState({
   status,
@@ -25,30 +19,33 @@ export function DataState({
   readonly metadata: ExternalMetadata;
   readonly compact?: boolean;
 }) {
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = siteCopy[locale].dataState;
+
   return (
     <div
       className={compact ? styles.stateCompact : styles.state}
       data-status={status}
     >
-      <span className={styles.stateLabel}>{labels[status]}</span>
+      <span className={styles.stateLabel}>{copy.labels[status]}</span>
       <span>{metadata.provider}</span>
       {metadata.observedAt ? (
         <time dateTime={metadata.observedAt}>
-          Observed {formatDate(metadata.observedAt)}
+          {copy.observed} {formatDate(metadata.observedAt, localeTag(locale))}
         </time>
       ) : null}
       <time dateTime={metadata.retrievedAt}>
-        Retrieved {formatDate(metadata.retrievedAt)}
+        {copy.retrieved} {formatDate(metadata.retrievedAt, localeTag(locale))}
       </time>
     </div>
   );
 }
 
-function formatDate(value: string): string {
+function formatDate(value: string, locale: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : new Intl.DateTimeFormat("en", {
+    : new Intl.DateTimeFormat(locale, {
         dateStyle: "medium",
         timeStyle: "short",
         timeZone: "UTC",

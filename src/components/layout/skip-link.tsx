@@ -1,12 +1,14 @@
-import { uiStrings } from "@/lib/i18n/ui-strings";
+"use client";
+
+import { siteCopy } from "@/lib/i18n/site-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 
 export function SkipLink() {
+  const locale = useLocaleStore((state) => state.locale);
+
   return (
-    <a
-      href="#main-content"
-      className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-4 focus-visible:left-4 focus-visible:z-50 focus-visible:rounded-md focus-visible:border focus-visible:border-line focus-visible:bg-surface focus-visible:px-4 focus-visible:py-2"
-    >
-      {uiStrings.a11y.skipToContent}
+    <a href="#main-content" className="site-skip-link">
+      {siteCopy[locale].a11y.skipToContent}
     </a>
   );
 }

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "scene": {
+    "visualContracts": 1,
+    "maxDevicePixelRatio": 1.75,
+    "maxLocalStarCount": 1800,
+    "maxOrbitSegments": 192,
+    "maxRingSegments": 256
+  },
+  "textures": {
+    "maxRuntimeAssets": 64,
+    "primaryMaxWidth": 2048,
+    "primaryMaxHeight": 1024,
+    "secondaryMaxWidth": 2048,
+    "secondaryMaxHeight": 1024,
+    "ringMaxHeight": 256
+  },
+  "product": {
+    "realBodies": 57,
+    "systemRegions": 4,
+    "detailDestinations": 61,
+    "externalProviders": 12,
+    "canonicalSitemapEntries": 68
+  }
+}

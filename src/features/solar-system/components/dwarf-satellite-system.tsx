@@ -28,6 +28,10 @@ import {
 import { moonOrbitVisibility } from "@/features/solar-system/lib/orbit-visibility-policy";
 import { effectiveBodyVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
 import {
+  SCENE_FRAME_PRIORITY,
+  sceneFrameTimeMs,
+} from "@/features/solar-system/lib/scene-frame-runtime";
+import {
   createTidalLockScratch,
   tidalLockQuaternion,
 } from "@/features/solar-system/lib/tidal-lock-orientation";
@@ -35,10 +39,7 @@ import type { ScaleMode } from "@/features/solar-system/types/experience-setting
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
-import {
-  currentSimulationTimeMs,
-  useSimulationStore,
-} from "@/stores/simulation-store";
+import { useSimulationStore } from "@/stores/simulation-store";
 
 import { CelestialVisualSurface } from "./celestial-visual-surface";
 import { OrbitPath } from "./orbit-path";
@@ -152,7 +153,7 @@ function SatelliteObject({
   useFrame(() => {
     const node = groupRef.current;
     if (!node) return;
-    const timestamp = currentSimulationTimeMs(useSimulationStore.getState());
+    const timestamp = sceneFrameTimeMs();
     const position = dwarfSatellitePositionAt(
       moon,
       timestamp,
@@ -176,7 +177,7 @@ function SatelliteObject({
       surface.quaternion.identity();
     }
     surface.userData.testRotationKind = moon.rotation.kind;
-  });
+  }, SCENE_FRAME_PRIORITY.satellites);
 
   const over = (event: ThreeEvent<PointerEvent>) => {
     if (!visible) return;

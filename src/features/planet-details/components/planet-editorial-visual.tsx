@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { PlanetId } from "@/lib/data/schemas/planet";
 
 import styles from "./planet-detail.module.css";
@@ -17,12 +18,19 @@ export function PlanetEditorialVisual({
       className={styles.visual}
       data-planet={id}
       role="img"
+      style={
+        {
+          "--planet-editorial-texture": `url("/textures/planets/${id}.webp")`,
+        } as CSSProperties
+      }
     >
       <span aria-hidden="true" className={styles.visualField} />
       <span aria-hidden="true" className={styles.visualOrbit} />
       <span aria-hidden="true" className={styles.visualAxis} />
       <span aria-hidden="true" className={styles.visualRing} />
-      <span aria-hidden="true" className={styles.visualOrb} />
+      <span aria-hidden="true" className={styles.visualOrb}>
+        <span className={styles.visualTexture} />
+      </span>
       <span className={styles.heroIndex}>
         {order.toString().padStart(2, "0")} / 08
       </span>

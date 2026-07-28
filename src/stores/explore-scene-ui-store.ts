@@ -22,7 +22,9 @@ interface ExploreSceneUiState {
   desktopDockCollapsed: boolean;
   mobileDockOpen: boolean;
   navigator: NavigatorState;
+  selectionFocusRequest: number;
   setActiveDockPanel: (panel: ExploreDockPanel) => void;
+  openSelectionPanel: () => void;
   toggleDesktopDock: () => void;
   openMobileDock: (panel?: ExploreDockPanel) => void;
   closeMobileDock: () => void;
@@ -48,7 +50,13 @@ export const useExploreSceneUiStore = create<ExploreSceneUiState>((set) => ({
   desktopDockCollapsed: false,
   mobileDockOpen: false,
   navigator: initialNavigatorState,
+  selectionFocusRequest: 0,
   setActiveDockPanel: (activeDockPanel) => set({ activeDockPanel }),
+  openSelectionPanel: () =>
+    set((state) => ({
+      activeDockPanel: "selection",
+      selectionFocusRequest: state.selectionFocusRequest + 1,
+    })),
   toggleDesktopDock: () =>
     set((state) => ({ desktopDockCollapsed: !state.desktopDockCollapsed })),
   openMobileDock: (activeDockPanel) =>
@@ -104,5 +112,6 @@ export function resetExploreSceneUiStore(): void {
     desktopDockCollapsed: false,
     mobileDockOpen: false,
     navigator: initialNavigatorState,
+    selectionFocusRequest: 0,
   });
 }

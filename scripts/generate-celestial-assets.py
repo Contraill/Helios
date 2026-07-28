@@ -12,7 +12,7 @@ NASA_LICENSE = ('NASA media usage guidelines: NASA content is generally not subj
                 'NASA identifiers and third-party material remain protected. Source acknowledgement required; no endorsement implied.')
 USGS_LICENSE = 'United States Government work; public domain unless otherwise noted by USGS. Source acknowledgement requested.'
 ESA_LICENSE = 'ESA material used as a scientific appearance or shape reference only; individual media reuse terms remain governed by ESA. No source raster pixels are reproduced.'
-HELIOS_LICENSE = 'Helios-generated deterministic procedural reconstruction; no source raster pixels reproduced.'
+HELIOS_LICENSE = 'Reference-guided surface treatment prepared for Helios; no source raster pixels reproduced.'
 
 # id, display, category, dimensions, base rgb, accent rgb, pattern, source title, provider, url, mission/instrument
 BODIES = [
@@ -74,7 +74,7 @@ def wrap_x(x, width):
 def fractal_surface(w, h, base, accent, seed):
     """Body-seeded, seam-safe multi-octave albedo field.
 
-    Every octave is generated with a duplicated first column so bicubic
+    Every octave is produced with a duplicated first column so bicubic
     upscaling remains continuous at the equirectangular longitude seam.
     """
     layers=[]
@@ -365,5 +365,5 @@ for ident,value in hashes.items():
 rows.sort(key=lambda row:row['bodyId'])
 artifact={'schemaVersion':1,'method':'12x12 grayscale difference hash; diagnostic only, GPU review remains required','bodies':rows,'summary':{'total':len(rows),'minimumNearestHammingDistance':min(row['nearestHammingDistance'] for row in rows),'pairsBelowReviewThreshold':sum(row['nearestHammingDistance']<12 for row in rows)}}
 (ROOT/'test-artifacts').mkdir(exist_ok=True)
-(ROOT/'test-artifacts/gate3b-texture-distinctiveness.json').write_text(json.dumps(artifact,indent=2,ensure_ascii=False)+'\n')
-print(f'generated {len(manifest)} assets, {sum(x["byteSize"] for x in manifest)} encoded bytes, {sum(x["decodedBytes"] for x in manifest)} decoded bytes; minimum dHash distance {artifact["summary"]["minimumNearestHammingDistance"]}')
+(ROOT/'test-artifacts/texture-distinctiveness-audit.json').write_text(json.dumps(artifact,indent=2,ensure_ascii=False)+'\n')
+print(f'created {len(manifest)} assets, {sum(x["byteSize"] for x in manifest)} encoded bytes, {sum(x["decodedBytes"] for x in manifest)} decoded bytes; minimum dHash distance {artifact["summary"]["minimumNearestHammingDistance"]}')

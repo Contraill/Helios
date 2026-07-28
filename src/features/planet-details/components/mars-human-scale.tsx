@@ -9,7 +9,8 @@ import {
   formatOneDecimal,
   formatTwoDecimals,
 } from "@/lib/i18n/formatters";
-import { uiStrings } from "@/lib/i18n/ui-strings";
+import type { Locale } from "@/lib/i18n/locale";
+import { planetPageCopy } from "@/lib/i18n/planet-page-copy";
 
 import styles from "./mars-detail.module.css";
 
@@ -17,6 +18,7 @@ interface MarsHumanScaleProps {
   dayDifferenceMinutes: number;
   gravityEarthRatio: number;
   gravityMS2: number;
+  locale?: Locale;
   sunlightTravelMinutes: number;
 }
 
@@ -32,9 +34,10 @@ export function MarsHumanScale({
   dayDifferenceMinutes,
   gravityEarthRatio,
   gravityMS2,
+  locale = "en",
   sunlightTravelMinutes,
 }: MarsHumanScaleProps) {
-  const copy = uiStrings.pages.planet.mars.humanScale;
+  const copy = planetPageCopy[locale].mars.humanScale;
   const [earthReading, setEarthReading] = useState("");
   const parsedReading = useMemo(
     () => parseScaleReading(earthReading),
@@ -77,7 +80,7 @@ export function MarsHumanScale({
           <span className={styles.inputUnit}>kg</span>
         </div>
         {invalid ? (
-          <p className={styles.inputError} id="earth-scale-error">
+          <p className={styles.inputError} id="earth-scale-error" role="alert">
             {copy.inputError}
           </p>
         ) : (
@@ -86,10 +89,14 @@ export function MarsHumanScale({
           </p>
         )}
 
-        <div aria-live="polite" className={styles.result}>
+        <div className={styles.result}>
           <p className={styles.resultLabel}>{copy.resultLabel}</p>
-          <p className={styles.resultValue}>
-            {marsReading === null ? "—" : formatOneDecimal(marsReading)}
+          <p
+            aria-atomic="true"
+            aria-live="polite"
+            className={styles.resultValue}
+          >
+            {marsReading === null ? "—" : formatOneDecimal(marsReading, locale)}
             <small>kg</small>
           </p>
           <p className={styles.resultExplanation}>{copy.resultExplanation}</p>
@@ -99,17 +106,17 @@ export function MarsHumanScale({
           <ComparisonRow
             label={copy.gravityLabel}
             note={copy.gravityNote}
-            value={`${formatOneDecimal(gravityEarthRatio * 100)}%`}
+            value={`${formatOneDecimal(gravityEarthRatio * 100, locale)}%`}
           />
           <ComparisonRow
             label={copy.dayLabel}
             note={copy.dayNote}
-            value={formatMinutesAsDuration(dayDifferenceMinutes)}
+            value={formatMinutesAsDuration(dayDifferenceMinutes, locale)}
           />
           <ComparisonRow
             label={copy.lightLabel}
             note={copy.lightNote}
-            value={`${formatTwoDecimals(sunlightTravelMinutes)} min`}
+            value={`${formatTwoDecimals(sunlightTravelMinutes, locale)} min`}
           />
         </div>
       </div>

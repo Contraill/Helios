@@ -209,7 +209,8 @@ export function regionVisualProfileFor(
   if (bodyId === "oort-cloud") {
     // Oort is an inferred schematic context layer, not a literal continuous-scale
     // shell. Keep its visual/camera extent inside the profile budget while the
-    // copy and metadata preserve the 2,000–100,000 AU scientific context.
+    // copy and metadata preserve the estimated 2,000–5,000 AU inner edge and
+    // 10,000–100,000 AU outer edge while the scene remains compressed.
     const extent = finitePositive(profile.extended.oort.renderRadius, 1);
     const inner = extent * 0.18;
     const outer = extent;

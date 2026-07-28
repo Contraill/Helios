@@ -227,37 +227,55 @@ describe("space-data provider normalization", () => {
     ).toBe(true);
   });
 
-  it("selects an on-this-day InSight record without requiring wind", async () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-07-18T12:00:00Z"));
+  it("serves the dated InSight landing-site snapshot without a network request", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await spaceData.loadInsight();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.status).toBe("historical");
+    expect(result.metadata.sourceUrl).toBe(
+      "https://science.nasa.gov/mission/insight/",
+    );
+    expect(result.data).toMatchObject({
+      sol: 675,
+      archiveMatch: "nearest",
+      valid: true,
+    });
+  });
+
+  it("rejects an undocumented CAD signature and keeps the verified snapshot", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () =>
         jsonResponse({
-          sol_keys: ["1", "2"],
-          "1": {
-            First_UTC: "2020-07-17T00:00:00Z",
-            Last_UTC: "2020-07-17T23:59:00Z",
-            AT: { mn: -90, av: -60, mx: -20, ct: 10 },
-          },
-          "2": {
-            First_UTC: "2020-07-18T00:00:00Z",
-            Last_UTC: "2020-07-18T23:59:00Z",
-            AT: { mn: -88, av: -58, mx: -18, ct: 12 },
-            PRE: { mn: 700, av: 720, mx: 740, ct: 9 },
-          },
+          signature: { version: "9.9" },
+          fields: ["des", "cd", "dist", "v_rel"],
+          data: [["test", "2026-Jul-20", "0.01", "12"]],
         }),
       ),
     );
 
-    const result = await spaceData.loadInsight();
-    expect(result.data).toMatchObject({
-      sol: 2,
-      archiveMatch: "on-this-day",
-      valid: true,
-    });
-    expect(result.data?.temperatureC?.average).toBe(-58);
-    expect(result.data?.windMps).toBeUndefined();
+    const result = await spaceData.loadCneosCad();
+    expect(result.status).toBe("stale");
+    expect(result.errorKind).toBe("version");
+  });
+
+  it("rejects an undocumented fireball signature and keeps the verified snapshot", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        jsonResponse({
+          signature: { version: "9.9" },
+          fields: ["date", "energy", "impact-e"],
+          data: [["2026-07-18", "1", "1"]],
+        }),
+      ),
+    );
+
+    const result = await spaceData.loadFireballs();
+    expect(result.status).toBe("historical");
+    expect(result.errorKind).toBe("version");
   });
 
   it("uses a planet-specific mission fallback for all eight worlds", async () => {

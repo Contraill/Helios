@@ -51,7 +51,7 @@ export const VISUAL_ROTATION_SOURCES: Readonly<
     sourceUrl: "https://sci.esa.int/web/rosetta/-/14615-comet-67p",
     retrievedAt: "2026-07-21",
     measurementNote:
-      "ESA reports a 12.40-hour period for the accepted June 2014 reference state.",
+      "ESA reports a 12.40-hour period for the documented June 2014 reference state.",
   }),
   "nasa-deep-impact-tempel-1-rotation": Object.freeze({
     sourceId: "nasa-deep-impact-tempel-1-rotation",

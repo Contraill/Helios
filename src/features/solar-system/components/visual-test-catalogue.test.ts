@@ -7,8 +7,8 @@ import {
   VISUAL_CATALOGUE_PAGE_SIZE,
 } from "./visual-test-catalogue";
 
-describe("Gate 3B visual catalogue", () => {
-  it("keeps the accepted group counts", () => {
+describe("celestial visual catalogue", () => {
+  it("keeps the documented group counts", () => {
     expect(catalogueIdsFor("moons")).toHaveLength(22);
     expect(catalogueIdsFor("dwarf-systems")).toHaveLength(15);
     expect(catalogueIdsFor("asteroids")).toHaveLength(4);

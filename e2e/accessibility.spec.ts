@@ -5,8 +5,17 @@ const auditedRoutes = [
   "/",
   "/explore",
   "/planet/earth",
+  "/body/sun",
+  "/body/moon-jupiter-europa",
+  "/region/asteroid-belt",
+  "/region/kuiper-belt",
+  "/region/oort-cloud",
+  "/region/heliosphere",
   "/compare?a=earth&b=mars",
+  "/missions",
   "/data",
+  "/about",
+  "/case-study",
 ] as const;
 
 async function waitForExploreReady(page: Page): Promise<void> {
@@ -53,7 +62,7 @@ test("system reduced motion removes continuous scene motion", async ({
   );
 });
 
-test("a hidden Explore document switches the renderer to demand mode", async ({
+test("a hidden Explore document pauses continuous scene rendering", async ({
   page,
 }) => {
   await page.goto("/explore");
@@ -98,15 +107,45 @@ test("keyboard focus remains visible and Escape restores the triggering planet",
   ).toBe(true);
 
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("heading", { name: "Earth" })).toBeVisible();
+  const selectionHeading = page.getByRole("heading", { name: "Earth" });
+  await expect(selectionHeading).toBeVisible();
+  await expect(selectionHeading).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(earth).toBeFocused();
+});
+
+test("changing language preserves focus and announces the update", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const languageGroup = page.getByRole("group", { name: "Language" });
+  const turkish = languageGroup.getByRole("button", { name: "TR" });
+  await turkish.focus();
+  await turkish.click();
+
+  await expect(turkish).toBeFocused();
+  await expect(turkish).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("html")).toHaveAttribute("lang", "tr-TR");
+  await expect(languageGroup.getByRole("status")).toContainText(/Türkçe|dil/i);
 });
 
 test.describe("200 percent layout equivalent", () => {
   test.use({ viewport: { height: 500, width: 720 } });
 
-  for (const route of ["/explore", "/planet/earth", "/data"] as const) {
+  for (const route of [
+    "/explore",
+    "/planet/earth",
+    "/body/moon-jupiter-europa",
+    "/region/asteroid-belt",
+    "/region/kuiper-belt",
+    "/region/oort-cloud",
+    "/region/heliosphere",
+    "/compare?a=earth&b=mars",
+    "/missions",
+    "/data",
+    "/about",
+    "/case-study",
+  ] as const) {
     test(`${route} does not create horizontal document overflow`, async ({
       page,
     }) => {

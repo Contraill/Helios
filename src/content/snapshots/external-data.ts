@@ -10,6 +10,7 @@ import type {
   NearEarthApproach,
   TrekRegion,
 } from "@/lib/data/external/models";
+import { providerName } from "@/lib/data/external/provider-contracts";
 import type { VerifiedSnapshot } from "@/lib/data/external/types";
 
 const retrievedAt = "2026-07-18T00:00:00.000Z";
@@ -31,7 +32,7 @@ export const apodSnapshot: VerifiedSnapshot<readonly ApodRecord[]> = {
     },
   ],
   metadata: {
-    provider: "NASA APOD",
+    provider: providerName("apod"),
     sourceTitle: "Astronomy Picture of the Day",
     sourceUrl: "https://apod.nasa.gov/apod/",
     freshness: "latest-available",
@@ -58,7 +59,7 @@ export const epicSnapshot: VerifiedSnapshot<readonly EpicRecord[]> = {
     },
   ],
   metadata: {
-    provider: "NASA EPIC",
+    provider: providerName("epic"),
     sourceTitle: "DSCOVR EPIC Natural Color Archive",
     sourceUrl: "https://epic.gsfc.nasa.gov/",
     freshness: "latest-available",
@@ -96,7 +97,7 @@ export const eonetSnapshot: VerifiedSnapshot<readonly EonetEvent[]> = {
     },
   ],
   metadata: {
-    provider: "NASA EONET",
+    provider: providerName("eonet"),
     sourceTitle: "Earth Observatory Natural Event Tracker",
     sourceUrl: "https://eonet.gsfc.nasa.gov/",
     freshness: "latest-available",
@@ -182,7 +183,7 @@ export const donkiSnapshot: VerifiedSnapshot<readonly DonkiEvent[]> = {
     },
   ],
   metadata: {
-    provider: "NASA DONKI",
+    provider: providerName("donki"),
     sourceTitle:
       "Space Weather Database Of Notifications, Knowledge, Information",
     sourceUrl: "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
@@ -246,15 +247,15 @@ export const insightSnapshot: VerifiedSnapshot<InsightWeatherRecord> = {
     archiveMatch: "nearest",
   },
   metadata: {
-    provider: "NASA InSight",
-    sourceTitle: "InSight Mars Weather Service",
-    sourceUrl: "https://api.nasa.gov/insight_weather/",
+    provider: providerName("insight"),
+    sourceTitle: "InSight historical weather observation",
+    sourceUrl: "https://science.nasa.gov/mission/insight/",
     freshness: "historical",
     observedAt: "2020-10-20T19:11:55.000Z",
     retrievedAt,
     attribution: "NASA/JPL-Caltech InSight",
     notes:
-      "Historical measurement from one landing site; not current Mars weather.",
+      "Bundled historical measurement from the Elysium Planitia landing site; not current Mars weather and not a planet-wide condition.",
   },
 };
 
@@ -386,7 +387,7 @@ export const missionMediaSnapshot: VerifiedSnapshot<
     },
   ],
   metadata: {
-    provider: "NASA Image and Video Library",
+    provider: providerName("nasa-images"),
     sourceTitle: "NASA Images",
     sourceUrl: "https://images.nasa.gov/",
     freshness: "historical",
@@ -457,7 +458,7 @@ export const fireballSnapshot: VerifiedSnapshot<readonly FireballRecord[]> = {
     },
   ],
   metadata: {
-    provider: "JPL CNEOS",
+    provider: providerName("cneos-fireball"),
     sourceTitle: "Fireball and Bolide Data",
     sourceUrl: "https://cneos.jpl.nasa.gov/fireballs/",
     freshness: "historical",

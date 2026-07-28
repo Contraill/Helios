@@ -94,6 +94,32 @@ describe("external request boundary", () => {
     ).rejects.toMatchObject({ kind: "malformed-json" });
   });
 
+  it("rejects historical snapshots before constructing a runtime URL", async () => {
+    const { buildExternalUrl } = await import("./request.server");
+    const insightPolicy: FetchPolicy = {
+      providerId: "insight",
+      revalidateSeconds: 0,
+      timeoutMs: 0,
+      cacheTag: "insight-history",
+    };
+
+    expect(() =>
+      buildExternalUrl({ path: "/insight_weather/", policy: insightPolicy }),
+    ).toThrowError(expect.objectContaining({ kind: "configuration" }));
+  });
+
+  it("classifies timeout failures separately from network failures", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockRejectedValue(new DOMException("timed out", "TimeoutError")),
+    );
+    const { fetchExternalJson } = await import("./request.server");
+
+    await expect(
+      fetchExternalJson({ path: "/api/natural", policy: epicPolicy }),
+    ).rejects.toMatchObject({ kind: "timeout" });
+  });
+
   it("classifies network failures", async () => {
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("dns")));
     const { fetchExternalJson } = await import("./request.server");

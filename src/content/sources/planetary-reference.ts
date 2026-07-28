@@ -82,7 +82,7 @@ const rawSources = [
     accessedAt: "2026-07-19",
     notes: {
       en: "Navigation-grade state-vector source for bounded accurate windows; output frame, reference plane, correction and TDB settings are explicit.",
-      tr: "Sınırlı doğru pencereler için navigasyon düzeyinde durum vektörü kaynağı; çıktı frame, referans düzlemi, düzeltme ve TDB ayarları açıktır.",
+      tr: "Sınırlı hassas zaman aralıkları için navigasyon düzeyinde durum vektörü kaynağı; çıktı çerçevesi, referans düzlemi, düzeltme ve TDB ayarları açıkça belirtilir.",
     },
   },
   {
@@ -95,7 +95,7 @@ const rawSources = [
     accessedAt: "2026-07-19",
     notes: {
       en: "Primary frame terminology and inertial/body-fixed transformation contract.",
-      tr: "Birincil frame terminolojisi ile atalet/body-fixed dönüşüm sözleşmesi.",
+      tr: "Atalet ve gövdeye sabit referans çerçeveleri arasındaki dönüşümler için birincil terminoloji kaynağı.",
     },
   },
   {
@@ -108,7 +108,7 @@ const rawSources = [
     accessedAt: "2026-07-19",
     notes: {
       en: "Primary body-orientation and pole-model terminology used to keep parent equatorial and body-fixed claims separate.",
-      tr: "Parent equatorial ve body-fixed iddialarını ayırmak için kullanılan birincil gövde yönelim ve kutup modeli terminolojisi.",
+      tr: "Ebeveyn ekvator düzlemi ile gövdeye sabit referans çerçevesine ilişkin iddiaları ayırmak için kullanılan birincil yönelim ve kutup modeli terminolojisi.",
     },
   },
   {
@@ -123,7 +123,7 @@ const rawSources = [
     accessedAt: "2026-07-19",
     notes: {
       en: "Pole and rotational-element authority; texture prime-meridian alignment remains explicitly unverified until secondary celestial assets are sourced.",
-      tr: "Kutup ve dönüş elemanları otoritesi; yeniden oluşturulan yüzeylerde texture başlangıç meridyeni hizası açıkça doğrulanmamıştır.",
+      tr: "Kutup ve dönüş elemanları için birincil kaynak; yeniden oluşturulan yüzeylerde doku başlangıç meridyeni hizası henüz doğrulanmamıştır.",
     },
   },
   {
@@ -147,6 +147,58 @@ const rawSources = [
     notes: {
       en: "Volumetric mean radius used by the sourced Sun scene model.",
       tr: "Kaynaklı Güneş sahne modelinde kullanılan hacimsel ortalama yarıçap.",
+    },
+  },
+  {
+    id: "nasa-asteroid-facts",
+    provider: "NASA Science",
+    title: "Asteroid Facts",
+    url: "https://science.nasa.gov/solar-system/asteroids/facts/",
+    sourceType: "article",
+    freshness: "reference",
+    accessedAt: "2026-07-24",
+    notes: {
+      en: "Official context for the main asteroid belt, composition and population language.",
+      tr: "Ana asteroit kuşağı, bileşim ve popülasyon dili için resmî bağlam.",
+    },
+  },
+  {
+    id: "nasa-kuiper-belt-facts",
+    provider: "NASA Science",
+    title: "Kuiper Belt Facts",
+    url: "https://science.nasa.gov/solar-system/kuiper-belt/facts/",
+    sourceType: "article",
+    freshness: "reference",
+    accessedAt: "2026-07-24",
+    notes: {
+      en: "Official context for the trans-Neptunian region and its broad orbital populations.",
+      tr: "Neptün ötesi bölge ve geniş yörünge popülasyonları için resmî bağlam.",
+    },
+  },
+  {
+    id: "nasa-oort-cloud-facts",
+    provider: "NASA Science",
+    title: "Oort Cloud Facts",
+    url: "https://science.nasa.gov/solar-system/oort-cloud/facts/",
+    sourceType: "article",
+    freshness: "reference",
+    accessedAt: "2026-07-24",
+    notes: {
+      en: "Official distance range and inferred-shell context for the Oort Cloud.",
+      tr: "Oort Bulutu için resmî uzaklık aralığı ve çıkarımsal kabuk bağlamı.",
+    },
+  },
+  {
+    id: "nasa-heliosphere-components",
+    provider: "NASA Science",
+    title: "Components of the Heliosphere",
+    url: "https://science.nasa.gov/learn/heat/resource/components-of-the-heliosphere/",
+    sourceType: "article",
+    freshness: "reference",
+    accessedAt: "2026-07-24",
+    notes: {
+      en: "Official terminology for the termination shock, heliosheath and heliopause.",
+      tr: "Sonlanma şoku, heliosheath ve heliopause için resmî terminoloji.",
     },
   },
   {

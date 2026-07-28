@@ -76,7 +76,7 @@ export const uranusDetailContent: PlanetDetailContent = Object.freeze({
   ]),
   methodology: Object.freeze({
     title: "Tilt is a geometric relationship, not a frozen picture",
-    body: "The hero fixes the unusual axis in a readable diagram. It does not claim to show Uranus's current season or exact orientation at a selected date. Those time-dependent questions belong to the future ephemeris phase.",
+    body: "The hero fixes the unusual axis in a readable diagram. It does not claim to show Uranus's current season or exact orientation at a selected date. Those time-dependent questions require a separate time-aware orientation model.",
   }),
   sourceIds: Object.freeze(["nasa-voyager-2-mission"]),
 });

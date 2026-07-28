@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 
+import { planetaryReferenceSourceById } from "@/content/sources/planetary-reference";
+
 import type { ExplorePlanetSummary } from "./explore-planets";
 import type { SceneSun } from "./scene-sun";
 import {
@@ -49,6 +51,17 @@ describe("celestial metadata registry", () => {
       orbitPolicyClass: "no-individual-orbit",
       sceneRepresentation: "regional-context",
     });
+  });
+
+  it("keeps every regional source id connected to the source registry", () => {
+    const registry = createCelestialRegistry([earth], sun);
+
+    for (const entry of entriesForCategory(registry, "regions-context")) {
+      expect(entry.sourceIds.length).toBeGreaterThan(0);
+      for (const sourceId of entry.sourceIds) {
+        expect(planetaryReferenceSourceById.has(sourceId)).toBe(true);
+      }
+    }
   });
 
   it("derives comet and region navigator lists from the same registry", () => {

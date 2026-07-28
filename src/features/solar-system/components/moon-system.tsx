@@ -29,16 +29,18 @@ import {
 } from "@/features/solar-system/lib/tidal-lock-orientation";
 import type { SceneQuality } from "@/features/solar-system/lib/quality";
 import type { ScenePlanet } from "@/features/solar-system/lib/scene-planets";
+import {
+  SCENE_FRAME_PRIORITY,
+  sceneFrameTimeMs,
+} from "@/features/solar-system/lib/scene-frame-runtime";
 import { effectiveBodyVisibility } from "@/features/solar-system/lib/scene-visibility-policy";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
-import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { getExploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
-import {
-  currentSimulationTimeMs,
-  useSimulationStore,
-} from "@/stores/simulation-store";
+import { useSimulationStore } from "@/stores/simulation-store";
 
 import { CelestialVisualSurface } from "./celestial-visual-surface";
 import { OrbitPath } from "./orbit-path";
@@ -62,6 +64,8 @@ function MoonObject({
   quality,
   scaleMode,
 }: PlanetaryMoonSystemProps & { moon: Moon }) {
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExploreSceneCopy(locale);
   const groupRef = useRef<Group>(null);
   const surfaceRef = useRef<Group>(null);
   const localPosition = useRef<[number, number, number]>([0, 0, 0]);
@@ -148,7 +152,7 @@ function MoonObject({
   useFrame(() => {
     const node = groupRef.current;
     if (!node) return;
-    const timestamp = currentSimulationTimeMs(useSimulationStore.getState());
+    const timestamp = sceneFrameTimeMs();
     const position = moonLocalPositionAt(
       moon,
       timestamp,
@@ -166,7 +170,7 @@ function MoonObject({
         ),
       );
     }
-  });
+  }, SCENE_FRAME_PRIORITY.satellites);
 
   const handlePointerOver = (event: ThreeEvent<PointerEvent>) => {
     if (!visible) return;
@@ -241,7 +245,7 @@ function MoonObject({
             offsetY={interactionRadius + 0.3}
             placement="north"
             priority={labelPriority}
-            positionCaption={exploreSceneCopy.labels.moonRepresentative}
+            positionCaption={copy.labels.moonRepresentative}
             selected={selected}
             text={moon.name}
           />

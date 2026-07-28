@@ -8,9 +8,9 @@ import {
   TIME_SCALE_OPTIONS,
   timeScaleLabel,
 } from "@/features/solar-system/types/experience-settings";
-import { representationLabel } from "@/features/solar-system/lib/celestial-representation";
 import { planetEphemerisRepresentation } from "@/lib/data/ephemeris/models";
-import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { getExploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 import { useEphemerisStore } from "@/stores/ephemeris-store";
 import { useSimulationStore } from "@/stores/simulation-store";
 
@@ -19,13 +19,7 @@ import {
   type EphemerisControllerApi,
   useEphemerisControllerSnapshot,
 } from "./ephemeris-controller";
-import gateStyles from "./explore-scene-gate.module.css";
-
-const dateTimeFormatter = new Intl.DateTimeFormat("en-GB", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "UTC",
-});
+import controlStyles from "./explore-scene-controls.module.css";
 
 function inputValueFor(timestamp: number): string {
   return new Date(timestamp).toISOString().slice(0, 23);
@@ -36,6 +30,12 @@ export function EphemerisPanel({
 }: {
   controller: EphemerisControllerApi;
 }) {
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExploreSceneCopy(locale);
+  const dateTimeFormatter = new Intl.DateTimeFormat(
+    locale === "tr" ? "tr-TR" : "en-GB",
+    { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" },
+  );
   const snapshot = useEphemerisControllerSnapshot();
   const bundle = useEphemerisStore((state) => state.bundle);
   const loadStatus = useEphemerisStore((state) => state.loadStatus);
@@ -57,13 +57,13 @@ export function EphemerisPanel({
     return (
       <div
         aria-busy="true"
-        aria-label={exploreSceneCopy.ephemeris.controlsLabel}
-        className={gateStyles.embeddedPanel}
+        aria-label={copy.ephemeris.controlsLabel}
+        className={controlStyles.embeddedPanel}
         data-embedded-panel="time"
       >
         <p className={styles.timePreparing} role="status">
-          <small>{exploreSceneCopy.ephemeris.label}</small>
-          <span>{exploreSceneCopy.ephemeris.preparing}</span>
+          <small>{copy.ephemeris.label}</small>
+          <span>{copy.ephemeris.preparing}</span>
         </p>
       </div>
     );
@@ -79,28 +79,34 @@ export function EphemerisPanel({
     (timeScale === SECONDS_PER_JULIAN_YEAR && !isPaused) ||
     snapshot.isScrubbing;
   const sourceStatus = acceleratedPreview
-    ? exploreSceneCopy.ephemeris.approximatePreview
+    ? copy.ephemeris.approximatePreview
     : loadStatus === "loading"
-      ? exploreSceneCopy.ephemeris.computing
+      ? copy.ephemeris.computing
       : loadStatus === "error"
-        ? exploreSceneCopy.ephemeris.previousRetained
-        : representationLabel(representation.representationType);
+        ? copy.ephemeris.previousRetained
+        : representation.representationType === "horizons-window"
+          ? copy.ephemeris.computedVector
+          : representation.representationType === "latest-available"
+            ? copy.ephemeris.computedVector
+            : representation.representationType === "verified-fallback"
+              ? copy.ephemeris.verifiedFallback
+              : copy.ephemeris.approximatePreview;
   const currentLabel = dateTimeFormatter.format(new Date(snapshot.displayedAt));
   const observedLabel = dateTimeFormatter.format(new Date(bundle.observedAt));
   const retrievedLabel = dateTimeFormatter.format(new Date(bundle.retrievedAt));
   const boundaryMessage =
     boundaryReached === "maximum"
-      ? exploreSceneCopy.ephemeris.maximumReached
+      ? copy.ephemeris.maximumReached
       : boundaryReached === "minimum"
-        ? exploreSceneCopy.ephemeris.minimumReached
+        ? copy.ephemeris.minimumReached
         : null;
   const statusDescription = boundaryMessage
     ? boundaryMessage
     : acceleratedPreview
-      ? exploreSceneCopy.ephemeris.approximateDescription(observedLabel)
+      ? copy.ephemeris.approximateDescription(observedLabel)
       : loadStatus === "error" && errorMessage
         ? errorMessage
-        : `${exploreSceneCopy.ephemeris.vectorDescription(
+        : `${copy.ephemeris.vectorDescription(
             observedLabel,
             retrievedLabel,
             bundle.metadata.barycenterPlanetIds ?? [],
@@ -112,7 +118,7 @@ export function EphemerisPanel({
     event.preventDefault();
     const timestamp = inputTimestamp(snapshot.pendingValue, range);
     if (timestamp === null) {
-      const message = exploreSceneCopy.ephemeris.rangeError(
+      const message = copy.ephemeris.rangeError(
         inputValueFor(range.minimumUtcMs),
         inputValueFor(range.maximumUtcMs),
       );
@@ -127,16 +133,14 @@ export function EphemerisPanel({
 
   return (
     <div
-      aria-label={exploreSceneCopy.ephemeris.controlsLabel}
-      className={`${gateStyles.embeddedPanel} ${gateStyles.ephemerisPanel}`}
+      aria-label={copy.ephemeris.controlsLabel}
+      className={`${controlStyles.embeddedPanel} ${controlStyles.ephemerisPanel}`}
       data-embedded-panel="time"
       id="time-control-panel"
     >
       <div className={styles.timeHeader}>
         <div>
-          <p className={styles.timeEyebrow}>
-            {exploreSceneCopy.ephemeris.label}
-          </p>
+          <p className={styles.timeEyebrow}>{copy.ephemeris.label}</p>
           <time dateTime={new Date(snapshot.displayedAt).toISOString()}>
             {currentLabel} UTC
           </time>
@@ -154,17 +158,15 @@ export function EphemerisPanel({
           onClick={togglePaused}
           type="button"
         >
-          {isPaused
-            ? exploreSceneCopy.ephemeris.resume
-            : exploreSceneCopy.ephemeris.pause}
+          {isPaused ? copy.ephemeris.resume : copy.ephemeris.pause}
         </button>
         <button onClick={controller.goNow} type="button">
-          {exploreSceneCopy.ephemeris.resetNow}
+          {copy.ephemeris.resetNow}
         </button>
       </div>
 
       <fieldset>
-        <legend>{exploreSceneCopy.ephemeris.speed}</legend>
+        <legend>{copy.ephemeris.speed}</legend>
         <div className={styles.segmentedControls}>
           {TIME_SCALE_OPTIONS.map((option) => (
             <button
@@ -173,7 +175,7 @@ export function EphemerisPanel({
               onClick={() => setTimeScale(option)}
               type="button"
             >
-              {timeScaleLabel(option)}
+              {timeScaleLabel(option, locale)}
             </button>
           ))}
         </div>
@@ -186,32 +188,32 @@ export function EphemerisPanel({
             onClick={() => controller.stepByYears(-10)}
             type="button"
           >
-            −10y
+            {locale === "tr" ? "−10 yıl" : "−10y"}
           </button>
           <button
             disabled={!canGoBackward}
             onClick={() => controller.stepByYears(-1)}
             type="button"
           >
-            −1y
+            {locale === "tr" ? "−1 yıl" : "−1y"}
           </button>
           <button
             disabled={!canGoBackward}
             onClick={() => controller.stepByDays(-30)}
             type="button"
           >
-            −30d
+            {locale === "tr" ? "−30 gün" : "−30d"}
           </button>
           <button
             disabled={!canGoBackward}
             onClick={() => controller.stepByDays(-1)}
             type="button"
           >
-            −1d
+            {locale === "tr" ? "−1 gün" : "−1d"}
           </button>
         </div>
         <label className={styles.dateTimeField} htmlFor="ephemeris-date-time">
-          <span>{exploreSceneCopy.ephemeris.dateTime}</span>
+          <span>{copy.ephemeris.dateTime}</span>
           <input
             aria-describedby={dateError ? "ephemeris-date-error" : undefined}
             aria-invalid={dateError ? true : undefined}
@@ -233,14 +235,14 @@ export function EphemerisPanel({
           disabled={loadStatus === "loading"}
           type="submit"
         >
-          {exploreSceneCopy.ephemeris.apply}
+          {copy.ephemeris.apply}
         </button>
         {dateError ? (
           <p id="ephemeris-date-error" role="alert">
             {dateError}
           </p>
         ) : snapshot.isEditing ? (
-          <p role="status">{exploreSceneCopy.ephemeris.editingDraft}</p>
+          <p role="status">{copy.ephemeris.editingDraft}</p>
         ) : null}
         <div className={styles.timeSteps}>
           <button
@@ -248,36 +250,34 @@ export function EphemerisPanel({
             onClick={() => controller.stepByDays(1)}
             type="button"
           >
-            +1d
+            {locale === "tr" ? "+1 gün" : "+1d"}
           </button>
           <button
             disabled={!canGoForward}
             onClick={() => controller.stepByDays(30)}
             type="button"
           >
-            +30d
+            {locale === "tr" ? "+30 gün" : "+30d"}
           </button>
           <button
             disabled={!canGoForward}
             onClick={() => controller.stepByYears(1)}
             type="button"
           >
-            +1y
+            {locale === "tr" ? "+1 yıl" : "+1y"}
           </button>
           <button
             disabled={!canGoForward}
             onClick={() => controller.stepByYears(10)}
             type="button"
           >
-            +10y
+            {locale === "tr" ? "+10 yıl" : "+10y"}
           </button>
         </div>
       </form>
 
       <label className={styles.timelineField} htmlFor="ephemeris-year-scrubber">
-        <span>
-          {exploreSceneCopy.ephemeris.generalDate(snapshot.scrubYearOffset)}
-        </span>
+        <span>{copy.ephemeris.generalDate(snapshot.scrubYearOffset)}</span>
         <input
           aria-describedby="ephemeris-range-bounds"
           id="ephemeris-year-scrubber"
@@ -293,9 +293,9 @@ export function EphemerisPanel({
           value={snapshot.scrubYearOffset}
         />
         <span className={styles.timelineRegions} aria-hidden="true">
-          <span>{exploreSceneCopy.ephemeris.timelinePast}</span>
-          <span>{exploreSceneCopy.ephemeris.timelineNow}</span>
-          <span>{exploreSceneCopy.ephemeris.timelineFuture}</span>
+          <span>{copy.ephemeris.timelinePast}</span>
+          <span>{copy.ephemeris.timelineNow}</span>
+          <span>{copy.ephemeris.timelineFuture}</span>
         </span>
         <span className={styles.rangeBounds} id="ephemeris-range-bounds">
           <time dateTime={new Date(range.minimumUtcMs).toISOString()}>
@@ -310,14 +310,10 @@ export function EphemerisPanel({
       <div className={styles.timeFooter}>
         <p aria-live="polite">{statusDescription}</p>
         <button onClick={() => void controller.copyLink()} type="button">
-          {snapshot.copied
-            ? exploreSceneCopy.ephemeris.copied
-            : exploreSceneCopy.ephemeris.copyLink}
+          {snapshot.copied ? copy.ephemeris.copied : copy.ephemeris.copyLink}
         </button>
       </div>
-      <p className={styles.ephemerisMethod}>
-        {exploreSceneCopy.ephemeris.method}
-      </p>
+      <p className={styles.ephemerisMethod}>{copy.ephemeris.method}</p>
     </div>
   );
 }

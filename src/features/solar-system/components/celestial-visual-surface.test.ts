@@ -8,7 +8,7 @@ import {
   visualGeometrySignatureFor,
 } from "./celestial-visual-surface";
 
-describe("Gate 3B visual geometry cache", () => {
+describe("celestial visual geometry cache", () => {
   it("promotes selected or hovered secondary textures without waiting for the background scheduler", () => {
     expect(
       shouldLoadCelestialTexture({

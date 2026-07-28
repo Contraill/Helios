@@ -1,0 +1,239 @@
+.page {
+  --mission-line: rgb(255 255 255 / 0.13);
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 82% 8%,
+      rgb(109 151 217 / 0.12),
+      transparent 30rem
+    ),
+    var(--helios-color-bg);
+}
+
+.hero,
+.catalogue,
+.method {
+  width: min(100% - 2.5rem, 88rem);
+  margin-inline: auto;
+}
+
+.hero {
+  display: grid;
+  min-height: 68svh;
+  grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.65fr);
+  align-items: end;
+  gap: clamp(2rem, 7vw, 7rem);
+  padding-block: clamp(6rem, 11vw, 10rem) clamp(4rem, 8vw, 7rem);
+}
+
+.eyebrow,
+.planet,
+.index,
+.scope dt {
+  margin: 0;
+  color: var(--helios-color-text-secondary);
+  font-family: var(--helios-font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+}
+
+.hero h1,
+.sectionIntro h2,
+.method h2 {
+  margin: 0;
+  font-family: var(--helios-font-display);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+}
+
+.hero h1 {
+  max-width: 11ch;
+  margin-top: 1rem;
+  font-size: clamp(3.7rem, 8vw, 8rem);
+  line-height: 0.9;
+}
+
+.lede {
+  max-width: 46rem;
+  margin: 2rem 0 0;
+  color: var(--helios-color-text-secondary);
+  font-size: clamp(1.05rem, 1.7vw, 1.35rem);
+  line-height: 1.7;
+}
+
+.actions,
+.card footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.actions {
+  margin-top: 2rem;
+}
+
+.actions a,
+.card footer a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  border: 1px solid var(--mission-line);
+  padding: 0.65rem 0.9rem;
+  text-decoration: none;
+  background: rgb(8 11 18 / 0.66);
+}
+
+.scope {
+  margin: 0;
+  border-block: 1px solid var(--mission-line);
+}
+
+.scope div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 1rem;
+  padding-block: 1.1rem;
+  border-bottom: 1px solid var(--mission-line);
+}
+
+.scope div:last-child {
+  border-bottom: 0;
+}
+
+.scope dd {
+  margin: 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(1.4rem, 3vw, 2.2rem);
+}
+
+.catalogue {
+  padding-block: clamp(4rem, 8vw, 8rem);
+}
+
+.sectionIntro {
+  display: grid;
+  grid-template-columns: 0.4fr 0.9fr 1fr;
+  gap: 2rem;
+  align-items: start;
+  margin-bottom: 3rem;
+}
+
+.sectionIntro h2,
+.method h2 {
+  font-size: clamp(2.6rem, 5vw, 5.3rem);
+  line-height: 0.95;
+}
+
+.sectionIntro > p:last-child,
+.method > div {
+  color: var(--helios-color-text-secondary);
+  line-height: 1.75;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin: 0;
+  padding: 1px;
+  list-style: none;
+  background: var(--mission-line);
+}
+
+.card {
+  min-width: 0;
+  background: rgb(6 8 13 / 0.96);
+}
+
+.card article {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  padding: clamp(1.4rem, 3vw, 2.4rem);
+}
+
+.card header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.2rem;
+}
+
+.card h3 {
+  margin: 0.35rem 0 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+}
+
+.card > article > p {
+  flex: 1;
+  margin: 1.5rem 0 0;
+  color: var(--helios-color-text-secondary);
+  line-height: 1.7;
+}
+
+.statusRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+  font-size: 0.82rem;
+}
+
+.card footer {
+  margin-top: 1.8rem;
+}
+
+.card footer a {
+  min-height: 2.5rem;
+  font-size: 0.82rem;
+}
+
+.method {
+  display: grid;
+  grid-template-columns: 0.35fr 0.8fr 1fr;
+  gap: 2rem;
+  padding-block: clamp(5rem, 9vw, 9rem);
+  border-top: 1px solid var(--mission-line);
+}
+
+.method > div p {
+  margin-top: 0;
+}
+
+@media (max-width: 860px) {
+  .hero,
+  .sectionIntro,
+  .method {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: auto;
+    align-items: start;
+  }
+
+  .scope {
+    max-width: 34rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero,
+  .catalogue,
+  .method {
+    width: min(100% - 2rem, 88rem);
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .card footer a {
+    width: 100%;
+  }
+}

@@ -53,7 +53,7 @@ export const marsDetailContent: PlanetDetailContent = Object.freeze({
       title: "A dry world that still carries water’s evidence",
       body: Object.freeze([
         "Channels, deltas, minerals and layered terrain preserve evidence that liquid water once shaped parts of Mars. The planet is presented as a geological record, not as a promise that its present surface is wet or habitable.",
-        "Its red appearance comes from iron-bearing minerals in the soil and dust. The visual treatment on this page is editorial, while the physical values remain tied to the source registry.",
+        "Its red appearance comes from iron-bearing minerals in the soil and dust. The visual treatment on this page is editorial, while the physical values remain tied to the cited references.",
       ]),
       sourceIds: Object.freeze(["nasa-mars-facts"]),
     }),

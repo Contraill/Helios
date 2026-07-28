@@ -7,11 +7,9 @@ import type { Material, Mesh, Object3D, ShaderMaterial, Texture } from "three";
 
 import { cameraRuntimeSnapshot } from "@/features/solar-system/lib/camera-runtime";
 import { regionFocusAnchorOffset } from "@/features/solar-system/lib/region-visual-policy";
+import { sceneFrameTimeMs } from "@/features/solar-system/lib/scene-frame-runtime";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
-import {
-  currentSimulationTimeMs,
-  useSimulationStore,
-} from "@/stores/simulation-store";
+import { useSimulationStore } from "@/stores/simulation-store";
 
 import {
   textureCacheSnapshot,
@@ -43,6 +41,15 @@ export interface HeliosSceneTestSnapshot {
     readonly localStarsOpacity: number;
     readonly milkyWayMounted: boolean;
     readonly milkyWayOpacity: number;
+    readonly galaxyRepresentation: string | null;
+    readonly galaxySurfaceAsset: string | null;
+    readonly galaxySurfaceReady: boolean;
+    readonly galaxyMapRadius: number;
+    readonly majorArmCount: number;
+    readonly minorArmCount: number;
+    readonly solarMarkerMounted: boolean;
+    readonly solarMarkerColor: string | null;
+    readonly solarMarkerRadiusRatio: number;
   };
   readonly frame: number;
   readonly gpu: {
@@ -256,6 +263,15 @@ function ActiveSceneTestProbe() {
       localStarsOpacity: 0,
       milkyWayMounted: false,
       milkyWayOpacity: 0,
+      galaxyRepresentation: null as string | null,
+      galaxySurfaceAsset: null as string | null,
+      galaxySurfaceReady: false,
+      galaxyMapRadius: 0,
+      majorArmCount: 0,
+      minorArmCount: 0,
+      solarMarkerMounted: false,
+      solarMarkerColor: null as string | null,
+      solarMarkerRadiusRatio: 0,
     };
     let sunProjected: [number, number] = [0.5, 0.5];
     let sunProjectedCoverage = 0;
@@ -281,8 +297,32 @@ function ActiveSceneTestProbe() {
           backdrop.milkyWayOpacity = Math.max(
             backdrop.milkyWayOpacity,
             opacity,
+            Number(object.userData.testBackdropOpacity ?? 0),
           );
+          backdrop.galaxyRepresentation =
+            typeof object.userData.representation === "string"
+              ? object.userData.representation
+              : null;
+          backdrop.galaxySurfaceAsset =
+            typeof object.userData.surfaceAsset === "string"
+              ? object.userData.surfaceAsset
+              : null;
+          backdrop.galaxySurfaceReady =
+            object.userData.surfaceReady === true;
+          backdrop.galaxyMapRadius = Number(
+            object.userData.testGalaxyMapRadius ?? 0,
+          );
+          backdrop.majorArmCount = Number(object.userData.majorArmCount ?? 0);
+          backdrop.minorArmCount = Number(object.userData.minorArmCount ?? 0);
         }
+      }
+      if (object.userData.testGalacticMarker === "solar-system") {
+        backdrop.solarMarkerMounted = true;
+        backdrop.solarMarkerColor =
+          typeof object.userData.markerColor === "string"
+            ? object.userData.markerColor
+            : null;
+        backdrop.solarMarkerRadiusRatio = object.position.length();
       }
 
       const regionId = object.userData.testRegionId as string | undefined;
@@ -620,7 +660,7 @@ function ActiveSceneTestProbe() {
         },
       },
       simulation: {
-        atMs: currentSimulationTimeMs(simulationState),
+        atMs: sceneFrameTimeMs(),
         isPaused: simulationState.isPaused,
       },
       surfaces,

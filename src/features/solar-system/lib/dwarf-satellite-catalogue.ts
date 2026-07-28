@@ -68,7 +68,7 @@ function representation(input: {
 const fixedUnknownRotation = (id: DwarfSatelliteId): VisualRotationProfile => ({
   kind: "fixed-unknown",
   sourceId: `helios-rotation-unknown-${id}`,
-  note: "The accepted source set does not establish a navigation-grade rotation or tidal-lock solution; the visual orientation remains fixed.",
+  note: "The documented source set does not establish a navigation-grade rotation or tidal-lock solution; the visual orientation remains fixed.",
 });
 
 const satellite = (
@@ -137,7 +137,7 @@ export const DWARF_SATELLITES: readonly DwarfSatellite[] = Object.freeze([
     sourceUrl: "https://science.nasa.gov/dwarf-planets/eris/",
     sourceIds: ["nasa-eris-dysnomia-facts", "jpl-horizons-eris-system"],
     precisionNote:
-      "Mean orbit scale and period are representative; a common source-backed J2000 pole solution was not available in the accepted source set.",
+      "Mean orbit scale and period are representative; a common source-backed J2000 pole solution was not available in the documented source set.",
   }),
   satellite({
     id: "dwarf-satellite-hiiaka",

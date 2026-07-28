@@ -6,7 +6,7 @@ import {
 } from "./dwarf-satellite-catalogue";
 
 describe("dwarf satellite visual dynamics", () => {
-  it("keeps the eight accepted satellites and seven parent systems", () => {
+  it("keeps the eight catalogued satellites and seven parent systems", () => {
     expect(DWARF_SATELLITES).toHaveLength(8);
     expect(new Set(DWARF_SATELLITES.map(({ id }) => id)).size).toBe(8);
     expect(dwarfSatellitesFor("pluto").map(({ name }) => name)).toEqual([
@@ -18,7 +18,7 @@ describe("dwarf satellite visual dynamics", () => {
     ]);
   });
 
-  it("only claims tidal lock when the accepted source set supports it", () => {
+  it("only claims tidal lock when the documented source set supports it", () => {
     const locked = DWARF_SATELLITES.filter(
       ({ rotation }) => rotation.kind === "tidally-locked",
     );

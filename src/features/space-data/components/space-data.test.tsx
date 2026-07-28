@@ -1,5 +1,7 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { act, fireEvent, render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it } from "vitest";
+
+import { resetLocaleStore, useLocaleStore } from "@/stores/locale-store";
 
 import type { ApodRecord } from "@/lib/data/external/models";
 import type {
@@ -31,6 +33,7 @@ const apod: ApodRecord = {
 };
 
 describe("space data states", () => {
+  beforeEach(() => resetLocaleStore());
   for (const status of [
     "current",
     "near-live",
@@ -76,7 +79,21 @@ describe("space data states", () => {
     fireEvent.error(screen.getByRole("img", { name: "Test nebula" }));
     expect(screen.getByText("APOD media unavailable")).toBeVisible();
     expect(
-      screen.getByRole("link", { name: "Open official record" }),
+      screen.getByRole("link", {
+        name: "Open the official record for Test nebula (opens in a new tab)",
+      }),
     ).toHaveAttribute("href", apod.sourceUrl);
+  });
+  it("localizes dated state and APOD controls with the interface preference", () => {
+    render(
+      <ApodFeature records={[apod]} metadata={metadata} status="fallback" />,
+    );
+
+    act(() => useLocaleStore.getState().setLocale("tr"));
+
+    expect(screen.getByText("Günün Astronomi Görseli")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Önceki gün" })).toBeVisible();
+    expect(screen.getByText("Doğrulanmış yedek")).toBeVisible();
+    expect(screen.getByText(/Gözlem/)).toBeVisible();
   });
 });

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo } from "react";
+import Link from "next/link";
 
 import {
   DWARF_SATELLITE_BY_ID,
@@ -11,11 +11,8 @@ import {
   EXTENDED_BODY_BY_ID,
   isExtendedBodyId,
 } from "@/features/solar-system/lib/extended-system";
-import {
-  representationLabel,
-  representationTypeAt,
-} from "@/features/solar-system/lib/celestial-representation";
-import { visualProfileFor } from "@/features/solar-system/lib/celestial-visual-registry";
+import { representationTypeAt } from "@/features/solar-system/lib/celestial-representation";
+import { celestialDetailHref } from "@/features/solar-system/lib/celestial-detail-routes";
 import { createCelestialRegistry } from "@/features/solar-system/lib/celestial-registry";
 import { regionVisualProfileFor } from "@/features/solar-system/lib/region-visual-policy";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
@@ -34,13 +31,14 @@ import {
   type CelestialBodyId,
 } from "@/features/solar-system/types/celestial-body";
 import { planetEphemerisRepresentation } from "@/lib/data/ephemeris/models";
-import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { getExploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 import { useEphemerisStore } from "@/stores/ephemeris-store";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useSimulationStore } from "@/stores/simulation-store";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 
-import gateStyles from "./explore-scene-gate.module.css";
+import controlStyles from "./explore-scene-controls.module.css";
 
 interface SelectedBodySummaryProps {
   onCloseSelection?: (bodyId: CelestialBodyId) => void;
@@ -53,14 +51,17 @@ export function SelectedBodySummary({
   planetSummaries,
   sceneSun,
 }: SelectedBodySummaryProps) {
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExploreSceneCopy(locale);
+  const numberLocale = locale === "tr" ? "tr-TR" : "en-US";
   const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
   const scaleMode = useExplorationStore((state) => state.scaleMode);
   const clearSelection = useExplorationStore((state) => state.clearSelection);
   const ephemerisBundle = useEphemerisStore((state) => state.bundle);
   const simulationAtMs = useSimulationStore((state) => state.simulationAtMs);
   const registry = useMemo(
-    () => createCelestialRegistry(planetSummaries, sceneSun),
-    [planetSummaries, sceneSun],
+    () => createCelestialRegistry(planetSummaries, sceneSun, locale),
+    [locale, planetSummaries, sceneSun],
   );
   const selectedMetadata = selectedBodyId
     ? registry.get(selectedBodyId)
@@ -72,36 +73,38 @@ export function SelectedBodySummary({
 
   if (!selectedBodyId || !selectedMetadata) {
     return (
-      <section className={gateStyles.emptySummary} aria-live="polite">
-        <p className={gateStyles.eyebrow}>
-          {exploreSceneCopy.summary.selection}
-        </p>
-        <h2>{exploreSceneCopy.summary.overviewTitle}</h2>
-        <p>{exploreSceneCopy.summary.overviewBody}</p>
+      <section className={controlStyles.emptySummary}>
+        <p className={controlStyles.eyebrow}>{copy.summary.selection}</p>
+        <h2>{copy.summary.overviewTitle}</h2>
+        <p>{copy.summary.overviewBody}</p>
       </section>
     );
   }
 
   if (selectedBodyId === "sun") {
     return (
-      <section className={gateStyles.summary} aria-live="polite">
+      <section className={controlStyles.summary}>
         <SummaryHeader
-          closeLabel={exploreSceneCopy.summary.closeOverview}
-          eyebrow={exploreSceneCopy.labels.star}
+          closeLabel={copy.summary.closeOverview}
+          eyebrow={copy.labels.star}
           name={selectedMetadata.displayName}
           onClose={close}
         />
         <p>{selectedMetadata.summary.description}</p>
-        <dl className={gateStyles.metrics}>
+        <dl className={controlStyles.metrics}>
           <div>
-            <dt>{exploreSceneCopy.summary.sceneRole}</dt>
-            <dd>{exploreSceneCopy.summary.systemOrigin}</dd>
+            <dt>{copy.summary.sceneRole}</dt>
+            <dd>{copy.summary.systemOrigin}</dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.positionMethod}</dt>
+            <dt>{copy.summary.positionMethod}</dt>
             <dd>{selectedMetadata.summary.representationLabel}</dd>
           </div>
         </dl>
+        <DetailLink
+          bodyId={selectedBodyId}
+          label={copy.summary.openSunDetail}
+        />
       </section>
     );
   }
@@ -110,47 +113,55 @@ export function SelectedBodySummary({
     const moon = MOON_BY_ID[selectedBodyId];
     const parent = registry.get(moon.parentPlanetId);
     const type = representationTypeAt(moon.representation, simulationAtMs);
-    const visual = visualProfileFor(moon.id);
     return (
-      <section className={gateStyles.summary} aria-live="polite">
+      <section className={controlStyles.summary}>
         <SummaryHeader
-          closeLabel={exploreSceneCopy.summary.closeMoon}
-          eyebrow={exploreSceneCopy.summary.featuredMoon}
+          closeLabel={copy.summary.closeMoon}
+          eyebrow={copy.summary.featuredMoon}
           name={selectedMetadata.displayName}
           onClose={close}
         />
         <p>
-          {exploreSceneCopy.registry.moonDescription(
+          {copy.registry.moonDescription(
             parent?.displayName ??
-              exploreSceneCopy.registry.parentPlanetNames[moon.parentPlanetId],
+              copy.registry.parentPlanetNames[moon.parentPlanetId],
           )}
         </p>
-        <dl className={gateStyles.metrics}>
+        <dl className={controlStyles.metrics}>
           <div>
-            <dt>{exploreSceneCopy.summary.meanRadius}</dt>
-            <dd>{moon.meanRadiusKm.toLocaleString("en-US")} km</dd>
+            <dt>{copy.summary.meanRadius}</dt>
+            <dd>{moon.meanRadiusKm.toLocaleString(numberLocale)} km</dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.orbitalPeriod}</dt>
-            <dd>{moon.orbitalPeriodDays.toLocaleString("en-US")} days</dd>
+            <dt>{copy.summary.orbitalPeriod}</dt>
+            <dd>
+              {moon.orbitalPeriodDays.toLocaleString(numberLocale)}{" "}
+              {copy.summary.days}
+            </dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.representation}</dt>
-            <dd>{representationLabel(type)}</dd>
+            <dt>{copy.summary.representation}</dt>
+            <dd>{copy.summary.representationLabels[type]}</dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.referenceFrame}</dt>
+            <dt>{copy.summary.referenceFrame}</dt>
             <dd>{moon.representation.referencePlane}</dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.visual}</dt>
-            <dd>{visual.surface.representation}</dd>
+            <dt>{copy.summary.visual}</dt>
+            <dd>{copy.summary.proceduralVisual}</dd>
           </div>
         </dl>
-        <p className={gateStyles.methodNote}>
-          {exploreSceneCopy.summary.featuredSetNote}
+        <p className={controlStyles.methodNote}>
+          {copy.summary.featuredSetNote}
         </p>
-        <p className={gateStyles.methodNote}>{visual.surface.note}</p>
+        <p className={controlStyles.methodNote}>
+          {copy.summary.proceduralVisualNote}
+        </p>
+        <DetailLink
+          bodyId={selectedBodyId}
+          label={copy.summary.openBodyDetail(selectedMetadata.displayName)}
+        />
       </section>
     );
   }
@@ -158,42 +169,50 @@ export function SelectedBodySummary({
   if (isDwarfSatelliteId(selectedBodyId)) {
     const moon = DWARF_SATELLITE_BY_ID[selectedBodyId];
     const type = representationTypeAt(moon.representation, simulationAtMs);
-    const visual = visualProfileFor(moon.id);
     return (
-      <section className={gateStyles.summary} aria-live="polite">
+      <section className={controlStyles.summary}>
         <SummaryHeader
-          closeLabel={exploreSceneCopy.summary.closeMoon}
-          eyebrow="dwarf-system satellite"
+          closeLabel={copy.summary.closeMoon}
+          eyebrow={copy.summary.dwarfSatellite}
           name={selectedMetadata.displayName}
           onClose={close}
         />
         <p>{selectedMetadata.summary.description}</p>
-        <dl className={gateStyles.metrics}>
+        <dl className={controlStyles.metrics}>
           <div>
-            <dt>Mean radius</dt>
-            <dd>{moon.meanRadiusKm.toLocaleString("en-US")} km</dd>
+            <dt>{copy.summary.meanRadius}</dt>
+            <dd>{moon.meanRadiusKm.toLocaleString(numberLocale)} km</dd>
           </div>
           <div>
-            <dt>Orbital period</dt>
-            <dd>{moon.orbitalPeriodDays.toLocaleString("en-US")} days</dd>
+            <dt>{copy.summary.orbitalPeriod}</dt>
+            <dd>
+              {moon.orbitalPeriodDays.toLocaleString(numberLocale)}{" "}
+              {copy.summary.days}
+            </dd>
           </div>
           <div>
-            <dt>Representation</dt>
-            <dd>{representationLabel(type)}</dd>
+            <dt>{copy.summary.representation}</dt>
+            <dd>{copy.summary.representationLabels[type]}</dd>
           </div>
           <div>
-            <dt>Visual</dt>
-            <dd>{visual.surface.representation}</dd>
+            <dt>{copy.summary.visual}</dt>
+            <dd>{copy.summary.proceduralVisual}</dd>
           </div>
           <div>
-            <dt>Provider</dt>
+            <dt>{copy.summary.provider}</dt>
             <dd>{moon.representation.provider}</dd>
           </div>
         </dl>
-        <p className={gateStyles.methodNote}>
-          {moon.representation.precisionNote}
+        <p className={controlStyles.methodNote}>
+          {copy.summary.representationNotes[type]}
         </p>
-        <p className={gateStyles.methodNote}>{visual.surface.note}</p>
+        <p className={controlStyles.methodNote}>
+          {copy.summary.proceduralVisualNote}
+        </p>
+        <DetailLink
+          bodyId={selectedBodyId}
+          label={copy.summary.openBodyDetail(selectedMetadata.displayName)}
+        />
       </section>
     );
   }
@@ -206,46 +225,54 @@ export function SelectedBodySummary({
       simulationAtMs,
     );
     return (
-      <section className={gateStyles.summary} aria-live="polite">
+      <section className={controlStyles.summary}>
         <SummaryHeader
-          closeLabel={exploreSceneCopy.summary.closeOverview}
-          eyebrow={exploreSceneCopy.summary.planetEyebrow(planet.orderFromSun)}
+          closeLabel={copy.summary.closeOverview}
+          eyebrow={copy.summary.planetEyebrow(planet.orderFromSun)}
           name={selectedMetadata.displayName}
           onClose={close}
         />
         <p>{selectedMetadata.summary.description}</p>
-        <dl className={gateStyles.metrics}>
+        <dl className={controlStyles.metrics}>
           <div>
-            <dt>{exploreSceneCopy.summary.gravity}</dt>
+            <dt>{copy.summary.gravity}</dt>
             <dd>{planet.gravityMS2.toFixed(1)} m/s²</dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.year}</dt>
+            <dt>{copy.summary.year}</dt>
             <dd>
-              {planet.orbitalPeriodEarthDays.toLocaleString("en-US")}{" "}
-              {exploreSceneCopy.summary.earthDays}
+              {planet.orbitalPeriodEarthDays.toLocaleString(numberLocale)}{" "}
+              {copy.summary.earthDays}
             </dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.knownMoons}</dt>
+            <dt>{copy.summary.knownMoons}</dt>
             <dd>
-              {planet.moonCount} · {exploreSceneCopy.summary.asOf}{" "}
-              {planet.moonCountAsOf}
+              {planet.moonCount} · {copy.summary.asOf} {planet.moonCountAsOf}
             </dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.positionMethod}</dt>
-            <dd>{representationLabel(representation.representationType)}</dd>
+            <dt>{copy.summary.positionMethod}</dt>
+            <dd>
+              {
+                copy.summary.representationLabels[
+                  representation.representationType
+                ]
+              }
+            </dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.referenceFrame}</dt>
+            <dt>{copy.summary.referenceFrame}</dt>
             <dd>{representation.referencePlane}</dd>
           </div>
         </dl>
-        <p className={gateStyles.methodNote}>{representation.precisionNote}</p>
-        <Link className={gateStyles.detailLink} href={`/planet/${planet.id}`}>
-          {exploreSceneCopy.summary.openPlanetDetail(planet.name)}
-        </Link>
+        <p className={controlStyles.methodNote}>
+          {copy.summary.representationNotes[representation.representationType]}
+        </p>
+        <DetailLink
+          bodyId={planet.id}
+          label={copy.summary.openPlanetDetail(selectedMetadata.displayName)}
+        />
       </section>
     );
   }
@@ -253,45 +280,47 @@ export function SelectedBodySummary({
   if (isExtendedBodyId(selectedBodyId)) {
     const body = EXTENDED_BODY_BY_ID[selectedBodyId];
     const type = representationTypeAt(body.representation, simulationAtMs);
-    const visual = visualProfileFor(body.id);
     return (
-      <section className={gateStyles.summary} aria-live="polite">
+      <section className={controlStyles.summary}>
         <SummaryHeader
-          closeLabel={exploreSceneCopy.summary.closeOverview}
-          eyebrow={selectedMetadata.kind.replaceAll("-", " ")}
+          closeLabel={copy.summary.closeOverview}
+          eyebrow={copy.summary.kindLabels[body.kind]}
           name={selectedMetadata.displayName}
           onClose={close}
         />
         <p>{selectedMetadata.summary.description}</p>
-        <dl className={gateStyles.metrics}>
+        <dl className={controlStyles.metrics}>
           <div>
-            <dt>{exploreSceneCopy.summary.semiMajorAxis}</dt>
+            <dt>{copy.summary.semiMajorAxis}</dt>
             <dd>{body.semiMajorAxisAu} AU</dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.positionMethod}</dt>
-            <dd>{representationLabel(type)}</dd>
+            <dt>{copy.summary.positionMethod}</dt>
+            <dd>{copy.summary.representationLabels[type]}</dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.referenceFrame}</dt>
+            <dt>{copy.summary.referenceFrame}</dt>
             <dd>{body.representation.referencePlane}</dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.provider}</dt>
+            <dt>{copy.summary.provider}</dt>
             <dd>{body.representation.provider}</dd>
           </div>
           <div>
-            <dt>{exploreSceneCopy.summary.visual}</dt>
-            <dd>{visual.surface.representation}</dd>
+            <dt>{copy.summary.visual}</dt>
+            <dd>{copy.summary.proceduralVisual}</dd>
           </div>
         </dl>
-        <p className={gateStyles.methodNote}>
-          {body.representation.precisionNote}
+        <p className={controlStyles.methodNote}>
+          {copy.summary.representationNotes[type]}
         </p>
-        <p className={gateStyles.methodNote}>{visual.surface.note}</p>
-        <Link className={gateStyles.detailLink} href={`/object/${body.id}`}>
-          {exploreSceneCopy.summary.openObjectEditorial(body.name)}
-        </Link>
+        <p className={controlStyles.methodNote}>
+          {copy.summary.proceduralVisualNote}
+        </p>
+        <DetailLink
+          bodyId={body.id}
+          label={copy.summary.openObjectEditorial(selectedMetadata.displayName)}
+        />
       </section>
     );
   }
@@ -304,38 +333,63 @@ export function SelectedBodySummary({
     );
     const heliosphereSelected = selectedBodyId === "heliosphere";
     return (
-      <section className={gateStyles.summary} aria-live="polite">
+      <section className={controlStyles.summary}>
         <SummaryHeader
-          closeLabel={exploreSceneCopy.summary.closeOverview}
+          closeLabel={copy.summary.closeOverview}
           eyebrow={
             heliosphereSelected
-              ? "Heliosphere boundary"
-              : exploreSceneCopy.summary.regionType
+              ? copy.summary.heliosphereBoundary
+              : copy.summary.regionType
           }
           name={selectedMetadata.displayName}
           onClose={close}
         />
         <p>{selectedMetadata.summary.description}</p>
-        <dl className={gateStyles.metrics}>
+        <dl className={controlStyles.metrics}>
           <div>
-            <dt>Representation</dt>
-            <dd>{regionProfile.representation.replaceAll("-", " ")}</dd>
+            <dt>{copy.summary.representation}</dt>
+            <dd>
+              {
+                copy.summary.regionRepresentationLabels[
+                  regionProfile.representation
+                ]
+              }
+            </dd>
           </div>
           <div>
-            <dt>Visual model</dt>
-            <dd>{regionProfile.kind.replaceAll("-", " ")}</dd>
+            <dt>{copy.summary.regionVisualModel}</dt>
+            <dd>{copy.summary.regionKindLabels[regionProfile.kind]}</dd>
           </div>
         </dl>
-        <p className={gateStyles.methodNote}>
+        <p className={controlStyles.methodNote}>
           {heliosphereSelected
-            ? "Schematic context layer · termination shock and heliopause are visual guides, not a measured final shape."
+            ? copy.summary.heliosphereNote
             : selectedMetadata.summary.representationLabel}
         </p>
+        <DetailLink
+          bodyId={selectedBodyId}
+          label={copy.summary.openRegionDetail(selectedMetadata.displayName)}
+        />
       </section>
     );
   }
 
   return null;
+}
+
+function DetailLink({
+  bodyId,
+  label,
+}: {
+  readonly bodyId: CelestialBodyId;
+  readonly label: string;
+}) {
+  const href = celestialDetailHref(bodyId);
+  return (
+    <Link className={controlStyles.detailLink} href={href}>
+      {label}
+    </Link>
+  );
 }
 
 function SummaryHeader({
@@ -349,6 +403,8 @@ function SummaryHeader({
   name: string;
   onClose: () => void;
 }) {
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExploreSceneCopy(locale);
   const bodyId = useExplorationStore((state) => state.selectedBodyId);
   const visible = useSceneVisibilityStore((state) =>
     bodyId ? effectiveBodyVisibility(bodyId, state) : true,
@@ -358,33 +414,36 @@ function SummaryHeader({
   );
   const hideObject = useSceneVisibilityStore((state) => state.hideObject);
   const showObject = useSceneVisibilityStore((state) => state.showObject);
-  const statusLabels = {
-    visible: "Visible",
-    "hidden-by-category": "Hidden by category",
-    "hidden-individually": "Hidden individually",
-    "explicitly-shown": "Explicitly shown",
-  } as const;
+  const visibilityNoun =
+    bodyId && isSystemRegionIdValue(bodyId)
+      ? copy.summary.visibility.layer
+      : copy.summary.visibility.object;
+  const statusLabels = copy.summary.visibility.statuses;
 
   return (
     <>
-      <header className={gateStyles.summaryHeader}>
+      <header className={controlStyles.summaryHeader}>
         <div>
-          <p className={gateStyles.eyebrow}>{eyebrow}</p>
-          <h2>{name}</h2>
+          <p className={controlStyles.eyebrow}>{eyebrow}</p>
+          <h2 data-selection-summary-heading tabIndex={-1}>
+            {name}
+          </h2>
         </div>
         <button aria-label={closeLabel} onClick={onClose} type="button">
           ×
         </button>
       </header>
       {bodyId ? (
-        <div className={gateStyles.objectVisibilityAction}>
+        <div className={controlStyles.objectVisibilityAction}>
           <button
             onClick={() => (visible ? hideObject(bodyId) : showObject(bodyId))}
             type="button"
           >
-            {visible ? "Hide this object" : "Show this object"}
+            {visible
+              ? copy.summary.visibility.hide(visibilityNoun)
+              : copy.summary.visibility.show(visibilityNoun)}
           </button>
-          <span className={gateStyles.objectVisibilityStatus} role="status">
+          <span className={controlStyles.objectVisibilityStatus} role="status">
             {statusLabels[reason]}
           </span>
         </div>

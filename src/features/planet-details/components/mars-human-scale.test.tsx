@@ -32,6 +32,8 @@ describe("MarsHumanScale", () => {
     fireEvent.change(input, { target: { value: "invalid" } });
 
     expect(input).toHaveAttribute("aria-invalid", "true");
-    expect(screen.getByText("Enter a number from 0 to 1,000.")).toBeVisible();
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      "Enter a number from 0 to 1,000.",
+    );
   });
 });

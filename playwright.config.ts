@@ -59,7 +59,8 @@ export default defineConfig({
   webServer: useExternalServer
     ? undefined
     : {
-        command: "pnpm build && pnpm start",
+        command:
+          "pnpm build && pnpm exec next start -H 127.0.0.1 -p 3000",
         url: baseURL,
         timeout: 240_000,
         reuseExistingServer: !process.env.CI,

@@ -97,7 +97,7 @@ export function useCelestialPointerInteraction({
         safelyRelease(event);
         if (selected) {
           onSelect(selected);
-          useExploreSceneUiStore.getState().setActiveDockPanel("selection");
+          useExploreSceneUiStore.getState().openSelectionPanel();
         }
       },
       onPointerCancel(event: ThreeEvent<PointerEvent>) {

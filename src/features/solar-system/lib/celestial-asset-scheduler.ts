@@ -36,7 +36,7 @@ function parentBodyId(bodyId: VisualBodyId): CelestialBodyId | null {
   return null;
 }
 
-/** Secondary assets never join the blocking Sun/planet/Earth/Saturn opening gate. */
+/** Secondary assets never join the blocking Sun/planet/Earth/Saturn opening sequence. */
 export const secondaryCelestialAssets: readonly SecondaryCelestialAsset[] =
   Object.freeze(
     visualRegistryIds.map((bodyId) => {

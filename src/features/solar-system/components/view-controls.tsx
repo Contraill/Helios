@@ -1,32 +1,23 @@
 "use client";
 
 import styles from "@/app/explore/explore.module.css";
-import {
-  SCENE_VISIBILITY_CATEGORIES,
-  type SceneVisibilityCategory,
-} from "@/features/solar-system/lib/scene-visibility-policy";
+import { SCENE_VISIBILITY_CATEGORIES } from "@/features/solar-system/lib/scene-visibility-policy";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
-import { uiStrings } from "@/lib/i18n/ui-strings";
+import { getExplorePageCopy } from "@/lib/i18n/explore-page-copy";
 import { useExplorationStore } from "@/stores/exploration-store";
+import { useLocaleStore } from "@/stores/locale-store";
 import {
   sceneVisibilityIsDefault,
   useSceneVisibilityStore,
 } from "@/stores/scene-visibility-store";
 
-import gateStyles from "./explore-scene-gate.module.css";
+import controlStyles from "./explore-scene-controls.module.css";
 
 const profiles: readonly ScaleMode[] = ["exploration", "scientific"];
-const visibilityLabels: Readonly<Record<SceneVisibilityCategory, string>> = {
-  planets: "Planets",
-  moons: "Moons",
-  asteroids: "Asteroids",
-  "dwarf-kuiper": "Dwarf & Kuiper worlds",
-  comets: "Comets",
-  regions: "Regions",
-};
 
 export function ViewControls() {
-  const copy = uiStrings.pages.explore.controls;
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExplorePageCopy(locale).controls;
   const scaleMode = useExplorationStore((state) => state.scaleMode);
   const cameraMode = useExplorationStore((state) => state.cameraMode);
   const setScaleMode = useExplorationStore((state) => state.setScaleMode);
@@ -48,23 +39,23 @@ export function ViewControls() {
 
   return (
     <div
-      aria-label="View controls"
-      className={`${gateStyles.embeddedPanel} ${gateStyles.viewPanel}`}
+      aria-label={copy.label}
+      className={`${controlStyles.embeddedPanel} ${controlStyles.viewPanel}`}
       data-embedded-panel="view"
       id="view-control-panel"
     >
       <div className={styles.controlDeckHeader}>
         <div>
-          <p className={styles.controlEyebrow}>Scene presentation</p>
-          <h2>View</h2>
+          <p className={styles.controlEyebrow}>{copy.eyebrow}</p>
+          <h2>{copy.title}</h2>
         </div>
       </div>
 
       <div
-        className={`${styles.controlGrid} ${gateStyles.viewControlGrid}`}
+        className={`${styles.controlGrid} ${controlStyles.viewControlGrid}`}
         data-view-layout="stacked"
       >
-        <fieldset className={gateStyles.viewSection}>
+        <fieldset className={controlStyles.viewSection}>
           <legend>{copy.scale}</legend>
           <div className={styles.segmentedControls}>
             {profiles.map((profile) => (
@@ -81,24 +72,27 @@ export function ViewControls() {
         </fieldset>
 
         <fieldset
-          className={`${gateStyles.viewSection} ${gateStyles.visibilityFieldset}`}
+          className={`${controlStyles.viewSection} ${controlStyles.visibilityFieldset}`}
         >
-          <legend>Visibility</legend>
-          <div className={gateStyles.visibilityGrid} data-visibility-grid>
+          <legend>{copy.visibility}</legend>
+          <div className={controlStyles.visibilityGrid} data-visibility-grid>
             {SCENE_VISIBILITY_CATEGORIES.map((category) => (
               <VisibilityToggle
+                copy={copy}
                 key={category}
-                label={visibilityLabels[category]}
+                label={copy.visibilityLabels[category]}
                 onClick={() => toggleCategoryVisibility(category)}
                 pressed={categories[category]}
               />
             ))}
             <VisibilityToggle
+              copy={copy}
               label={copy.orbits}
               onClick={toggleOrbits}
               pressed={orbitsVisible}
             />
             <VisibilityToggle
+              copy={copy}
               label={copy.labels}
               onClick={toggleLabels}
               pressed={labelsVisible}
@@ -106,28 +100,26 @@ export function ViewControls() {
           </div>
           <button
             aria-describedby="restore-visibility-description"
-            className={gateStyles.restoreVisibility}
+            className={controlStyles.restoreVisibility}
             disabled={visibilityIsDefault}
             onClick={restoreAllVisibility}
             type="button"
           >
-            Restore all visibility
+            {copy.restoreVisibility}
           </button>
           <span
-            className={gateStyles.srOnly}
+            className={controlStyles.srOnly}
             id="restore-visibility-description"
           >
-            {visibilityIsDefault
-              ? "All categories, orbits and labels are already visible."
-              : "Shows every category, clears object overrides and enables orbits and labels."}
+            {visibilityIsDefault ? copy.restoreAlready : copy.restoreAction}
           </span>
         </fieldset>
 
         <fieldset
-          className={`${gateStyles.viewSection} ${gateStyles.cameraFieldset}`}
+          className={`${controlStyles.viewSection} ${controlStyles.cameraFieldset}`}
         >
           <legend>{copy.camera}</legend>
-          <div className={gateStyles.cameraGrid}>
+          <div className={controlStyles.cameraGrid}>
             <button
               aria-pressed={cameraMode === "free"}
               onClick={enterFreeCamera}
@@ -146,12 +138,12 @@ export function ViewControls() {
               {copy.resetView}
             </button>
           </div>
-          <p className={gateStyles.cameraStatus} role="status">
+          <p className={controlStyles.cameraStatus} role="status">
             {cameraMode === "free"
-              ? "Free camera keeps the current pose while selection remains available."
+              ? copy.freeStatus
               : cameraMode === "overview"
-                ? "Guided overview is active."
-                : "Guided camera follows the selected target without locking rotation or zoom."}
+                ? copy.overviewStatus
+                : copy.guidedStatus}
           </p>
         </fieldset>
       </div>
@@ -159,35 +151,34 @@ export function ViewControls() {
       <p className={styles.scaleExplanation} role="status">
         {copy.scaleDescriptions[scaleMode]}
       </p>
-      <p className={styles.visualAttribution}>
-        One automatic High visual contract is active. Runtime safety is handled
-        by staged loading, bounded pixel ratio, mipmaps and texture leases.
-      </p>
+      <p className={styles.visualAttribution}>{copy.visualContract}</p>
     </div>
   );
 }
 
 function VisibilityToggle({
+  copy,
   label,
   onClick,
   pressed,
 }: {
+  copy: ReturnType<typeof getExplorePageCopy>["controls"];
   label: string;
   onClick: () => void;
   pressed: boolean;
 }) {
   return (
     <button
-      aria-label={`${label}: ${pressed ? "visible" : "hidden"}`}
+      aria-label={copy.visibilityAria(label, pressed)}
       aria-pressed={pressed}
-      className={gateStyles.visibilityToggle}
+      className={controlStyles.visibilityToggle}
       data-visibility-toggle
       onClick={onClick}
       type="button"
     >
       <span>{label}</span>
-      <span aria-hidden="true" className={gateStyles.visibilityState}>
-        {pressed ? "On" : "Off"}
+      <span aria-hidden="true" className={controlStyles.visibilityState}>
+        {copy.visibilityState(pressed)}
       </span>
     </button>
   );

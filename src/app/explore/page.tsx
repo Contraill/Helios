@@ -6,21 +6,31 @@ import { ExploreExperience } from "@/features/solar-system/components/explore-ex
 import { createExplorePlanetSummaries } from "@/features/solar-system/lib/explore-planets";
 import { createScenePlanets } from "@/features/solar-system/lib/scene-planets";
 import { createSceneSun } from "@/features/solar-system/lib/scene-sun";
-import { uiStrings } from "@/lib/i18n/ui-strings";
+import { getExplorePageCopy } from "@/lib/i18n/explore-page-copy";
+import { getRequestLocale } from "@/lib/i18n/request-locale.server";
+import { createPageMetadata } from "@/lib/metadata/page-metadata";
 
 import styles from "./explore.module.css";
 
-const copy = uiStrings.pages.explore;
 const planetSummaries = createExplorePlanetSummaries(planets);
 const scenePlanets = createScenePlanets(planets);
 const sceneSun = createSceneSun(sun);
 
-export const metadata: Metadata = {
-  title: copy.title,
-  description: copy.description,
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getRequestLocale();
+  const copy = getExplorePageCopy(locale);
+  return createPageMetadata({
+    canonical: "/explore",
+    description: copy.description,
+    locale,
+    title: copy.title,
+  });
+}
 
-export default function ExplorePage() {
+export default async function ExplorePage() {
+  const locale = await getRequestLocale();
+  const copy = getExplorePageCopy(locale);
+
   return (
     <article className={styles.explore}>
       <header className={styles.intro}>

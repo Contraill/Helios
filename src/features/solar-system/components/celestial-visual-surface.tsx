@@ -30,13 +30,13 @@ import {
   useSceneTexture,
   useTextureReadiness,
 } from "@/features/solar-system/lib/texture-cache";
+import {
+  SCENE_FRAME_PRIORITY,
+  sceneFrameTimeMs,
+} from "@/features/solar-system/lib/scene-frame-runtime";
 import { visualRotationAngleAt } from "@/features/solar-system/lib/visual-rotation-policy";
 import { useReducedMotionPreference } from "@/hooks/use-reduced-motion-preference";
 import { useExplorationStore } from "@/stores/exploration-store";
-import {
-  currentSimulationTimeMs,
-  useSimulationStore,
-} from "@/stores/simulation-store";
 
 const sphereGeometry = new SphereGeometry(1, 64, 32);
 const atmosphereGeometry = new SphereGeometry(1, 48, 24);
@@ -136,7 +136,7 @@ const SINGLE_PART = [
 /**
  * The fallback shell is 0.08% smaller than the final surface. During the
  * short opacity crossfade this deterministic separation prevents coplanar
- * depth competition without changing the accepted final geometry bounds.
+ * depth competition without changing the documented final geometry bounds.
  */
 export const FALLBACK_SURFACE_SCALE = 0.9992;
 
@@ -292,10 +292,10 @@ export function CelestialVisualSurface({
   useFrame(() => {
     const node = localRootRef.current;
     if (!node || profile.rotation.kind === "tidally-locked") return;
-    const timestamp = currentSimulationTimeMs(useSimulationStore.getState());
+    const timestamp = sceneFrameTimeMs();
     node.rotation.set(0, visualRotationAngleAt(profile.rotation, timestamp), 0);
     node.userData.testRotationAngle = node.rotation.y;
-  });
+  }, SCENE_FRAME_PRIORITY.visual);
 
   return (
     <group

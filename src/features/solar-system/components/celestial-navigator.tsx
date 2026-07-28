@@ -27,11 +27,12 @@ import type {
   CelestialNavigatorCategory,
   NavigatorView,
 } from "@/features/solar-system/types/celestial-navigation";
-import { exploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { getExploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useExploreSceneUiStore } from "@/stores/explore-scene-ui-store";
 
-import gateStyles from "./explore-scene-gate.module.css";
+import controlStyles from "./explore-scene-controls.module.css";
 
 interface CelestialNavigatorProps {
   planetSummaries: readonly ExplorePlanetSummary[];
@@ -47,21 +48,25 @@ const CATEGORY_ORDER = [
   "regions-context",
 ] as const satisfies readonly CelestialNavigatorCategory[];
 
-function viewTitle(view: NavigatorView, parentName?: string): string {
-  if (view.kind === "categories") return exploreSceneCopy.navigator.label;
+function viewTitle(
+  view: NavigatorView,
+  copy: ReturnType<typeof getExploreSceneCopy>,
+  parentName?: string,
+): string {
+  if (view.kind === "categories") return copy.navigator.label;
   if (view.kind === "moon-parents") {
-    return exploreSceneCopy.navigator.categories["planetary-moons"].label;
+    return copy.navigator.categories["planetary-moons"].label;
   }
   if (view.kind === "moons") {
-    return `${parentName ?? view.parentPlanetId} · ${exploreSceneCopy.navigator.featuredMoons.toLowerCase()}`;
+    return `${parentName ?? view.parentPlanetId} · ${copy.navigator.featuredMoons.toLowerCase()}`;
   }
   if (view.kind === "dwarf-parents") {
-    return exploreSceneCopy.navigator.categories["dwarf-kuiper"].label;
+    return copy.navigator.categories["dwarf-kuiper"].label;
   }
   if (view.kind === "dwarf-system") {
-    return `${parentName ?? view.parentBodyId} · system`;
+    return `${parentName ?? view.parentBodyId} · ${copy.navigator.system}`;
   }
-  return exploreSceneCopy.navigator.categories[view.category].label;
+  return copy.navigator.categories[view.category].label;
 }
 
 function moveFocusWithinList(
@@ -107,13 +112,15 @@ export function CelestialNavigator({
   sceneSun,
 }: CelestialNavigatorProps) {
   const rootRef = useRef<HTMLElement>(null);
+  const locale = useLocaleStore((state) => state.locale);
+  const copy = getExploreSceneCopy(locale);
   const selectedBodyId = useExplorationStore((state) => state.selectedBodyId);
   const selectSun = useExplorationStore((state) => state.selectSun);
   const selectPlanet = useExplorationStore((state) => state.selectPlanet);
   const selectBody = useExplorationStore((state) => state.selectBody);
   const navigator = useExploreSceneUiStore((state) => state.navigator);
-  const setActiveDockPanel = useExploreSceneUiStore(
-    (state) => state.setActiveDockPanel,
+  const openSelectionPanel = useExploreSceneUiStore(
+    (state) => state.openSelectionPanel,
   );
   const openCategory = useExploreSceneUiStore((state) => state.openCategory);
   const openMoonParent = useExploreSceneUiStore(
@@ -128,8 +135,8 @@ export function CelestialNavigator({
   );
   const view = currentNavigatorView(navigator);
   const registry = useMemo(
-    () => createCelestialRegistry(planetSummaries, sceneSun),
-    [planetSummaries, sceneSun],
+    () => createCelestialRegistry(planetSummaries, sceneSun, locale),
+    [locale, planetSummaries, sceneSun],
   );
   const planetById = useMemo(
     () =>
@@ -148,7 +155,7 @@ export function CelestialNavigator({
 
   const selectBodyAndOpenSummary = (bodyId: CelestialBodyId) => {
     selectBody(bodyId);
-    setActiveDockPanel("selection");
+    openSelectionPanel();
   };
 
   const openParent = (parentPlanetId: MoonParentPlanetId, key: string) => {
@@ -168,6 +175,7 @@ export function CelestialNavigator({
 
   const currentTitle = viewTitle(
     view,
+    copy,
     view.kind === "moons"
       ? planetById.get(view.parentPlanetId)?.name
       : view.kind === "dwarf-system"
@@ -181,36 +189,33 @@ export function CelestialNavigator({
 
   return (
     <nav
-      aria-label={exploreSceneCopy.navigator.label}
-      className={gateStyles.navigator}
+      aria-label={copy.navigator.label}
+      className={controlStyles.navigator}
       onKeyDown={(event) => {
         if (rootRef.current) moveFocusWithinList(event, rootRef.current);
       }}
       ref={rootRef}
     >
-      <header className={gateStyles.navigatorHeader}>
+      <header className={controlStyles.navigatorHeader}>
         <div>
-          <p className={gateStyles.eyebrow}>
-            {exploreSceneCopy.navigator.eyebrow}
-          </p>
+          <p className={controlStyles.eyebrow}>{copy.navigator.eyebrow}</p>
           <h2>{currentTitle}</h2>
         </div>
         {view.kind !== "categories" ? (
           <button
-            className={gateStyles.backButton}
+            className={controlStyles.backButton}
             onClick={handleBack}
             type="button"
           >
-            {exploreSceneCopy.navigator.back}
+            {copy.navigator.back}
           </button>
         ) : null}
       </header>
 
       {view.kind === "categories" ? (
-        <ul className={gateStyles.categoryList}>
+        <ul className={controlStyles.categoryList}>
           {CATEGORY_ORDER.map((category) => {
-            const categoryCopy =
-              exploreSceneCopy.navigator.categories[category];
+            const categoryCopy = copy.navigator.categories[category];
             return (
               <li key={category}>
                 <button
@@ -231,7 +236,7 @@ export function CelestialNavigator({
       ) : null}
 
       {view.kind === "category" && view.category === "sun-planets" ? (
-        <ul className={gateStyles.bodyList}>
+        <ul className={controlStyles.bodyList}>
           {categoryEntries.map((entry) => {
             const planet = planetById.get(
               entry.id as ExplorePlanetSummary["id"],
@@ -239,7 +244,7 @@ export function CelestialNavigator({
             const isSun = entry.id === "sun";
             return (
               <li
-                className={planet ? gateStyles.planetRow : undefined}
+                className={planet ? controlStyles.planetRow : undefined}
                 key={entry.id}
               >
                 <button
@@ -252,7 +257,7 @@ export function CelestialNavigator({
                   onClick={() => {
                     if (isSun) selectSun();
                     else if (planet) selectPlanet(planet.id);
-                    setActiveDockPanel("selection");
+                    openSelectionPanel();
                   }}
                   type="button"
                 >
@@ -266,10 +271,8 @@ export function CelestialNavigator({
                   planet.id as MoonParentPlanetId,
                 ) ? (
                   <button
-                    aria-label={exploreSceneCopy.navigator.openMoons(
-                      planet.name,
-                    )}
-                    className={gateStyles.moonShortcut}
+                    aria-label={copy.navigator.openMoons(planet.name)}
+                    className={controlStyles.moonShortcut}
                     data-navigator-item
                     onClick={() =>
                       openParent(
@@ -279,7 +282,7 @@ export function CelestialNavigator({
                     }
                     type="button"
                   >
-                    {exploreSceneCopy.navigator.moonShortcut}
+                    {copy.navigator.moonShortcut}
                   </button>
                 ) : null}
               </li>
@@ -289,7 +292,7 @@ export function CelestialNavigator({
       ) : null}
 
       {view.kind === "moon-parents" ? (
-        <ul className={gateStyles.categoryList}>
+        <ul className={controlStyles.categoryList}>
           {FEATURED_MOON_PARENT_IDS.map((parentId) => {
             const planet = planetById.get(parentId);
             const moonCount = featuredMoonsForPlanet(parentId).length;
@@ -304,9 +307,7 @@ export function CelestialNavigator({
                   type="button"
                 >
                   <strong>{planet?.name ?? parentId}</strong>
-                  <span>
-                    {exploreSceneCopy.navigator.featuredMoonCount(moonCount)}
-                  </span>
+                  <span>{copy.navigator.featuredMoonCount(moonCount)}</span>
                 </button>
               </li>
             );
@@ -315,7 +316,7 @@ export function CelestialNavigator({
       ) : null}
 
       {view.kind === "moons" ? (
-        <ul className={gateStyles.bodyList}>
+        <ul className={controlStyles.bodyList}>
           {featuredMoonsForPlanet(view.parentPlanetId).map((moon) => (
             <li key={moon.id}>
               <button
@@ -335,7 +336,7 @@ export function CelestialNavigator({
       ) : null}
 
       {view.kind === "dwarf-parents" ? (
-        <ul className={gateStyles.bodyList}>
+        <ul className={controlStyles.bodyList}>
           {dwarfEntries.map((entry) => {
             const parentId = entry.id as DwarfSystemParentId;
             const hasSystem = (
@@ -345,7 +346,7 @@ export function CelestialNavigator({
               ? dwarfSatellitesFor(parentId).length
               : 0;
             return (
-              <li className={gateStyles.planetRow} key={entry.id}>
+              <li className={controlStyles.planetRow} key={entry.id}>
                 <button
                   aria-current={
                     selectedBodyId === entry.id ? "true" : undefined
@@ -361,15 +362,18 @@ export function CelestialNavigator({
                 </button>
                 {hasSystem ? (
                   <button
-                    aria-label={`Open ${entry.displayName} system (${moonCount} satellites)`}
-                    className={gateStyles.moonShortcut}
+                    aria-label={copy.navigator.openSystem(
+                      entry.displayName,
+                      moonCount,
+                    )}
+                    className={controlStyles.moonShortcut}
                     data-navigator-item
                     onClick={() =>
                       openDwarfSystem(parentId, `dwarf-parent-${entry.id}`)
                     }
                     type="button"
                   >
-                    {moonCount} · system
+                    {moonCount} · {copy.navigator.system}
                   </button>
                 ) : null}
               </li>
@@ -379,7 +383,7 @@ export function CelestialNavigator({
       ) : null}
 
       {view.kind === "dwarf-system" ? (
-        <ul className={gateStyles.bodyList}>
+        <ul className={controlStyles.bodyList}>
           <li>
             <button
               aria-current={
@@ -419,7 +423,7 @@ export function CelestialNavigator({
       {view.kind === "category" &&
       view.category !== "sun-planets" &&
       view.category !== "regions-context" ? (
-        <ul className={gateStyles.bodyList}>
+        <ul className={controlStyles.bodyList}>
           {categoryEntries.map((entry) => (
             <li key={entry.id}>
               <button
@@ -441,7 +445,7 @@ export function CelestialNavigator({
       ) : null}
 
       {view.kind === "category" && view.category === "regions-context" ? (
-        <ul className={gateStyles.bodyList}>
+        <ul className={controlStyles.bodyList}>
           {categoryEntries.map((entry) => (
             <li key={entry.id}>
               <button

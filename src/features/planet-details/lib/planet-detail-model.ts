@@ -11,6 +11,7 @@ import {
   STANDARD_EARTH_GRAVITY_MS2,
 } from "@/lib/calculations/planet";
 import type { PlanetData, PlanetId } from "@/lib/data/schemas/planet";
+import type { Locale } from "@/lib/i18n/locale";
 
 export interface PlanetDetailModel {
   readonly accentColor: string;
@@ -53,6 +54,7 @@ export function createPlanetDetailModel(
   planet: PlanetData,
   catalog: readonly PlanetData[],
   additionalSourceIds: readonly string[] = [],
+  locale: Locale = "en",
 ): PlanetDetailModel {
   const index = catalog.findIndex(({ id }) => id === planet.id);
   if (index < 0) throw new Error(`Planet ${planet.id} is not in the catalog.`);
@@ -67,7 +69,7 @@ export function createPlanetDetailModel(
     atmosphereComponents: Object.freeze([
       ...planet.environment.majorAtmosphericComponents,
     ]),
-    atmosphereSummary: planet.environment.atmosphereSummary.en,
+    atmosphereSummary: planet.environment.atmosphereSummary[locale],
     averageTemperatureC: planet.environment.temperature.averageC.value,
     axialTiltDeg: planet.rotation.axialTiltDeg.value,
     ...(solarDayHours
@@ -82,7 +84,7 @@ export function createPlanetDetailModel(
         }
       : {}),
     densityKgM3: planet.physical.densityKgM3.value,
-    description: planet.description.en,
+    description: planet.description[locale],
     equatorialDiameterKm: planet.physical.equatorialDiameterKm.value,
     escapeVelocityKmS: planet.physical.escapeVelocityKmS.value,
     featuredMoons: Object.freeze([...planet.moons.featured]),
@@ -100,21 +102,21 @@ export function createPlanetDetailModel(
     ...(planet.moons.count.asOf
       ? { moonCountAsOf: planet.moons.count.asOf }
       : {}),
-    name: planet.name.en,
-    ...(next ? { next: { id: next.id, name: next.name.en } } : {}),
+    name: planet.name[locale],
+    ...(next ? { next: { id: next.id, name: next.name[locale] } } : {}),
     orbitalPeriodEarthDays: planet.orbit.orbitalPeriodEarthDays.value,
     orderFromSun: planet.orderFromSun.value,
     ...(previous
-      ? { previous: { id: previous.id, name: previous.name.en } }
+      ? { previous: { id: previous.id, name: previous.name[locale] } }
       : {}),
     retrograde: planet.rotation.retrograde,
-    ringsDescription: planet.rings.description.en,
+    ringsDescription: planet.rings.description[locale],
     siderealRotationHours: planet.rotation.siderealRotationHours.value,
     sources: createSourcePresentations(sourceIds),
     sunlightTravelMinutes: calculateSunlightTravelTimeMinutes(
       planet.orbit.semiMajorAxisKm.value,
     ),
-    tagline: planet.tagline.en,
+    tagline: planet.tagline[locale],
     temperatureDefinition: planet.environment.temperature.definition,
   });
 }

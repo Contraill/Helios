@@ -561,7 +561,7 @@ test.describe("loaded responsive scene ownership", () => {
   }
 });
 
-test("renderer evidence covers orbit policy and selected extended bodies", async ({
+test("scene diagnostics cover orbit policy and selected extended bodies", async ({
   page,
 }) => {
   test.setTimeout(90_000);

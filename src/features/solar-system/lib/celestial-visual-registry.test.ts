@@ -30,7 +30,7 @@ function geometrySignature(id: VisualBodyId): string {
 }
 
 describe("Celestial visual registry", () => {
-  it("covers the exact Gate 3B visual catalogue without duplicate IDs", () => {
+  it("covers the exact celestial visual catalogue without duplicate IDs", () => {
     const expected = [
       ...FEATURED_MOON_IDS,
       ...EXTENDED_BODY_IDS,
@@ -150,7 +150,7 @@ describe("Celestial visual registry", () => {
     }
   });
 
-  it("keeps every runtime texture inside the accepted ceiling", async () => {
+  it("keeps every runtime texture inside the documented ceiling", async () => {
     const manifest =
       await import("../../../../scripts/data/texture-runtime-manifest.json");
     const assets = manifest.default.assets as readonly {

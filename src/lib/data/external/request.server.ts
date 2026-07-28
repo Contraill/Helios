@@ -33,6 +33,12 @@ export function buildExternalUrl({
   policy,
 }: FetchExternalInput): URL {
   const provider = providerPolicies[policy.providerId];
+  if (provider.authentication === "historical-snapshot") {
+    throw new ExternalRequestError(
+      "configuration",
+      `${provider.name} is a bundled historical source and has no runtime endpoint.`,
+    );
+  }
   const url = new URL(path, provider.origin);
   for (const [key, value] of Object.entries(params ?? {})) {
     if (value !== undefined) url.searchParams.set(key, String(value));

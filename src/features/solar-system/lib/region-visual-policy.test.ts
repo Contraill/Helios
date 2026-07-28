@@ -22,7 +22,7 @@ function variance(values: readonly number[]): number {
   );
 }
 
-describe("Gate 3A region visual policy", () => {
+describe("region visual policy", () => {
   it("exposes one fixed Detailed and Cinematic region contract", () => {
     expect(regionVisualProfileFor).toHaveLength(3);
 

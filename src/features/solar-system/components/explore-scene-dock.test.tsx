@@ -1,4 +1,10 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -72,6 +78,26 @@ describe("ExploreSceneDock", () => {
       screen.getByRole("button", { name: /Expand Explore controls/i }),
     );
     expect(screen.getByText("Navigator content")).toBeInTheDocument();
+  });
+
+  it("moves focus into a newly opened selection summary", async () => {
+    setCssMode("desktop");
+    render(
+      <ExploreSceneDock
+        {...props}
+        selection={
+          <h2 data-selection-summary-heading tabIndex={-1}>
+            Ceres
+          </h2>
+        }
+      />,
+    );
+
+    act(() => useExploreSceneUiStore.getState().openSelectionPanel());
+
+    await waitFor(() =>
+      expect(screen.getByRole("heading", { name: "Ceres" })).toHaveFocus(),
+    );
   });
 
   it("uses the CSS contract to expose a modal bottom sheet and restores focus", () => {

@@ -57,7 +57,7 @@ export function extendedBodySceneLabel(body: ExtendedBody): string {
 const NASA_SMALL_BODIES = "https://ssd.jpl.nasa.gov/tools/sbdb_lookup.html";
 const SBDB_API = "https://ssd-api.jpl.nasa.gov/sbdb.api";
 const SBDB_SOURCE_ID = "jpl-sbdb-orbital-elements";
-const ACCEPTED_FALLBACK_SOURCE_ID = "helios-accepted-orbital-fallback";
+const REFERENCE_FALLBACK_SOURCE_ID = "helios-reference-orbit-fallback";
 const J2000_EPOCH = {
   julianDate: 2_451_545,
   timeScale: "TDB" as const,
@@ -94,8 +94,8 @@ function representation(input: {
   return Object.freeze({
     provider: directJplSample
       ? "NASA/JPL Solar System Dynamics"
-      : "Helios accepted catalogue fallback",
-    sourceId: directJplSample ? SBDB_SOURCE_ID : ACCEPTED_FALLBACK_SOURCE_ID,
+      : "Helios reference orbit fallback",
+    sourceId: directJplSample ? SBDB_SOURCE_ID : REFERENCE_FALLBACK_SOURCE_ID,
     sourceUrl:
       input.sourceUrl ??
       `${SBDB_API}?sstr=${encodeURIComponent(input.targetCode)}&full-prec=1`,
@@ -110,12 +110,12 @@ function representation(input: {
       input.note ??
       (directJplSample
         ? "A published JPL SBDB sample element set is propagated with a two-body solver for visual preview only; use Horizons for accurate ephemerides."
-        : "An accepted frozen six-element preview is retained to preserve the existing body scope. It was not freshly re-fetched from SBDB in this build environment and must not be presented as an accurate or current ephemeris."),
+        : "A bundled frozen six-element preview preserves the documented body scope. It was not freshly re-fetched from SBDB in this build environment and must not be presented as an accurate or current ephemeris."),
     fallbackReason:
       input.fallbackReason ??
       (directJplSample
         ? undefined
-        : "A fresh machine-readable SBDB response was unavailable in the build environment; the accepted catalogue snapshot remains explicitly isolated as a fallback preview."),
+        : "A fresh machine-readable SBDB response was unavailable in the build environment; the bundled catalogue snapshot remains explicitly isolated as a fallback preview."),
   });
 }
 
@@ -135,9 +135,9 @@ function body(
 
 /**
  * Existing featured extended-body scope only. Ceres, Pallas, Halley and Encke
- * use element examples published directly by JPL. The other accepted catalogue
+ * use element examples published directly by JPL. The other catalogue
  * records remain explicit `verified-fallback` previews: their six-element
- * values preserve the accepted scene but were not freshly re-fetched in this
+ * values preserve the documented scene but were not freshly re-fetched in this
  * build environment. No fallback record is labelled current or accurate.
  */
 export const EXTENDED_BODIES: readonly ExtendedBody[] = Object.freeze([
@@ -189,7 +189,7 @@ export const EXTENDED_BODIES: readonly ExtendedBody[] = Object.freeze([
       targetCode: "4",
       epoch: J2000_EPOCH,
       fallbackReason:
-        "The accepted catalogue phase is retained from a frozen JPL-aligned snapshot because a fresh SBDB payload was unavailable in the build environment.",
+        "The catalogue uses a frozen JPL-aligned orbital snapshot because a fresh SBDB response was unavailable in the build environment.",
     }),
   }),
   body({

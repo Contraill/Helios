@@ -1,5 +1,11 @@
 import { expect, test, type Page } from "@playwright/test";
 
+import { detailName } from "@/features/body-details/lib/body-detail-model";
+import {
+  CELESTIAL_DETAIL_SLUGS,
+  celestialDetailHref,
+} from "@/features/solar-system/lib/celestial-detail-routes";
+
 const routes = [
   { path: "/", heading: "Helios" },
   { path: "/explore", heading: "Explore" },
@@ -12,9 +18,23 @@ const routes = [
   { path: "/planet/uranus", heading: "Uranus" },
   { path: "/planet/neptune", heading: "Neptune" },
   { path: "/compare", heading: "Compare" },
+  { path: "/missions", heading: "Spacecraft as evidence, not decoration" },
   { path: "/data", heading: "Data" },
-  { path: "/about", heading: "About" },
-  { path: "/case-study", heading: "Case study" },
+  { path: "/about", heading: "A quieter way to read the Solar System." },
+  {
+    path: "/case-study",
+    heading: "Building a Solar System that admits its limits.",
+  },
+  { path: "/body/sun", heading: "Sun" },
+  { path: "/body/earth", heading: "Earth" },
+  { path: "/body/moon-jupiter-europa", heading: "Europa" },
+  { path: "/body/dwarf-satellite-charon", heading: "Charon" },
+  { path: "/body/ceres", heading: "Ceres" },
+  { path: "/object/ceres", heading: "Ceres" },
+  { path: "/region/asteroid-belt", heading: "Asteroid belt" },
+  { path: "/region/kuiper-belt", heading: "Kuiper belt" },
+  { path: "/region/oort-cloud", heading: "Oort cloud" },
+  { path: "/region/heliosphere", heading: "Heliosphere" },
 ] as const;
 
 async function expectNoHorizontalOverflow(page: Page) {
@@ -47,6 +67,107 @@ for (const route of routes) {
     );
   });
 }
+
+test("every catalogued body and region detail route resolves", async ({
+  request,
+}) => {
+  test.setTimeout(120_000);
+
+  for (let offset = 0; offset < CELESTIAL_DETAIL_SLUGS.length; offset += 8) {
+    const batch = CELESTIAL_DETAIL_SLUGS.slice(offset, offset + 8);
+    await Promise.all(
+      batch.map(async (slug) => {
+        const response = await request.get(celestialDetailHref(slug));
+        expect(response.status(), slug).toBe(200);
+        const html = await response.text();
+        expect(html, slug).toContain("<h1");
+        expect(html, slug).toContain(detailName(slug));
+        expect(html, slug).not.toContain("Page not found");
+      }),
+    );
+  }
+});
+
+test("canonical metadata keeps legacy and current routes in one URL system", async ({
+  page,
+}) => {
+  for (const [path, canonicalPath] of [
+    ["/body/earth", "/body/earth"],
+    ["/planet/earth", "/body/earth"],
+    ["/body/ceres", "/body/ceres"],
+    ["/object/ceres", "/body/ceres"],
+    ["/region/heliosphere", "/region/heliosphere"],
+  ] as const) {
+    await page.goto(path);
+    const canonical = page.locator('link[rel="canonical"]');
+    await expect(canonical, path).toHaveCount(1);
+    await expect(canonical, path).toHaveAttribute(
+      "href",
+      new RegExp(`${canonicalPath.replaceAll("/", "\\/")}$`),
+    );
+  }
+});
+
+test("sitemap publishes canonical detail routes and omits legacy duplicates", async ({
+  request,
+}) => {
+  const response = await request.get("/sitemap.xml");
+  expect(response.status()).toBe(200);
+  const xml = await response.text();
+
+  for (const slug of CELESTIAL_DETAIL_SLUGS) {
+    expect(xml).toContain(celestialDetailHref(slug));
+  }
+  expect(xml).not.toContain("/planet/");
+  expect(xml).not.toContain("/object/");
+});
+
+test("root metadata exposes absolute social preview images", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const openGraphImage = page.locator('meta[property="og:image"]');
+  const twitterImage = page.locator('meta[name="twitter:image"]');
+  await expect(openGraphImage).toHaveCount(1);
+  await expect(twitterImage).toHaveCount(1);
+  await expect(openGraphImage).toHaveAttribute("content", /\/opengraph-image/);
+  await expect(twitterImage).toHaveAttribute("content", /\/twitter-image/);
+});
+
+test("the social preview images are available as PNG", async ({ request }) => {
+  for (const path of ["/opengraph-image", "/twitter-image"]) {
+    const response = await request.get(path);
+    expect(response.status(), path).toBe(200);
+    expect(response.headers()["content-type"], path).toContain("image/png");
+    expect((await response.body()).byteLength, path).toBeGreaterThan(1_000);
+  }
+});
+
+test("robots exposes the sitemap and keeps API routes out of search", async ({
+  request,
+}) => {
+  const response = await request.get("/robots.txt");
+  expect(response.status()).toBe(200);
+  const text = await response.text();
+  expect(text).toContain("Disallow: /api/");
+  expect(text).toMatch(/Sitemap: .*\/sitemap\.xml/);
+});
+
+test("unknown body slugs return the not-found page", async ({ page }) => {
+  const response = await page.goto("/body/not-a-real-world");
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Page not found",
+  );
+});
+
+test("unknown region slugs return the not-found page", async ({ page }) => {
+  const response = await page.goto("/region/not-a-system-region");
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+    "Page not found",
+  );
+});
 
 test("unknown planet slugs return the not-found page", async ({ page }) => {
   const response = await page.goto("/planet/pluto");
@@ -122,7 +243,7 @@ test("extended categories and featured objects remain keyboard-selectable", asyn
     page.getByRole("heading", { name: "Ceres", exact: true }),
   ).toBeVisible();
   await page.getByRole("link", { name: /Open Ceres editorial page/i }).click();
-  await expect(page).toHaveURL(/\/object\/ceres$/);
+  await expect(page).toHaveURL(/\/body\/ceres$/);
 });
 
 test("selection, rapid change and Escape keep the dock and camera synchronized", async ({
@@ -251,7 +372,7 @@ const phaseSixPlanets = [
   { id: "neptune", name: "Neptune" },
 ] as const;
 
-test.describe("Phase 6 planet details", () => {
+test.describe("planet detail routes", () => {
   for (const planet of phaseSixPlanets) {
     test(`${planet.name} has metadata, methodology and sourced content`, async ({
       page,
@@ -312,7 +433,7 @@ test.describe("Phase 6 planet details", () => {
   });
 });
 
-test.describe("Phase 6 mobile overflow", () => {
+test.describe("planet detail mobile overflow", () => {
   test.use({ hasTouch: true, viewport: { width: 390, height: 844 } });
 
   for (const planet of phaseSixPlanets) {
@@ -341,7 +462,7 @@ test.describe("Phase 6 mobile overflow", () => {
   }
 });
 
-test.describe("Phase 7 external-data surfaces", () => {
+test.describe("external-data surfaces", () => {
   test("home APOD preserves date, source and fallback status without a key", async ({
     page,
   }) => {
@@ -460,10 +581,24 @@ test.describe("Phase 7 external-data surfaces", () => {
     await expect(
       page.locator('[data-status="historical"]').first(),
     ).toBeVisible();
+
+    const provenance = page.locator("#provenance");
+    await expect(provenance.locator("article[data-status]")).toHaveCount(9);
+    const sourceLinks = provenance.getByRole("link", {
+      name: /opens in a new tab/i,
+    });
+    await expect(sourceLinks).toHaveCount(9);
+    expect(
+      new Set(
+        await sourceLinks.evaluateAll((links) =>
+          links.map((link) => link.getAttribute("aria-label")),
+        ),
+      ).size,
+    ).toBe(9);
   });
 });
 
-test.describe("Phase 8 comparison", () => {
+test.describe("comparison experience", () => {
   test("restores URL state and preserves browser history", async ({ page }) => {
     await page.goto("/compare?a=earth&b=jupiter");
     await expect(page.getByLabel("First planet")).toHaveValue("earth");
@@ -485,6 +620,9 @@ test.describe("Phase 8 comparison", () => {
     await expect(page.getByRole("status")).toContainText("same world twice");
     await expect(page.getByText("kg-equivalent")).toHaveCount(0);
     await expect(page.getByRole("table")).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: "Open Earth page" }),
+    ).toHaveCount(2);
   });
 
   test("personal comparison remains finite and keyboard reachable", async ({
@@ -494,7 +632,15 @@ test.describe("Phase 8 comparison", () => {
     await page.getByLabel("Earth weight").fill("70");
     await page.getByLabel("Earth age").fill("23");
     await expect(page.getByText("26.5 kg-equivalent")).toBeVisible();
-    await expect(page.getByText(/NaN/)).toHaveCount(0);
+    await expect(page.getByText(/NaN|Infinity/)).toHaveCount(0);
+
+    await page.getByLabel("Earth weight").fill("1000001");
+    await expect(page.getByLabel("Earth weight")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    await expect(page.getByText(/NaN|Infinity/)).toHaveCount(0);
+
     await page.getByLabel("First planet").focus();
     await expect(page.getByLabel("First planet")).toBeFocused();
   });
@@ -531,3 +677,44 @@ for (const viewport of [
     }
   });
 }
+
+test("interface language persists across the complete product surface", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: "TR" }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "tr-TR");
+  await expect(
+    page.getByRole("link", { name: "Keşfet", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Sistemi keşfet", exact: true }),
+  ).toBeVisible();
+
+  for (const [path, heading] of [
+    ["/explore", "Keşfet"],
+    ["/compare", "Karşılaştır"],
+    ["/missions", "Dekor değil, kanıt olarak uzay araçları"],
+    ["/data", "Veri"],
+    ["/about", "Güneş Sistemi'ni daha sakin okumanın bir yolu."],
+    ["/case-study", "Sınırlarını kabul eden bir Güneş Sistemi inşa etmek."],
+    ["/body/earth", "Dünya"],
+    ["/body/moon-earth-moon", "Ay"],
+    ["/region/asteroid-belt", "Asteroit Kuşağı"],
+    ["/planet/earth", "Dünya"],
+    ["/object/ceres", "Ceres"],
+  ] as const) {
+    await page.goto(path);
+    await expect(page.locator("html"), path).toHaveAttribute("lang", "tr-TR");
+    await expect(page.getByRole("heading", { level: 1 }), path).toHaveText(
+      heading,
+    );
+  }
+
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "tr-TR");
+  await expect(page.getByRole("button", { name: "TR" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+});
