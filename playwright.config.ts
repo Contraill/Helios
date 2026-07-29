@@ -31,6 +31,10 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
+  // Helios renders the High visual contract through WebGL. Running two full
+  // scene probes concurrently can starve Chromium's software GPU and make
+  // otherwise-completed clicks or animation frames time out.
+  workers: 1,
   reporter: process.env.CI
     ? [["list"], ["html", { open: "never" }]]
     : [["list"]],
