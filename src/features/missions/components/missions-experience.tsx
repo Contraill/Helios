@@ -40,7 +40,7 @@ export function MissionsPresentation({
   const copy = landingCopy[locale].missions;
 
   return (
-    <article className={styles.page} lang={locale}>
+    <article className={styles.page} data-missions-page lang={locale}>
       <header className={styles.hero}>
         <div>
           <p className={styles.eyebrow}>{copy.hero.kicker}</p>

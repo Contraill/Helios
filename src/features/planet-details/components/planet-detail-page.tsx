@@ -191,9 +191,11 @@ export function PlanetDetailPage({
     <article
       className={styles.page}
       data-planet={model.id}
+      data-planet-page="true"
+      data-planet-detail-page
       style={{ "--planet-accent": model.accentColor } as CSSProperties}
     >
-      <header className={styles.hero}>
+      <header className={styles.hero} data-planet-hero="true">
         <div className={styles.heroCopy}>
           <p className={styles.heroKicker}>{content.heroKicker}</p>
           <h1>{model.name}</h1>
@@ -211,7 +213,7 @@ export function PlanetDetailPage({
           </nav>
         </div>
 
-        <div className={styles.heroVisualWrap}>
+        <div className={styles.heroVisualWrap} data-planet-visual-wrap="true">
           <PlanetEditorialVisual
             id={model.id}
             label={content.visualLabel}

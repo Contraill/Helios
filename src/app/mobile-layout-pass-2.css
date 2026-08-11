@@ -1,0 +1,327 @@
+@media (max-width: 900px) {
+  main > article:has([data-explore-responsive-root]) {
+    min-height: calc(100svh - 7rem);
+  }
+
+  main > article:has([data-explore-responsive-root]) > header {
+    max-width: 38rem;
+    padding: 1.75rem 1rem 0;
+  }
+
+  main > article:has([data-explore-responsive-root]) > header h1 {
+    max-width: 100%;
+    font-size: clamp(3rem, 15vw, 4.75rem);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  main > article:has([data-explore-responsive-root]) > header p:last-child {
+    max-width: 34rem;
+    margin-top: 0.75rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+  }
+
+  main > article:has([data-explore-responsive-root]) > section[aria-label] {
+    height: max(31rem, calc(100svh - 10rem));
+    min-height: 31rem;
+    margin-top: -1rem;
+  }
+
+  [data-explore-responsive-root][data-shell-mode="mobile"] > div {
+    right: max(0.75rem, env(safe-area-inset-right));
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    left: max(0.75rem, env(safe-area-inset-left));
+    min-height: 4rem;
+    grid-template-columns: minmax(0, 1fr) minmax(8.5rem, 44%);
+    gap: 0.55rem;
+    padding: 0.55rem;
+  }
+
+  [data-explore-responsive-root][data-shell-mode="mobile"] > div > span {
+    display: -webkit-box;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.62rem;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  [data-explore-responsive-root][data-shell-mode="mobile"] > div > button {
+    width: 100%;
+    min-width: 0;
+    min-height: 3rem;
+    padding: 0.6rem 0.7rem;
+    font-size: 0.74rem;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    text-align: center;
+  }
+
+  [data-explore-responsive-root] > dialog {
+    max-height: min(88dvh, 48rem);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  [data-explore-responsive-root] > dialog [role="tablist"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.35rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  [data-explore-responsive-root] > dialog [role="tab"] {
+    min-height: 2.75rem;
+    padding: 0.45rem 0.55rem;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  [data-explore-responsive-root] > dialog > section[role="tabpanel"] {
+    max-height: calc(min(88dvh, 48rem) - 11.35rem);
+    padding: 0.85rem 0.85rem calc(1rem + env(safe-area-inset-bottom));
+    scrollbar-gutter: stable;
+  }
+
+  [data-explore-responsive-root] > dialog button,
+  [data-explore-responsive-root] > dialog input,
+  [data-explore-responsive-root] > dialog select {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  main > article:has([data-compare-experience]) {
+    padding: 3rem 1rem 5rem;
+  }
+
+  main > article:has([data-compare-experience]) > header {
+    gap: 1.5rem;
+    padding: 1.25rem 0 2.75rem;
+  }
+
+  main > article:has([data-compare-experience]) > header h1 {
+    max-width: 100%;
+    font-size: clamp(3.25rem, 17vw, 5.25rem);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  [data-compare-experience] {
+    gap: 3.5rem;
+  }
+
+  [data-compare-experience] > section:first-child {
+    min-width: 0;
+    padding: 1rem;
+  }
+
+  [data-compare-experience] > section:first-child > div:first-child,
+  [data-compare-experience] > section:first-child label,
+  [data-compare-experience] > section:first-child select {
+    min-width: 0;
+  }
+
+  [data-compare-experience] > section:first-child select {
+    width: 100%;
+  }
+
+  [data-compare-experience] > section:first-child > div:last-child {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+
+  [data-compare-experience] > section:first-child > div:last-child button {
+    width: 100%;
+    min-width: 0;
+    min-height: 3rem;
+    white-space: normal;
+  }
+
+  [data-compare-experience] > section:first-child > div:last-child p {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin: 0;
+  }
+
+  [data-compare-experience] > section:nth-of-type(2) > div {
+    min-height: 17rem;
+    align-items: start;
+    justify-content: space-around;
+    gap: 0.75rem;
+    padding: 1rem 0.55rem;
+  }
+
+  [data-compare-experience] > section:nth-of-type(2) figure {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+
+  [data-compare-experience] > section:nth-of-type(2) figure > div {
+    max-width: min(38vw, 9.5rem);
+    max-height: min(38vw, 9.5rem);
+  }
+
+  [data-compare-experience] > section:nth-of-type(2) figcaption {
+    width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  [data-compare-experience] > section:nth-of-type(4) > div {
+    width: 100%;
+    max-width: calc(100vw - 2rem);
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-gutter: stable;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  [data-compare-experience] > section:nth-of-type(4) table {
+    min-width: 40rem;
+  }
+
+  [data-compare-experience] > section:nth-of-type(4) thead th:first-child,
+  [data-compare-experience] > section:nth-of-type(4) tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #080a0f;
+    box-shadow: 1px 0 0 var(--helios-color-line);
+  }
+
+  [data-compare-experience] > section:nth-of-type(4) thead th:first-child {
+    z-index: 3;
+  }
+
+  [data-missions-page] > header {
+    min-height: auto;
+    gap: 2.5rem;
+    padding-block: 3.5rem 3rem;
+  }
+
+  [data-missions-page] > header > div {
+    min-width: 0;
+  }
+
+  [data-missions-page] > header h1 {
+    max-width: 100%;
+    font-size: clamp(3rem, 14vw, 5.25rem);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  [data-missions-page] > header > div > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-missions-page] > header > div > div a {
+    width: 100%;
+    min-height: 3rem;
+    justify-content: center;
+    text-align: center;
+  }
+
+  [data-missions-page] > header > dl {
+    width: 100%;
+    max-width: none;
+  }
+
+  [data-missions-page] > header > dl > div {
+    grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+  }
+
+  [data-missions-page] > header > dl dd {
+    min-width: 0;
+    max-width: 60%;
+    overflow-wrap: anywhere;
+    text-align: right;
+  }
+
+  [data-missions-page] > section:first-of-type > div:first-child {
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  [data-missions-page] > section:first-of-type li,
+  [data-missions-page] > section:first-of-type article,
+  [data-missions-page] > section:first-of-type article header > div {
+    min-width: 0;
+  }
+
+  [data-missions-page] > section:first-of-type article header {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  [data-missions-page] > section:first-of-type h3,
+  [data-missions-page] > section:first-of-type p,
+  [data-missions-page] > section:first-of-type a {
+    overflow-wrap: anywhere;
+  }
+
+  [data-missions-page] > section:last-of-type {
+    gap: 1.5rem;
+    padding-block: 4rem 5rem;
+  }
+}
+
+@media (max-width: 430px) {
+  main > article:has([data-explore-responsive-root]) > header {
+    padding-top: 1.35rem;
+  }
+
+  main > article:has([data-explore-responsive-root]) > header h1 {
+    font-size: clamp(2.8rem, 14vw, 4rem);
+  }
+
+  [data-explore-responsive-root][data-shell-mode="mobile"] > div {
+    grid-template-columns: minmax(0, 1fr) minmax(7.75rem, 46%);
+  }
+
+  [data-explore-responsive-root] > dialog {
+    max-height: 90dvh;
+  }
+
+  [data-explore-responsive-root] > dialog > section[role="tabpanel"] {
+    max-height: calc(90dvh - 11.35rem);
+  }
+
+  [data-compare-experience] > section:first-child > div:last-child {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-compare-experience] > section:nth-of-type(2) > div {
+    gap: 0.4rem;
+    padding-inline: 0.4rem;
+  }
+
+  [data-compare-experience] > section:nth-of-type(2) figcaption {
+    font-size: 0.88rem;
+  }
+
+  [data-missions-page] > header {
+    padding-block: 3rem 2.5rem;
+  }
+
+  [data-missions-page] > header h1 {
+    font-size: clamp(2.75rem, 13.5vw, 4.25rem);
+  }
+
+  [data-missions-page] > header > dl dd {
+    max-width: 54%;
+    font-size: clamp(1.15rem, 7vw, 1.7rem);
+  }
+
+  [data-missions-page] > section:first-of-type article {
+    padding: 1.1rem;
+  }
+
+  [data-missions-page] > section:first-of-type article header {
+    gap: 0.75rem;
+  }
+}

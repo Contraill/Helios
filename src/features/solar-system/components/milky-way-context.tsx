@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import {
   AdditiveBlending,
   Color,
   DoubleSide,
   NormalBlending,
+  PerspectiveCamera,
   type Group,
   type MeshBasicMaterial,
   type PointsMaterial,
@@ -23,7 +24,8 @@ import {
   createMilkyWayParticleData,
   galacticContextDistance,
   galacticContextPhase,
-  galacticMapRadius,
+  galacticContextPhaseWithHysteresis,
+  galacticMapRadiusForViewport,
   MILKY_WAY_MODEL,
   SOLAR_SYSTEM_GALACTIC_POSITION,
   universeLayerOpacities,
@@ -185,7 +187,11 @@ export function MilkyWayContext(props: MilkyWayContextProps) {
       [camera.position.x, camera.position.y, camera.position.z],
       props.scaleMode,
     );
-    const phase = galacticContextPhase(distance, profile);
+    const phase = galacticContextPhaseWithHysteresis(
+      distance,
+      profile,
+      previousPhase.current,
+    );
     if (phase !== previousPhase.current) {
       previousPhase.current = phase;
       setPhase(phase);
@@ -206,6 +212,15 @@ function MilkyWayMap({
   timeScale,
 }: MilkyWayContextProps) {
   const profile = sceneProfileFor(scaleMode);
+  const viewportSize = useThree((state) => state.size);
+  const viewportArea = viewportSize.width * viewportSize.height;
+  const tinyViewport =
+    Math.min(viewportSize.width, viewportSize.height) < 460 ||
+    viewportArea < 360_000;
+  const compactViewport =
+    tinyViewport ||
+    Math.min(viewportSize.width, viewportSize.height) < 760 ||
+    viewportArea < 820_000;
   const galaxyRef = useRef<Group>(null);
   const stellarMaterialRef = useRef<ShaderMaterial>(null);
   const dustMaterialRef = useRef<ShaderMaterial>(null);
@@ -216,28 +231,54 @@ function MilkyWayMap({
   const markerRingMaterialRef = useRef<MeshBasicMaterial>(null);
   const markerCoreMaterialRef = useRef<MeshBasicMaterial>(null);
   const galaxyTexture = useSceneTexture(MILKY_WAY_EXTERIOR_TEXTURE);
-  const galaxy = useMemo(
-    () =>
-      createMilkyWayParticleData(scaleMode === "scientific" ? 52_000 : 36_000),
-    [scaleMode],
-  );
-  const dust = useMemo(
-    () =>
-      createMilkyWayDustParticleData(
-        scaleMode === "scientific" ? 11_000 : 8_000,
-      ),
-    [scaleMode],
-  );
-  const deepField = useMemo(
-    () => createDeepFieldParticleData(scaleMode === "scientific" ? 1_400 : 950),
-    [scaleMode],
-  );
+  const galaxy = useMemo(() => {
+    const count = tinyViewport
+      ? scaleMode === "scientific"
+        ? 18_000
+        : 12_000
+      : compactViewport
+        ? scaleMode === "scientific"
+          ? 26_000
+          : 18_000
+        : scaleMode === "scientific"
+          ? 52_000
+          : 36_000;
+    return createMilkyWayParticleData(count);
+  }, [compactViewport, scaleMode, tinyViewport]);
+  const dust = useMemo(() => {
+    const count = tinyViewport
+      ? scaleMode === "scientific"
+        ? 4_200
+        : 2_800
+      : compactViewport
+        ? scaleMode === "scientific"
+          ? 6_000
+          : 4_000
+        : scaleMode === "scientific"
+          ? 11_000
+          : 8_000;
+    return createMilkyWayDustParticleData(count);
+  }, [compactViewport, scaleMode, tinyViewport]);
+  const deepField = useMemo(() => {
+    const count = tinyViewport
+      ? scaleMode === "scientific"
+        ? 480
+        : 320
+      : compactViewport
+        ? scaleMode === "scientific"
+          ? 700
+          : 450
+        : scaleMode === "scientific"
+          ? 1_400
+          : 950;
+    return createDeepFieldParticleData(count);
+  }, [compactViewport, scaleMode, tinyViewport]);
 
   useEffect(() => {
     if (galaxyRef.current) galaxyRef.current.rotation.z = -0.18;
   }, [resetVersion]);
 
-  useFrame(({ camera }, delta) => {
+  useFrame(({ camera, size }, delta) => {
     const cameraPosition = [
       camera.position.x,
       camera.position.y,
@@ -245,12 +286,28 @@ function MilkyWayMap({
     ] as const;
     const distance = contextDistanceForCamera(cameraPosition, scaleMode);
     const opacity = universeLayerOpacities(distance, profile).milkyWay;
-    const phase = galacticContextPhase(distance, profile);
-    const mapRadius = galacticMapRadius(Math.hypot(...cameraPosition), profile);
+    const phase = useGalacticContextStore.getState().phase;
+    const aspect = size.width / Math.max(size.height, 1);
+    const verticalFov = camera instanceof PerspectiveCamera ? camera.fov : 46;
+    const runtimeTarget = cameraRuntimeSnapshot()?.target ?? [0, 0, 0];
+    const cameraTargetDistance = Math.hypot(
+      cameraPosition[0] - runtimeTarget[0],
+      cameraPosition[1] - runtimeTarget[1],
+      cameraPosition[2] - runtimeTarget[2],
+    );
+    const mapRadius = galacticMapRadiusForViewport(
+      cameraTargetDistance,
+      profile,
+      aspect,
+      verticalFov,
+    );
+    const portraitPointBoost =
+      aspect < 0.8 ? Math.min(1.45, 0.8 / Math.max(aspect, 0.4)) : 1;
     const pointScale =
       mapRadius *
       profile.backdrop.galaxyPointSize *
-      (scaleMode === "scientific" ? 0.75 : 3.1);
+      (scaleMode === "scientific" ? 0.75 : 3.1) *
+      portraitPointBoost;
 
     if (galaxyRef.current) {
       galaxyRef.current.visible = opacity > 0.002;
@@ -263,19 +320,31 @@ function MilkyWayMap({
       }
     }
     if (stellarMaterialRef.current) {
-      const stellarOpacity = opacity * (galaxyTexture ? 0.62 : 1.18);
+      const stellarOpacity =
+        opacity *
+        (galaxyTexture
+          ? compactViewport
+            ? 0.74
+            : 0.62
+          : compactViewport
+            ? 1.3
+            : 1.18);
       stellarMaterialRef.current.opacity = Math.min(1, stellarOpacity);
       stellarMaterialRef.current.uniforms.uOpacity.value = stellarOpacity;
       stellarMaterialRef.current.uniforms.uPointScale.value = pointScale;
     }
     if (dustMaterialRef.current) {
-      const dustOpacity = opacity * (galaxyTexture ? 0.18 : 0.3);
+      const dustOpacity =
+        opacity * (galaxyTexture ? 0.16 : compactViewport ? 0.24 : 0.3);
       dustMaterialRef.current.opacity = dustOpacity;
       dustMaterialRef.current.uniforms.uOpacity.value = dustOpacity;
       dustMaterialRef.current.uniforms.uPointScale.value = pointScale * 1.1;
     }
     if (galaxyTextureMaterialRef.current) {
-      galaxyTextureMaterialRef.current.opacity = opacity * 0.94;
+      galaxyTextureMaterialRef.current.opacity = Math.min(
+        1,
+        opacity * (compactViewport ? 1 : 0.94),
+      );
     }
     if (diskHazeMaterialRef.current) {
       const diskOpacity = opacity * (galaxyTexture ? 0.08 : 0.6);
@@ -288,7 +357,8 @@ function MilkyWayMap({
       barHazeMaterialRef.current.uniforms.uOpacity.value = barOpacity;
     }
     if (deepFieldMaterialRef.current) {
-      deepFieldMaterialRef.current.opacity = opacity * 0.2;
+      deepFieldMaterialRef.current.opacity =
+        opacity * (compactViewport ? 0.14 : 0.2);
     }
     if (markerRingMaterialRef.current) {
       markerRingMaterialRef.current.opacity =

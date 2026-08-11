@@ -1,0 +1,88 @@
+.notice {
+  position: absolute;
+  z-index: 22;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(1rem, env(safe-area-inset-top))
+    max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom))
+    max(1rem, env(safe-area-inset-left));
+  background: rgb(2 4 8 / 0.38);
+  backdrop-filter: blur(8px);
+  pointer-events: none;
+}
+
+.card {
+  display: grid;
+  width: min(28rem, 100%);
+  justify-items: center;
+  gap: 0.72rem;
+  padding: clamp(1.2rem, 4vw, 1.8rem);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: 1rem;
+  background: rgb(3 7 13 / 0.9);
+  box-shadow: 0 1.8rem 6rem rgb(0 0 0 / 0.5);
+  color: var(--helios-color-text-primary);
+  text-align: center;
+  pointer-events: auto;
+}
+
+.signal {
+  width: 2.8rem;
+  aspect-ratio: 1;
+  border: 1px solid rgb(232 165 75 / 0.65);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 0.45rem rgb(232 165 75 / 0.08),
+    0 0 2.4rem rgb(232 165 75 / 0.22);
+  animation: recoveryPulse 1.4s ease-in-out infinite;
+}
+
+.card strong {
+  font-family: var(--helios-font-display);
+  font-size: clamp(1.25rem, 4vw, 1.8rem);
+  font-weight: 520;
+}
+
+.card p {
+  max-width: 36ch;
+  margin: 0;
+  color: var(--helios-color-text-secondary);
+  line-height: 1.65;
+}
+
+.card button {
+  min-width: min(14rem, 100%);
+  min-height: 2.75rem;
+  padding: 0.68rem 1rem;
+  border: 1px solid rgb(232 165 75 / 0.52);
+  background: rgb(232 165 75 / 0.1);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.card button:hover,
+.card button:focus-visible {
+  border-color: rgb(215 228 247 / 0.62);
+  background: rgb(112 151 204 / 0.14);
+}
+
+@keyframes recoveryPulse {
+  0%,
+  100% {
+    opacity: 0.46;
+    transform: scale(0.9);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal {
+    animation: none;
+  }
+}

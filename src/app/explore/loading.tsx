@@ -5,7 +5,11 @@ export default async function Loading() {
   const locale = await getRequestLocale();
   const copy = getExplorePageCopy(locale);
   return (
-    <div className="scene-loading scene-loading--route" role="status">
+    <div
+      className="scene-loading scene-loading--route"
+      data-route-loading="explore"
+      role="status"
+    >
       <span>{copy.loading}</span>
     </div>
   );

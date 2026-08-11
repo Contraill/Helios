@@ -33,8 +33,9 @@ jobs:
       - run: pnpm verify
       - run: node node_modules/next/dist/bin/next build --webpack
 
-  e2e:
-    name: Playwright smoke
+  e2e-chromium:
+    name: Playwright Chromium full
+    needs: checks
     runs-on: ubuntu-latest
     steps:
       - name: Notify Vercel
@@ -54,11 +55,68 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
-      - run: pnpm exec playwright test --project=chromium
+      - run: pnpm test:e2e:chromium
 
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: playwright-report
+          name: playwright-report-chromium
+          path: playwright-report/
+          retention-days: 7
+
+  cross-browser:
+    name: Cross-browser / ${{ matrix.project }}
+    needs: checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: chrome-release
+            browser: chrome
+          - project: firefox-release
+            browser: firefox
+          - project: webkit-release
+            browser: webkit
+          - project: edge-release
+            browser: msedge
+          - project: android-chrome-release
+            browser: chromium
+          - project: ios-safari-release
+            browser: webkit
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright managed browser
+        if: ${{ matrix.browser != 'chrome' && matrix.browser != 'msedge' }}
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Install Chromium channel dependencies
+        if: ${{ matrix.browser == 'chrome' || matrix.browser == 'msedge' }}
+        run: pnpm exec playwright install-deps chromium
+
+      - name: Install Google Chrome
+        if: ${{ matrix.browser == 'chrome' }}
+        run: pnpm exec playwright install chrome
+
+      - name: Install Microsoft Edge
+        if: ${{ matrix.browser == 'msedge' }}
+        run: pnpm exec playwright install msedge
+
+      - run: pnpm exec playwright test --project=${{ matrix.project }}
+
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report-${{ matrix.project }}
           path: playwright-report/
           retention-days: 7

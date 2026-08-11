@@ -39,17 +39,17 @@ export function LocaleSwitcher() {
     <div
       aria-busy={isPending || undefined}
       aria-label={copy.a11y.localeLabel}
-      className="flex items-center rounded-full border border-line p-0.5 text-xs"
+      className="flex items-center rounded-full border border-line p-px text-[0.7rem]"
       role="group"
       title={copy.a11y.localeScope}
     >
-      <span className="px-2 text-[0.65rem] tracking-[0.08em] text-muted">
+      <span className="hidden px-2 text-[0.65rem] tracking-[0.08em] text-muted lg:inline">
         {copy.a11y.localeCoverage}
       </span>
       {OPTIONS.map((option) => (
         <button
           aria-pressed={locale === option.locale}
-          className="min-h-8 min-w-9 rounded-full px-2 font-medium tracking-[0.12em] transition-colors aria-pressed:bg-foreground aria-pressed:text-background"
+          className="min-h-9 min-w-10 rounded-full px-1.5 font-medium tracking-[0.1em] transition-colors aria-pressed:bg-foreground aria-pressed:text-background"
           aria-disabled={isPending || undefined}
           key={option.locale}
           onClick={() => chooseLocale(option.locale)}

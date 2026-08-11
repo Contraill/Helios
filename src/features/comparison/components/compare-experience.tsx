@@ -93,7 +93,7 @@ export function CompareExperience({
     }).format(value);
 
   return (
-    <div className={styles.experience}>
+    <div className={styles.experience} data-compare-experience>
       <section
         className={styles.comparisonControls}
         aria-label={copy.controls.label}
@@ -257,7 +257,12 @@ export function CompareExperience({
           <p>{copy.table.kicker}</p>
           <h2 id="table-heading">{copy.table.title}</h2>
         </header>
-        <div className={styles.tableWrap}>
+        <div
+          aria-labelledby="table-heading"
+          className={styles.tableWrap}
+          role="region"
+          tabIndex={0}
+        >
           <table className={styles.comparisonTable}>
             <caption>{copy.table.caption(first.name, second.name)}</caption>
             <thead>

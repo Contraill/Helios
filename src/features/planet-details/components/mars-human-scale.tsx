@@ -95,6 +95,7 @@ export function MarsHumanScale({
             aria-atomic="true"
             aria-live="polite"
             className={styles.resultValue}
+            data-testid="planet-weight-result"
           >
             {marsReading === null ? "—" : formatOneDecimal(marsReading, locale)}
             <small>kg</small>

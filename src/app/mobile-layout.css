@@ -1,0 +1,105 @@
+@media (max-width: 680px) {
+  main > article > section:has(> dl[aria-label="Helios product scope"]),
+  main > article > section:has(> dl[aria-label="Helios ürün kapsamı"]) {
+    min-height: auto;
+    gap: 0;
+    padding: clamp(3.5rem, 12vw, 4.75rem) 1rem 1rem;
+  }
+
+  main
+    > article
+    > section:has(> dl[aria-label="Helios product scope"])
+    > div:first-child,
+  main
+    > article
+    > section:has(> dl[aria-label="Helios ürün kapsamı"])
+    > div:first-child {
+    max-width: none;
+  }
+
+  main
+    > article
+    > section:has(> dl[aria-label="Helios product scope"])
+    > div:first-child
+    > div:has(> a[href="/explore"]),
+  main
+    > article
+    > section:has(> dl[aria-label="Helios ürün kapsamı"])
+    > div:first-child
+    > div:has(> a[href="/explore"]) {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  main
+    > article
+    > section:has(> dl[aria-label="Helios product scope"])
+    > div:first-child
+    > div:has(> a[href="/explore"])
+    > a,
+  main
+    > article
+    > section:has(> dl[aria-label="Helios ürün kapsamı"])
+    > div:first-child
+    > div:has(> a[href="/explore"])
+    > a {
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    white-space: normal;
+  }
+
+  main
+    > article
+    > section:has(> dl[aria-label="Helios product scope"])
+    > div[aria-hidden="true"],
+  main
+    > article
+    > section:has(> dl[aria-label="Helios ürün kapsamı"])
+    > div[aria-hidden="true"] {
+    top: 17rem;
+    right: -9rem;
+    bottom: auto;
+    width: 26rem;
+    opacity: 0.46;
+  }
+
+  dl[aria-label="Helios product scope"],
+  dl[aria-label="Helios ürün kapsamı"] {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    margin: 2.5rem 0 0;
+  }
+
+  dl[aria-label="Helios product scope"] > div,
+  dl[aria-label="Helios ürün kapsamı"] > div {
+    min-width: 0;
+  }
+
+  dl[aria-label="Helios product scope"] dd,
+  dl[aria-label="Helios ürün kapsamı"] dd {
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 360px) {
+  dl[aria-label="Helios product scope"],
+  dl[aria-label="Helios ürün kapsamı"] {
+    grid-template-columns: 1fr;
+  }
+
+  dl[aria-label="Helios product scope"] > div,
+  dl[aria-label="Helios ürün kapsamı"] > div {
+    border-right: 0;
+    border-bottom: 1px solid var(--helios-color-line);
+  }
+
+  dl[aria-label="Helios product scope"] > div:last-child,
+  dl[aria-label="Helios ürün kapsamı"] > div:last-child {
+    border-bottom: 0;
+  }
+}

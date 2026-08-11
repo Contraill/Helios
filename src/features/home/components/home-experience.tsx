@@ -47,13 +47,13 @@ export function HomePresentation({
   const copy = landingCopy[locale].home;
 
   return (
-    <article className={styles.page} lang={locale}>
-      <section className={styles.hero}>
-        <div className={styles.heroCopy}>
+    <article className={styles.page} data-home-page="true" lang={locale}>
+      <section className={styles.hero} data-home-hero="true">
+        <div className={styles.heroCopy} data-home-copy="true">
           <p className={styles.kicker}>{copy.heroKicker}</p>
           <h1>Helios</h1>
           <p className={styles.intro}>{copy.intro}</p>
-          <div className={styles.actions}>
+          <div className={styles.actions} data-home-actions="true">
             <Link className={styles.primaryAction} href="/explore">
               {copy.actions.explore}
             </Link>
@@ -62,7 +62,11 @@ export function HomePresentation({
           </div>
         </div>
 
-        <div aria-hidden="true" className={styles.heroSystem}>
+        <div
+          aria-hidden="true"
+          className={styles.heroSystem}
+          data-home-system="true"
+        >
           <svg
             className={styles.heroSystemGraphic}
             viewBox="0 0 600 600"
@@ -158,7 +162,11 @@ export function HomePresentation({
           </svg>
         </div>
 
-        <dl className={styles.scopeStrip} aria-label={copy.scope.label}>
+        <dl
+          className={styles.scopeStrip}
+          aria-label={copy.scope.label}
+          data-home-scope="true"
+        >
           <div>
             <dt>{copy.scope.bodies}</dt>
             <dd>{CELESTIAL_SCOPE.realBodies}</dd>

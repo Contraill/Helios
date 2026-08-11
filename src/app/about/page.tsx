@@ -23,7 +23,7 @@ export default async function AboutPage() {
   const copy = editorialPageCopy[locale].about;
 
   return (
-    <article className={styles.page}>
+    <article className={styles.page} data-editorial-page="about">
       <header className={styles.hero}>
         <div>
           <p className={styles.kicker}>{copy.hero.kicker}</p>

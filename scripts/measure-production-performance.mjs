@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+﻿import { spawn } from "node:child_process";
 import { readFile, stat, writeFile } from "node:fs/promises";
 import { brotliCompressSync, gzipSync } from "node:zlib";
 
@@ -37,10 +37,7 @@ async function bundleMetrics() {
   );
   const loadableManifest = JSON.parse(
     await readFile(
-      new URL(
-        "../.next/server/app/explore/page/react-loadable-manifest.json",
-        import.meta.url,
-      ),
+      new URL("../.next/react-loadable-manifest.json", import.meta.url),
     ),
   );
   const rootFiles = [
@@ -123,6 +120,46 @@ async function frameSample(page, durationMs = 4_000) {
   );
 }
 
+async function waitForExploreSceneReady(page) {
+  await page.waitForFunction(
+    () =>
+      document.documentElement.getAttribute("data-explore-scene-ready") ===
+      "true",
+    undefined,
+    { timeout: 45_000 },
+  );
+  await page
+    .getByTestId("explore-opening-loader")
+    .waitFor({ state: "detached", timeout: 45_000 })
+    .catch(() => {});
+}
+
+async function selectExploreBody(page, name) {
+  await waitForExploreSceneReady(page);
+
+  await page.getByRole("tab", { name: "Navigator" }).click();
+
+  const bodyButton = page.getByRole("button", { name, exact: true });
+  if (!(await bodyButton.isVisible().catch(() => false))) {
+    const categoryButton = page.getByRole("button", {
+      name: /Sun & planets/i,
+    });
+
+    if (!(await categoryButton.isVisible().catch(() => false))) {
+      const backButton = page.getByRole("button", { name: /Back/i });
+      if (await backButton.isVisible().catch(() => false)) {
+        await backButton.click();
+      }
+    }
+
+    if (await categoryButton.isVisible().catch(() => false)) {
+      await categoryButton.click();
+    }
+  }
+
+  await bodyButton.waitFor({ state: "visible", timeout: 15_000 });
+  await bodyButton.click();
+}
 async function runtimeMetrics(browser) {
   const context = await browser.newContext({
     viewport: { height: 1_000, width: 1_440 },
@@ -144,7 +181,7 @@ async function runtimeMetrics(browser) {
       throw new Error("Expected automatic high visual contract");
     }
   });
-  await page.getByRole("button", { name: "Saturn", exact: true }).click();
+  await selectExploreBody(page, "Saturn");
   await page.waitForTimeout(1_200);
 
   const cdp = await context.newCDPSession(page);
@@ -307,7 +344,7 @@ async function routeLifecycleMetrics(browser, explore3dFiles) {
     await page.getByRole("link", { name: targetName, exact: true }).click();
     if (target === "explore") {
       await page.locator("canvas").waitFor();
-      await page.getByRole("button", { name: "Saturn", exact: true }).click();
+      await selectExploreBody(page, "Saturn");
     } else {
       await page.getByRole("heading", { level: 1, name: "Compare" }).waitFor();
     }

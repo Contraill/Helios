@@ -26,13 +26,16 @@ const chromiumArgs = useServerlessChromium
       "--ignore-gpu-blocklist",
     ];
 
+const desktopReleaseSpec = "**/browser-release.spec.ts";
+const mobileReleaseSpec = "**/mobile-browser-release.spec.ts";
+
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
   // Helios renders the High visual contract through WebGL. Running two full
-  // scene probes concurrently can starve Chromium's software GPU and make
+  // scene probes concurrently can starve software GPU implementations and make
   // otherwise-completed clicks or animation frames time out.
   workers: 1,
   reporter: process.env.CI
@@ -42,6 +45,7 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
+      testIgnore: [desktopReleaseSpec, mobileReleaseSpec],
       use: {
         ...devices["Desktop Chrome"],
         launchOptions: executablePath
@@ -50,14 +54,40 @@ export default defineConfig({
       },
     },
     {
-      name: "firefox-smoke",
-      grep: /@browser-smoke/,
+      name: "chrome-release",
+      testMatch: desktopReleaseSpec,
+      use: {
+        ...devices["Desktop Chrome"],
+        channel: "chrome",
+      },
+    },
+    {
+      name: "firefox-release",
+      testMatch: desktopReleaseSpec,
       use: { ...devices["Desktop Firefox"] },
     },
     {
-      name: "webkit-smoke",
-      grep: /@browser-smoke/,
+      name: "webkit-release",
+      testMatch: desktopReleaseSpec,
       use: { ...devices["Desktop Safari"] },
+    },
+    {
+      name: "edge-release",
+      testMatch: desktopReleaseSpec,
+      use: {
+        ...devices["Desktop Edge"],
+        channel: "msedge",
+      },
+    },
+    {
+      name: "android-chrome-release",
+      testMatch: mobileReleaseSpec,
+      use: { ...devices["Pixel 5"] },
+    },
+    {
+      name: "ios-safari-release",
+      testMatch: mobileReleaseSpec,
+      use: { ...devices["iPhone 12"] },
     },
   ],
   webServer: useExternalServer

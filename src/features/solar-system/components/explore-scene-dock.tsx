@@ -190,6 +190,7 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
   return (
     <div
       className={controlStyles.responsiveRoot}
+      data-explore-responsive-root
       data-shell-mode={shellMode}
       ref={rootRef}
     >

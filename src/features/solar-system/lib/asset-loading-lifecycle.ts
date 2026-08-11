@@ -104,7 +104,14 @@ export function markRendererReady(): void {
 }
 
 export function markRendererUnavailable(): void {
+  if (rendererUnavailable) return;
   rendererUnavailable = true;
+  emit();
+}
+
+export function markRendererAvailable(): void {
+  if (!rendererUnavailable) return;
+  rendererUnavailable = false;
   emit();
 }
 

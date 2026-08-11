@@ -70,6 +70,74 @@ export interface GalacticViewInput {
 }
 
 /**
+ * Two-finger dolly gestures can introduce a small pan while zooming. Keep
+ * that drift bounded near the Solar System once the camera approaches the
+ * Galactic Context transition, without blocking intentional local panning.
+ */
+export function galacticContextTargetRadius(
+  distanceFromOrigin: number,
+  profile: SceneProfile,
+  viewportAspect = 1,
+): number {
+  const distance = Math.max(0, distanceFromOrigin);
+  const fadeStart = profile.backdrop.milkyWayFadeIn[0];
+  const fadeEnd = profile.backdrop.milkyWayFadeIn[1];
+  const portraitRatio = viewportAspect < 0.8 ? 0.07 : 0.1;
+  return Math.max(
+    fadeStart * 0.12,
+    Math.min(fadeEnd * 0.2, distance * portraitRatio),
+  );
+}
+
+/**
+ * Once a pinch gesture has entered Galactic Context, keep the camera target
+ * locked while zooming back in and ease that target to the Solar System
+ * origin. The lock is released before ordinary local panning resumes.
+ */
+export function galacticContextReturnTargetRadius(
+  distanceFromOrigin: number,
+  profile: SceneProfile,
+  viewportAspect = 1,
+): number {
+  const fadeStart = profile.backdrop.milkyWayFadeIn[0];
+  const progress = smoothstep(
+    fadeStart * 0.38,
+    fadeStart * 0.78,
+    Math.max(0, distanceFromOrigin),
+  );
+  return (
+    galacticContextTargetRadius(distanceFromOrigin, profile, viewportAspect) *
+    progress
+  );
+}
+
+/** Smoothly reduces target drift without ever pushing an already-safe target outward. */
+export function galacticContextReturnDistance(
+  currentDistance: number,
+  targetLimit: number,
+  deltaSeconds: number,
+): number {
+  const current = Math.max(0, currentDistance);
+  const limit = Math.max(0, targetLimit);
+  if (current <= limit) return current;
+  const frameSeconds = Math.min(1 / 20, Math.max(0, deltaSeconds));
+  const alpha = 1 - Math.exp(-frameSeconds * 12);
+  return Math.max(limit, current + (limit - current) * alpha);
+}
+
+function galacticContextTargetAllowance(
+  distanceFromOrigin: number,
+  profile: SceneProfile,
+): number {
+  const fadeStart = profile.backdrop.milkyWayFadeIn[0];
+  const fadeEnd = profile.backdrop.milkyWayFadeIn[1];
+  return Math.max(
+    fadeStart * 0.12,
+    Math.min(fadeEnd * 0.34, Math.max(0, distanceFromOrigin) * 0.2),
+  );
+}
+
+/**
  * Distant-body focus must not be mistaken for leaving the Solar System.
  * Galactic context is available only when the camera is looking back toward
  * the local origin without an active celestial selection.
@@ -86,10 +154,12 @@ export function galacticContextDistance(
     return 0;
   }
   const targetDistance = Math.hypot(...input.cameraTarget);
-  const centralTargetLimit = profile.backdrop.milkyWayFadeIn[0] * 0.12;
-  if (targetDistance > centralTargetLimit) return 0;
-
   const distanceFromOrigin = Math.hypot(...input.cameraPosition);
+  if (
+    targetDistance > galacticContextTargetAllowance(distanceFromOrigin, profile)
+  ) {
+    return 0;
+  }
   const distanceToTarget = Math.hypot(
     input.cameraPosition[0] - input.cameraTarget[0],
     input.cameraPosition[1] - input.cameraTarget[1],
@@ -122,6 +192,26 @@ export function galacticContextPhase(
   return "galactic";
 }
 
+export function galacticContextPhaseWithHysteresis(
+  distanceFromSun: number,
+  profile: SceneProfile,
+  previous: GalacticContextPhase,
+): GalacticContextPhase {
+  const { milkyWay } = universeLayerOpacities(distanceFromSun, profile);
+  if (previous === "galactic") {
+    if (milkyWay >= 0.72) return "galactic";
+    return milkyWay < 0.05 ? "local" : "transition";
+  }
+  if (previous === "transition") {
+    if (milkyWay >= 0.86) return "galactic";
+    if (milkyWay < 0.04) return "local";
+    return "transition";
+  }
+  if (milkyWay >= 0.86) return "galactic";
+  if (milkyWay >= 0.1) return "transition";
+  return "local";
+}
+
 export function galacticMapRadius(
   distanceFromSun: number,
   profile: SceneProfile,
@@ -129,6 +219,32 @@ export function galacticMapRadius(
   return Math.min(
     profile.backdrop.galaxyRadius,
     Math.max(0, distanceFromSun) * 0.41,
+  );
+}
+
+export function galacticMapRadiusForViewport(
+  distanceFromSun: number,
+  profile: SceneProfile,
+  viewportAspect = 1,
+  verticalFovDegrees = 46,
+): number {
+  const distance = Math.max(0, distanceFromSun);
+  const baseRadius = galacticMapRadius(distance, profile);
+  if (distance === 0) return 0;
+
+  const safeAspect = Math.max(0.1, viewportAspect);
+  const safeFov = Math.min(120, Math.max(10, verticalFovDegrees));
+  const halfVertical = distance * Math.tan(((safeFov * Math.PI) / 180) * 0.5);
+  const verticalFit = halfVertical * 0.96;
+  // Portrait viewports need extra horizontal headroom because the camera
+  // target can continue settling while the galactic transition is active.
+  // Keep the exterior map comfortably inside the narrow axis instead of
+  // merely touching the theoretical perspective-frustum edge.
+  const horizontalFit = halfVertical * safeAspect * 0.72;
+
+  return Math.min(
+    baseRadius,
+    Math.max(0, Math.min(verticalFit, horizontalFit)),
   );
 }
 

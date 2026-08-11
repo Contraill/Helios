@@ -1,0 +1,250 @@
+@media (max-width: 900px) {
+  [data-site-footer] > div {
+    min-width: 0;
+    padding-top: 1.25rem;
+    padding-right: max(1rem, env(safe-area-inset-right));
+    padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+    padding-left: max(1rem, env(safe-area-inset-left));
+  }
+
+  [data-site-footer] p {
+    max-width: 56rem;
+    margin: 0;
+    overflow-wrap: anywhere;
+    line-height: 1.6;
+  }
+
+  [data-route-state]:not([data-route-state="not-found-game"]) {
+    width: min(100% - 2rem, 42rem);
+    min-height: max(22rem, calc(100svh - 10rem));
+    gap: 0.9rem;
+    padding: 3rem 0 4rem;
+    overflow-wrap: anywhere;
+  }
+
+  [data-route-state]:not([data-route-state="not-found-game"]) h1 {
+    max-width: 100%;
+    margin: 0;
+    font-size: clamp(2.6rem, 13vw, 4.5rem);
+    line-height: 0.96;
+    letter-spacing: -0.055em;
+    text-wrap: balance;
+  }
+
+  [data-route-state]:not([data-route-state="not-found-game"]) p {
+    max-width: 38rem;
+    margin: 0;
+    line-height: 1.65;
+  }
+
+  [data-route-state]:not([data-route-state="not-found-game"]) p:last-child {
+    display: grid;
+    width: 100%;
+    margin-top: 0.55rem;
+  }
+
+  [data-route-state-action] {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--helios-color-line);
+    background: rgb(255 255 255 / 0.035);
+    color: var(--helios-color-text-primary);
+    font: inherit;
+    overflow-wrap: anywhere;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  [data-route-state-action]:hover,
+  [data-route-state-action]:focus-visible {
+    border-color: rgb(170 200 239 / 0.55);
+    background: rgb(94 132 184 / 0.14);
+  }
+
+  [data-route-loading] {
+    width: 100%;
+    min-height: max(22rem, calc(100svh - 9rem));
+    padding: 2rem max(1rem, env(safe-area-inset-right))
+      max(2rem, env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+    overflow: hidden;
+  }
+
+  [data-route-loading] span {
+    max-width: min(100%, 28rem);
+    overflow-wrap: anywhere;
+    line-height: 1.55;
+    text-align: center;
+  }
+
+  [data-apod-feature] {
+    min-width: 0;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-apod-media],
+  [data-apod-copy] {
+    min-width: 0;
+  }
+
+  [data-apod-media] {
+    width: 100%;
+    min-height: clamp(14rem, 58vw, 22rem);
+    max-height: 24rem;
+    aspect-ratio: 16 / 10;
+  }
+
+  [data-apod-media] > img,
+  [data-apod-media] > div {
+    min-height: 0;
+  }
+
+  [data-apod-copy] {
+    gap: 0.85rem;
+    padding: 1.35rem 1rem 1.5rem;
+  }
+
+  [data-apod-copy] h2 {
+    max-width: 100%;
+    font-size: clamp(2rem, 9vw, 3.4rem);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  [data-apod-copy] p,
+  [data-apod-copy] time,
+  [data-apod-copy] a,
+  [data-apod-copy] button,
+  [data-apod-copy] span {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  [data-apod-actions] {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+  }
+
+  [data-apod-actions] button,
+  [data-apod-actions] a {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 3rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.65rem 0.75rem;
+    line-height: 1.3;
+    text-align: center;
+    white-space: normal;
+  }
+
+  [data-apod-actions] a {
+    grid-column: 1 / -1;
+  }
+
+  [data-apod-feature] [data-data-state] {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 0.35rem;
+  }
+
+  [data-data-state] span,
+  [data-data-state] time {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  [data-remote-media],
+  [data-remote-media-fallback] {
+    max-width: 100%;
+  }
+
+  [data-remote-media-fallback] {
+    min-width: 0;
+    min-height: 10rem;
+    padding: 1rem;
+  }
+
+  [data-remote-media-fallback] span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+  }
+
+  .scene-loading,
+  .scene-fallback {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .scene-fallback span {
+    max-width: min(100%, 30rem);
+  }
+
+  .motion-notice {
+    top: 0.75rem;
+    right: 0.75rem;
+    max-width: calc(100% - 1.5rem);
+    overflow-wrap: anywhere;
+  }
+
+  .galactic-context-notice,
+  .galactic-context-notice p,
+  .galactic-context-notice strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 520px) {
+  [data-route-state]:not([data-route-state="not-found-game"]) {
+    width: min(100% - 2rem, 42rem);
+    min-height: max(20rem, calc(100svh - 8rem));
+    padding-block: 2.5rem 3.25rem;
+  }
+
+  [data-apod-media] {
+    min-height: clamp(13rem, 62vw, 18rem);
+    aspect-ratio: 4 / 3;
+  }
+
+  [data-apod-copy] {
+    padding-inline: 0.85rem;
+  }
+
+  [data-apod-actions] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-apod-actions] a {
+    grid-column: auto;
+  }
+
+  .scene-loading,
+  .scene-fallback {
+    min-height: 20rem;
+    padding: 1.25rem;
+  }
+}
+
+@media (max-width: 360px) {
+  [data-route-state]:not([data-route-state="not-found-game"]) h1 {
+    font-size: clamp(2.35rem, 12vw, 3.4rem);
+  }
+
+  [data-apod-copy] h2 {
+    font-size: clamp(1.8rem, 8.5vw, 2.65rem);
+  }
+}

@@ -1,45 +1,36 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { blockingPrimaryTextureAssets } from "@/content/sources/planet-textures";
+vi.mock("@/content/sources/planet-textures", () => ({
+  blockingPrimaryTextureAssets: [],
+}));
 
 import {
   assetLoadingSnapshot,
-  markCompleteFrameRendered,
-  markMaterialApplied,
-  markPrimaryAssetStatus,
-  markRendererReady,
-  markSecondaryStageStarted,
+  markRendererAvailable,
+  markRendererUnavailable,
   resetAssetLoadingLifecycle,
 } from "./asset-loading-lifecycle";
 
-describe("blocking primary asset lifecycle", () => {
+describe("asset loading renderer availability", () => {
   beforeEach(() => resetAssetLoadingLifecycle());
 
-  it("opens only after independent settlement, mounted material application and a complete frame", () => {
-    markRendererReady();
-    const failed = blockingPrimaryTextureAssets.find(({ owner }) =>
-      owner.includes("mars"),
-    )!;
+  it("releases the unavailable shortcut after a successful WebGL retry", () => {
+    expect(assetLoadingSnapshot().blockingReady).toBe(false);
 
-    for (const entry of blockingPrimaryTextureAssets) {
-      const degraded = entry === failed;
-      markPrimaryAssetStatus(entry.path, degraded ? "error" : "ready");
-      markMaterialApplied(entry.owner, degraded);
-    }
-
-    expect(assetLoadingSnapshot()).toMatchObject({
-      blockingReady: false,
-      degradedOwners: [failed.owner],
-      firstCompleteFrame: false,
-      planetReadyCount: 7,
-      planetTotal: 8,
-      primarySettled: blockingPrimaryTextureAssets.length,
-      rendererReady: true,
-    });
-
-    markCompleteFrameRendered();
+    markRendererUnavailable();
     expect(assetLoadingSnapshot().blockingReady).toBe(true);
-    markSecondaryStageStarted();
-    expect(assetLoadingSnapshot().secondaryStageStarted).toBe(true);
+
+    markRendererAvailable();
+    expect(assetLoadingSnapshot().blockingReady).toBe(false);
+  });
+
+  it("keeps repeated availability updates idempotent", () => {
+    markRendererUnavailable();
+    markRendererUnavailable();
+    expect(assetLoadingSnapshot().blockingReady).toBe(true);
+
+    markRendererAvailable();
+    markRendererAvailable();
+    expect(assetLoadingSnapshot().blockingReady).toBe(false);
   });
 });

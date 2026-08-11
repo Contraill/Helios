@@ -193,10 +193,18 @@ export function useEphemerisController(): EphemerisControllerApi {
         return Promise.resolve();
       }
       if (inFlightRequest.current?.key === requestKey) {
+        // A bootstrap/background fetch for this exact timestamp can still be
+        // in flight when the user explicitly applies the same time. Reuse the
+        // network request, but do not skip the explicit navigation side effects:
+        // the shared clock must snap to the requested timestamp immediately.
+        if (shareable) updateUrl(target);
+        if (synchronizeClock) {
+          useSimulationStore.getState().setSimulationTime(target);
+        }
+        publishClock(target);
         return inFlightRequest.current.promise;
       }
 
-      const previousTimestamp = currentSimulationTimeMs(simulationState);
       requestController.current?.abort();
       const controller = new AbortController();
       requestController.current = controller;
@@ -229,14 +237,10 @@ export function useEphemerisController(): EphemerisControllerApi {
           publishClock(currentSimulationTimeMs(useSimulationStore.getState()));
         } catch (error) {
           if (controller.signal.aborted) return;
-          if (synchronizeClock) {
-            useSimulationStore.getState().setSimulationTime(previousTimestamp);
-          }
-          publishClock(
-            synchronizeClock
-              ? previousTimestamp
-              : currentSimulationTimeMs(useSimulationStore.getState()),
-          );
+          // Provider availability must not rewind an explicitly selected time.
+          // Keep the shared simulation clock at the user's target and let the
+          // existing retained/fallback ephemeris bundle describe data quality.
+          publishClock(currentSimulationTimeMs(useSimulationStore.getState()));
           useEphemerisStore
             .getState()
             .setError(

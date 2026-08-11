@@ -24,21 +24,37 @@ pnpm verify:static
 pnpm audit:interactions
 pnpm verify
 pnpm build
-pnpm exec playwright test --project=chromium --workers=2
+pnpm exec playwright install chromium firefox webkit
+pnpm exec playwright install chrome
+pnpm exec playwright install msedge
+pnpm test:e2e:release
 pnpm audit:performance
 NASA_API_KEY=... pnpm probe:providers:release
 ```
 
-- [ ] All commands pass without skipped tests.
+- [ ] Native checks and production build pass without errors.
+- [ ] Full Chromium Playwright suite passes with zero failed, flaky, skipped or unexpectedly retried tests.
+- [ ] Desktop Chrome release suite passes.
+- [ ] Desktop Firefox release suite passes.
+- [ ] Desktop WebKit/Safari-proxy release suite passes.
+- [ ] Desktop Microsoft Edge release suite passes.
+- [ ] Android Chrome emulation release suite passes.
+- [ ] iOS Safari emulation release suite passes.
+- [ ] No configured browser project reports zero tests.
 - [ ] Production provider probe is preserved with release evidence.
 - [ ] Production performance report is preserved with release evidence.
 
 ## Manual browser and GPU acceptance
 
-- [ ] Chromium desktop and representative mobile viewport.
-- [ ] Firefox, Edge, Safari/iOS Safari and Android Chrome where available.
+Automated engine/device coverage does not replace real hardware checks.
+
+- [ ] Current Chrome, Firefox and Edge on a hardware-accelerated desktop.
+- [ ] Current Safari on Apple hardware where available.
+- [ ] iOS Safari on a physical iPhone/iPad where available.
+- [ ] Android Chrome on a physical Android device where available.
 - [ ] Keyboard-only, reduced motion, 200% zoom and screen-reader smoke flow.
-- [ ] WebGL unavailable fallback.
+- [ ] WebGL unavailable fallback and manual retry.
+- [ ] WebGL context loss/recovery on at least one hardware-accelerated desktop browser.
 - [ ] Galactic Context transition and marker legibility.
 - [ ] Sun prominence contact, flow, corona and transparency.
 - [ ] Planet textures, rings, city lights, comet tails and labels.

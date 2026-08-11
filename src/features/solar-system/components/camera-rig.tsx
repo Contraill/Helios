@@ -18,8 +18,13 @@ import { markCelestialCameraGesture } from "@/features/solar-system/lib/pointer-
 import { regionFocusAnchorOffset } from "@/features/solar-system/lib/region-visual-policy";
 import { sceneProfileFor } from "@/features/solar-system/lib/scene-profiles";
 import { SCENE_FRAME_PRIORITY } from "@/features/solar-system/lib/scene-frame-runtime";
+import {
+  galacticContextReturnDistance,
+  galacticContextReturnTargetRadius,
+} from "@/features/solar-system/lib/universe-backdrop";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
 import { useExplorationStore } from "@/stores/exploration-store";
+import { useGalacticContextStore } from "@/stores/galactic-context-store";
 
 import {
   cameraPoseHasSettled,
@@ -82,6 +87,7 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
   const activeTransitionBodyId = useRef<string | null>(null);
   const trackedBodyId = useRef<string | null>(null);
   const isDragging = useRef(false);
+  const galacticTargetLock = useRef(false);
   const lastMinimumDistance = useRef(profile.camera.minimumDistance);
   const previousStableMode = useRef<"overview" | "focus" | "free">("overview");
   const transitionScaleMode = useRef(scaleMode);
@@ -442,6 +448,47 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
           : lastMinimumDistance.current;
       orbitControls.enabled = true;
       orbitControls.update();
+      if (
+        liveSelectedBodyId === null &&
+        (liveMode === "overview" || liveMode === "free")
+      ) {
+        const distanceFromOrigin = camera.position.length();
+        const fadeStart = liveProfile.backdrop.milkyWayFadeIn[0];
+        const stableGalacticPhase = useGalacticContextStore.getState().phase;
+        if (
+          stableGalacticPhase !== "local" ||
+          distanceFromOrigin >= fadeStart * 0.86
+        ) {
+          galacticTargetLock.current = true;
+        }
+        if (galacticTargetLock.current) {
+          const targetLimit = galacticContextReturnTargetRadius(
+            distanceFromOrigin,
+            liveProfile,
+            aspect,
+          );
+          const targetDistance = orbitControls.target.length();
+          if (targetDistance > targetLimit && targetDistance > 1e-6) {
+            const nextTargetDistance = galacticContextReturnDistance(
+              targetDistance,
+              targetLimit,
+              delta,
+            );
+            orbitControls.target.multiplyScalar(
+              Math.max(0, nextTargetDistance) / targetDistance,
+            );
+            orbitControls.update();
+          }
+          if (
+            distanceFromOrigin <= fadeStart * 0.38 &&
+            orbitControls.target.length() <= 0.5
+          ) {
+            galacticTargetLock.current = false;
+          }
+        }
+      } else {
+        galacticTargetLock.current = false;
+      }
       currentTarget.current.copy(orbitControls.target);
     }
 

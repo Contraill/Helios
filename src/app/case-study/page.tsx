@@ -23,7 +23,7 @@ export default async function CaseStudyPage() {
   const copy = editorialPageCopy[locale].caseStudy;
 
   return (
-    <article className={styles.page}>
+    <article className={styles.page} data-editorial-page="case-study">
       <header className={styles.hero}>
         <div>
           <p className={styles.kicker}>{copy.hero.kicker}</p>

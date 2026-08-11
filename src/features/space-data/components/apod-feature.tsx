@@ -30,11 +30,15 @@ export function ApodFeature({
   const record = records[index];
   if (!record) {
     return (
-      <section className={styles.apod} aria-labelledby="apod-heading">
-        <div className={styles.apodMedia}>
+      <section
+        className={styles.apod}
+        data-apod-feature
+        aria-labelledby="apod-heading"
+      >
+        <div className={styles.apodMedia} data-apod-media>
           <RemoteMedia alt={copy.title} fallbackLabel={copy.mediaUnavailable} />
         </div>
-        <div className={styles.apodCopy}>
+        <div className={styles.apodCopy} data-apod-copy>
           <p className={styles.eyebrow}>{copy.title}</p>
           <h2 id="apod-heading">{copy.emptyTitle}</h2>
           <p className={styles.empty}>{copy.emptyBody}</p>
@@ -46,8 +50,12 @@ export function ApodFeature({
   const mediaSrc =
     record.mediaType === "video" ? record.thumbnailUrl : record.mediaUrl;
   return (
-    <section className={styles.apod} aria-labelledby="apod-heading">
-      <div className={styles.apodMedia}>
+    <section
+      className={styles.apod}
+      data-apod-feature
+      aria-labelledby="apod-heading"
+    >
+      <div className={styles.apodMedia} data-apod-media>
         <RemoteMedia
           alt={record.title}
           fallbackLabel={copy.mediaUnavailable}
@@ -57,12 +65,12 @@ export function ApodFeature({
           {record.mediaType === "video" ? copy.videoPreview : copy.image}
         </span>
       </div>
-      <div className={styles.apodCopy}>
+      <div className={styles.apodCopy} data-apod-copy>
         <p className={styles.eyebrow}>{copy.title}</p>
         <h2 id="apod-heading">{record.title}</h2>
         <time dateTime={record.date}>{record.date}</time>
         <p>{record.excerpt}</p>
-        <div className={styles.apodActions}>
+        <div className={styles.apodActions} data-apod-actions>
           <button
             type="button"
             disabled={index >= records.length - 1}

@@ -60,8 +60,9 @@ export function MarsArchive({
                     {record.temperatureC.min.toFixed(1)} /{" "}
                     {record.temperatureC.average.toFixed(1)} /{" "}
                     {record.temperatureC.max.toFixed(1)}
+                    <br />
+                    <small>{copy.minAvgMax}</small>
                   </dd>
-                  <small>{copy.minAvgMax}</small>
                 </div>
               ) : null}
               {record.pressurePa ? (

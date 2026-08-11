@@ -66,7 +66,7 @@ export default async function DataPage() {
   ] as const;
 
   return (
-    <article className={styles.page}>
+    <article className={styles.page} data-data-page>
       <header className={styles.hero}>
         <div>
           <p className={styles.kicker}>{copy.hero.kicker}</p>

@@ -27,7 +27,7 @@ export function BodyDetailPage({
   const parentHref = model.parent ? celestialDetailHref(model.parent.id) : null;
 
   return (
-    <article className={styles.page} style={visualStyle}>
+    <article className={styles.page} data-body-detail-page style={visualStyle}>
       <div className={styles.backdrop} aria-hidden="true" />
       <nav className={styles.breadcrumbs} aria-label={copy.breadcrumb}>
         <Link href="/explore">{copy.explore}</Link>

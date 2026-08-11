@@ -1,0 +1,391 @@
+.page {
+  --idle-home-top: 68%;
+  --not-found-header-height: 5.5rem;
+  position: relative;
+  width: 100%;
+  height: calc(100svh - var(--not-found-header-height));
+  min-height: 24rem;
+  overflow: hidden;
+}
+
+.copyBlock {
+  position: absolute;
+  z-index: 6;
+  top: max(0.7rem, env(safe-area-inset-top, 0px));
+  right: auto;
+  left: max(0.9rem, env(safe-area-inset-left, 0px));
+  display: flex;
+  pointer-events: none;
+}
+
+.copyBlock > div {
+  display: none;
+}
+
+.page[data-game-phase="idle"] .copyBlock {
+  top: var(--idle-home-top);
+  right: 0;
+  left: 0;
+  justify-content: center;
+}
+
+.page[data-game-phase="idle"] .hud {
+  display: none;
+}
+
+.eyebrow,
+.hud dt,
+.resultStats dt {
+  margin: 0;
+  color: rgb(220 224 232 / 0.56);
+  font-family: var(--helios-font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.homeLink {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.38rem 0.68rem;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 999px;
+  color: rgb(236 239 245 / 0.82);
+  font-size: 0.64rem;
+  text-decoration: none;
+  background: rgb(5 8 14 / 0.5);
+  pointer-events: auto;
+  transition:
+    border-color 150ms ease,
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.homeLink:hover,
+.homeLink:focus-visible {
+  border-color: rgb(255 255 255 / 0.22);
+  color: #f6f7f9;
+  outline: none;
+  background: rgb(255 255 255 / 0.08);
+  box-shadow: 0 0 0 3px rgb(255 255 255 / 0.07);
+}
+
+.gameCard,
+.canvasShell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.canvasShell {
+  isolation: isolate;
+}
+
+.canvas {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.canvas:focus-visible {
+  box-shadow: inset 0 0 0 2px rgb(255 255 255 / 0.16);
+}
+
+.page[data-game-phase="idle"] .canvas,
+.page[data-game-phase="idle"] .canvasShell {
+  cursor: pointer;
+}
+
+.canvas[data-pointer-control="dragging"] {
+  cursor: grabbing;
+}
+
+.hud {
+  position: absolute;
+  z-index: 4;
+  top: max(0.7rem, env(safe-area-inset-top, 0px));
+  right: max(0.85rem, env(safe-area-inset-right, 0px));
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.34rem;
+  margin: 0;
+  pointer-events: none;
+}
+
+.hud div {
+  min-width: clamp(2.8rem, 4.5vw, 3.55rem);
+  padding: 0.19rem 0.3rem 0.23rem;
+  border: 1px solid rgb(255 255 255 / 0.065);
+  border-radius: 0.3rem;
+  text-align: right;
+  background: rgb(5 8 14 / 0.46);
+  backdrop-filter: blur(4px);
+}
+
+.hud dt {
+  overflow: hidden;
+  font-size: 0.36rem;
+  letter-spacing: 0.1em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hud dd {
+  margin: 0.12rem 0 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(0.72rem, 1.05vw, 0.92rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.overlay {
+  position: absolute;
+  z-index: 7;
+  inset: 0;
+  display: grid;
+  align-items: end;
+  overflow: hidden;
+  padding: max(clamp(0.8rem, 3vw, 2rem), env(safe-area-inset-top, 0px))
+    max(clamp(0.8rem, 3vw, 2rem), env(safe-area-inset-right, 0px))
+    max(clamp(0.8rem, 3vw, 2rem), env(safe-area-inset-bottom, 0px))
+    max(clamp(0.8rem, 3vw, 2rem), env(safe-area-inset-left, 0px));
+  background: linear-gradient(
+    180deg,
+    rgb(6 8 12 / 0.03) 10%,
+    rgb(6 8 12 / 0.4) 56%,
+    rgb(6 8 12 / 0.9) 100%
+  );
+}
+
+.overlay[data-overlay="won"] {
+  background: linear-gradient(
+    180deg,
+    rgb(8 24 14 / 0.04) 10%,
+    rgb(10 54 29 / 0.38) 56%,
+    rgb(5 34 18 / 0.92) 100%
+  );
+}
+
+.overlay[data-overlay="won"] .resultPanel {
+  border-top-color: rgb(143 224 174 / 0.34);
+}
+
+.overlay[data-overlay="paused"] {
+  place-items: center;
+  background: rgb(4 6 12 / 0.66);
+  backdrop-filter: blur(4px);
+}
+
+.resultPanel {
+  width: min(100%, 48rem);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: clamp(0.8rem, 2.2vw, 1.35rem) 0 0;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  text-align: left;
+  scrollbar-width: thin;
+}
+
+.overlay[data-overlay="paused"] .resultPanel {
+  width: min(100%, 30rem);
+  padding: clamp(1rem, 3vw, 1.75rem);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 0.8rem;
+  text-align: center;
+  background: rgb(7 9 14 / 0.88);
+  box-shadow: 0 1rem 4rem rgb(0 0 0 / 0.3);
+}
+
+.overlay strong {
+  display: block;
+  font-family: var(--helios-font-display);
+  font-size: clamp(2.2rem, 6vw, 5.25rem);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 0.92;
+}
+
+.overlay[data-overlay="paused"] strong {
+  font-size: clamp(1.65rem, 4vw, 2.5rem);
+  letter-spacing: -0.045em;
+}
+
+.overlay p {
+  max-width: 42rem;
+  margin: 0.72rem 0 0;
+  color: rgb(220 233 255 / 0.62);
+  font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+  line-height: 1.55;
+}
+
+.overlay[data-overlay="paused"] p {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.resultStats {
+  display: flex;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  margin: clamp(0.9rem, 2vw, 1.35rem) 0 0;
+}
+
+.resultStats div {
+  min-width: 4rem;
+}
+
+.resultStats dd {
+  margin: 0.18rem 0 0;
+  font-family: var(--helios-font-display);
+  font-size: clamp(1.15rem, 2.5vw, 1.8rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.resultActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: clamp(1rem, 2.3vw, 1.55rem);
+}
+
+.overlay[data-overlay="paused"] .resultActions {
+  justify-content: center;
+}
+
+.resultActions button,
+.resultActions a {
+  display: inline-flex;
+  min-width: 8.5rem;
+  min-height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  padding: 0.48rem 0.8rem;
+  border: 1px solid rgb(255 255 255 / 0.13);
+  border-radius: 999px;
+  color: #f6f7f9;
+  font: inherit;
+  font-size: 0.68rem;
+  text-decoration: none;
+  background: rgb(255 255 255 / 0.035);
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.resultActions button:hover,
+.resultActions button:focus-visible,
+.resultActions a:hover,
+.resultActions a:focus-visible {
+  border-color: rgb(255 255 255 / 0.25);
+  outline: none;
+  background: rgb(255 255 255 / 0.08);
+  box-shadow: 0 0 0 3px rgb(255 255 255 / 0.07);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 719px) {
+  .page {
+    --not-found-header-height: 7rem;
+  }
+
+  .homeLink {
+    min-height: 2.15rem;
+    font-size: 0.66rem;
+  }
+
+  .hud {
+    top: 0.6rem;
+    right: 0.45rem;
+    gap: 0.24rem;
+  }
+
+  .hud div {
+    min-width: 3rem;
+    padding: 0.2rem 0.28rem 0.24rem;
+  }
+
+  .hud dt {
+    font-size: 0.37rem;
+  }
+
+  .hud dd {
+    font-size: 0.76rem;
+  }
+
+  .overlay strong {
+    font-size: clamp(2rem, 12vw, 3.7rem);
+  }
+
+  .resultActions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .resultActions button,
+  .resultActions a {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) and (pointer: coarse) {
+  .page {
+    --not-found-header-height: 4.5rem;
+    min-height: 14rem;
+  }
+
+  .hud {
+    display: none;
+  }
+
+  .overlay {
+    padding: 0.65rem;
+  }
+
+  .overlay strong {
+    font-size: clamp(1.6rem, 8vw, 2.55rem);
+  }
+
+  .overlay p {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .homeLink,
+  .resultActions button,
+  .resultActions a {
+    transition: none;
+  }
+
+  .overlay[data-overlay="paused"] {
+    backdrop-filter: none;
+  }
+}

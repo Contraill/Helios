@@ -4,11 +4,12 @@ import type {
   ExternalDataStatus,
   ExternalMetadata,
 } from "@/lib/data/external/types";
-import { localeTag } from "@/lib/i18n/locale";
 import { siteCopy } from "@/lib/i18n/site-copy";
 import { useLocaleStore } from "@/stores/locale-store";
 
 import styles from "./space-data.module.css";
+
+import { formatDataStateDate } from "./data-state-format";
 
 export function DataState({
   status,
@@ -25,29 +26,19 @@ export function DataState({
   return (
     <div
       className={compact ? styles.stateCompact : styles.state}
+      data-data-state
       data-status={status}
     >
       <span className={styles.stateLabel}>{copy.labels[status]}</span>
       <span>{metadata.provider}</span>
       {metadata.observedAt ? (
         <time dateTime={metadata.observedAt}>
-          {copy.observed} {formatDate(metadata.observedAt, localeTag(locale))}
+          {copy.observed} {formatDataStateDate(metadata.observedAt, locale)}
         </time>
       ) : null}
       <time dateTime={metadata.retrievedAt}>
-        {copy.retrieved} {formatDate(metadata.retrievedAt, localeTag(locale))}
+        {copy.retrieved} {formatDataStateDate(metadata.retrievedAt, locale)}
       </time>
     </div>
   );
-}
-
-function formatDate(value: string, locale: string): string {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? value
-    : new Intl.DateTimeFormat(locale, {
-        dateStyle: "medium",
-        timeStyle: "short",
-        timeZone: "UTC",
-      }).format(date);
 }

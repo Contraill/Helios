@@ -1,10 +1,11 @@
 "use client";
 
-import { Component, type ReactNode } from "react";
+import { Component, type ErrorInfo, type ReactNode } from "react";
 
 interface SceneErrorBoundaryProps {
   children: ReactNode;
   fallback: ReactNode;
+  onError?: (error: Error, info: ErrorInfo) => void;
 }
 
 interface SceneErrorBoundaryState {
@@ -19,6 +20,14 @@ export class SceneErrorBoundary extends Component<
 
   static getDerivedStateFromError(): SceneErrorBoundaryState {
     return { failed: true };
+  }
+
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    try {
+      this.props.onError?.(error, info);
+    } catch {
+      // Recovery reporting must never replace the renderer fallback.
+    }
   }
 
   render() {

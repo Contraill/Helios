@@ -22,6 +22,7 @@ export function RemoteMedia({
     return (
       <div
         className={`${styles.remoteFallback} ${className ?? ""}`}
+        data-remote-media-fallback
         role="img"
         aria-label={`${alt}. ${fallbackLabel}`}
       >
@@ -35,6 +36,7 @@ export function RemoteMedia({
     <img
       alt={alt}
       className={className}
+      data-remote-media
       loading="lazy"
       onError={() => setFailed(true)}
       src={src}

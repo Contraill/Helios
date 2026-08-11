@@ -6,7 +6,12 @@ import {
   createMilkyWayParticleData,
   galacticContextDistance,
   galacticContextPhase,
+  galacticContextPhaseWithHysteresis,
+  galacticContextReturnDistance,
+  galacticContextReturnTargetRadius,
+  galacticContextTargetRadius,
   galacticMapRadius,
+  galacticMapRadiusForViewport,
   MILKY_WAY_MODEL,
   SOLAR_SYSTEM_GALACTIC_POSITION,
   universeLayerOpacities,
@@ -119,6 +124,100 @@ describe("distance-aware universe backdrop", () => {
         profile,
       ),
     ).toBeGreaterThan(2_900);
+  });
+
+  it("accepts small mobile pinch drift while rejecting remote free-camera targets", () => {
+    const profile = sceneProfileFor("exploration");
+    expect(
+      galacticContextDistance(
+        {
+          cameraMode: "free",
+          cameraPosition: [0, 360, 520],
+          cameraTarget: [38, 4, 0],
+          selectedBodyId: null,
+        },
+        profile,
+      ),
+    ).toBeGreaterThan(profile.backdrop.milkyWayFadeIn[0]);
+    expect(
+      galacticContextDistance(
+        {
+          cameraMode: "free",
+          cameraPosition: [4_200, 40, 80],
+          cameraTarget: [4_100, 0, 0],
+          selectedBodyId: null,
+        },
+        sceneProfileFor("scientific"),
+      ),
+    ).toBe(0);
+  });
+
+  it("keeps portrait galactic framing closer to the Solar System origin", () => {
+    const profile = sceneProfileFor("exploration");
+    const portrait = galacticContextTargetRadius(700, profile, 390 / 844);
+    const landscape = galacticContextTargetRadius(700, profile, 844 / 390);
+    expect(portrait).toBeLessThan(landscape);
+    expect(portrait).toBeGreaterThanOrEqual(
+      profile.backdrop.milkyWayFadeIn[0] * 0.12,
+    );
+  });
+
+  it("eases pinch drift back to the origin before local panning resumes", () => {
+    const profile = sceneProfileFor("exploration");
+    const far = galacticContextReturnTargetRadius(520, profile, 390 / 844);
+    const transition = galacticContextReturnTargetRadius(
+      140,
+      profile,
+      390 / 844,
+    );
+    const local = galacticContextReturnTargetRadius(70, profile, 390 / 844);
+    expect(far).toBeGreaterThan(transition);
+    expect(transition).toBeGreaterThan(local);
+    expect(local).toBe(0);
+  });
+
+  it("smooths target return monotonically without pushing safe targets outward", () => {
+    const first = galacticContextReturnDistance(80, 10, 1 / 60);
+    const second = galacticContextReturnDistance(first, 10, 1 / 60);
+    expect(first).toBeLessThan(80);
+    expect(first).toBeGreaterThan(10);
+    expect(second).toBeLessThan(first);
+    expect(galacticContextReturnDistance(8, 10, 1 / 60)).toBe(8);
+    expect(galacticContextReturnDistance(80, 10, 0)).toBe(80);
+    expect(galacticContextReturnDistance(80, 10, 1)).toBeGreaterThan(10);
+  });
+
+  it("uses hysteresis so pinch jitter does not rapidly hide the galaxy", () => {
+    const profile = sceneProfileFor("exploration");
+    expect(galacticContextPhaseWithHysteresis(470, profile, "galactic")).toBe(
+      "galactic",
+    );
+    expect(galacticContextPhaseWithHysteresis(390, profile, "galactic")).toBe(
+      "transition",
+    );
+    expect(galacticContextPhaseWithHysteresis(215, profile, "transition")).toBe(
+      "local",
+    );
+  });
+
+  it("fits the galaxy map inside portrait horizontal field of view", () => {
+    const profile = sceneProfileFor("exploration");
+    const distance = 700;
+    const portrait = galacticMapRadiusForViewport(
+      distance,
+      profile,
+      390 / 844,
+      46,
+    );
+    const landscape = galacticMapRadiusForViewport(
+      distance,
+      profile,
+      844 / 390,
+      46,
+    );
+    expect(portrait).toBeLessThan(landscape);
+    expect(portrait).toBeGreaterThan(0);
+    expect(portrait).toBeLessThan(galacticMapRadius(distance, profile));
   });
 
   it("keeps the exterior galaxy map in front of the camera instead of surrounding it", () => {
