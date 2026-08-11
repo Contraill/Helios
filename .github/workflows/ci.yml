@@ -38,12 +38,6 @@ jobs:
     needs: checks
     runs-on: ubuntu-latest
     steps:
-      - name: Notify Vercel
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: vercel/repository-dispatch/actions/status@v1
-        with:
-          name: "Vercel - helios: e2e"
-
       - uses: actions/checkout@v6
 
       - uses: pnpm/action-setup@v6
@@ -120,3 +114,27 @@ jobs:
           name: playwright-report-${{ matrix.project }}
           path: playwright-report/
           retention-days: 7
+
+  e2e-gate:
+    name: Playwright smoke
+    if: ${{ always() }}
+    needs:
+      - e2e-chromium
+      - cross-browser
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Vercel
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: vercel/repository-dispatch/actions/status@v1
+        with:
+          name: "Vercel - helios: e2e"
+
+      - name: Require Chromium and cross-browser suites
+        env:
+          CHROMIUM_RESULT: ${{ needs.e2e-chromium.result }}
+          CROSS_BROWSER_RESULT: ${{ needs.cross-browser.result }}
+        run: |
+          echo "Chromium: $CHROMIUM_RESULT"
+          echo "Cross-browser: $CROSS_BROWSER_RESULT"
+          test "$CHROMIUM_RESULT" = "success"
+          test "$CROSS_BROWSER_RESULT" = "success"

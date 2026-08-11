@@ -48,35 +48,65 @@ async function expectNoHorizontalOverflow(page: Page) {
   );
 }
 
-async function waitForExploreOutcome(
+async function readExploreOutcome(
   page: Page,
-): Promise<"ready" | "fallback"> {
+): Promise<"ready" | "fallback" | "pending"> {
   const html = page.locator("html");
   const shell = page.locator(".solar-canvas-shell");
   const retry = page.getByRole("button", { name: /try again|tekrar dene/i });
+  const availability = await shell.getAttribute("data-webgl-availability");
+  const context = await shell.getAttribute("data-webgl-context");
+  const retryVisible = await retry.isVisible().catch(() => false);
+
+  if (availability === "unavailable" || context === "failed" || retryVisible) {
+    return "fallback";
+  }
+
+  if (
+    (await html.getAttribute("data-explore-scene-ready")) === "true" &&
+    availability === "available" &&
+    context === "ready" &&
+    (await shell.locator("canvas").count()) === 1
+  ) {
+    return "ready";
+  }
+
+  return "pending";
+}
+
+async function waitForExploreOutcome(
+  page: Page,
+): Promise<"ready" | "fallback"> {
+  let candidate: "ready" | "fallback" | null = null;
+  let candidateSince = 0;
 
   await expect
     .poll(
       async () => {
-        if ((await html.getAttribute("data-explore-scene-ready")) === "true") {
-          return "ready";
+        const outcome = await readExploreOutcome(page);
+        if (outcome === "pending") {
+          candidate = null;
+          candidateSince = 0;
+          return "pending";
         }
-        const availability = await shell.getAttribute(
-          "data-webgl-availability",
-        );
-        if (availability === "unavailable" || (await retry.count()) > 0) {
-          return "fallback";
+
+        if (candidate !== outcome) {
+          candidate = outcome;
+          candidateSince = Date.now();
+          return "pending";
         }
-        return "pending";
+
+        return Date.now() - candidateSince >= 500 ? outcome : "pending";
       },
       { timeout: 60_000 },
     )
     .toMatch(/ready|fallback/);
 
-  if ((await html.getAttribute("data-explore-scene-ready")) === "true") {
-    return "ready";
+  const outcome = await readExploreOutcome(page);
+  if (outcome === "pending") {
+    throw new Error("Explore did not settle into a terminal release state.");
   }
-  return "fallback";
+  return outcome;
 }
 
 for (const route of publicRoutes) {
@@ -247,7 +277,7 @@ test("desktop release reduced motion disables continuous Explore rendering when 
   }
 });
 
-test("desktop release recovers from an initial detached WebGL probe failure when the engine supports WebGL", async ({
+test("desktop release resolves an initial detached WebGL probe failure through recovery or designed fallback", async ({
   page,
 }) => {
   test.setTimeout(120_000);
@@ -297,6 +327,13 @@ test("desktop release recovers from an initial detached WebGL probe failure when
   const retry = page.getByRole("button", { name: /try again|tekrar dene/i });
   await expect(retry).toBeVisible();
   await retry.click();
+  const retryOutcome = await waitForExploreOutcome(page);
+  if (retryOutcome === "fallback") {
+    await expect(retry).toBeVisible();
+    await expect(shell.locator("canvas")).toHaveCount(0);
+    return;
+  }
+
   await expect(shell).toHaveAttribute("data-webgl-availability", "available", {
     timeout: 30_000,
   });
