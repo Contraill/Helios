@@ -17,7 +17,7 @@ The `/body/[slug]` library covers the Sun, eight planets, 22 featured planetary 
 
 Explore starts at the current UTC time, supports accelerated playback across a bounded historical and future range, and keeps camera, selection and simulation state under a single scene authority. Galactic Context is a separate schematic Milky Way map with a labelled Solar System marker; it is not presented as one physically continuous zoom. Solar prominences use deterministic emergence/decay and reduced-motion-aware plasma flow.
 
-English and Turkish cover the complete product surface: the global shell, Explore, Compare, Missions, Data, About, Case Study, all semantic body/region pages, eight custom planet compositions, metadata and remote-data states. The language cookie preserves the current route and scene state while Server Components refresh in the selected locale.
+English and Turkish cover the complete product surface: the global shell, Explore, Compare, Missions, Data, About, Case Study, all semantic body/region pages, eight custom planet compositions, metadata and remote-data states. English pages keep the unprefixed URLs and Turkish pages live under `/tr` (for example `/body/mars` and `/tr/body/mars`), so both languages are indexable. Every page is prerendered in both languages; the saved language preference only redirects returning visitors.
 
 Helios is deployed on Vercel at [heliios.vercel.app](https://heliios.vercel.app). Production deployments are gated on the GitHub Actions quality and cross-browser checks. Manual GPU/device review, the production provider probe and the performance report remain open release evidence; see `docs/RELEASE_CHECKLIST.md`.
 
@@ -42,7 +42,9 @@ Optional scene packages are added only when a verified product requirement needs
 
 ```text
 src/
-├── app/                       # routes and server-rendered page entrypoints
+├── app/
+│   ├── [locale]/              # every page, prerendered for en and tr
+│   └── api/                   # ephemeris and health route handlers
 ├── components/                # layout and reusable UI
 ├── content/
 │   ├── planets/               # eight validated planet records
@@ -65,7 +67,8 @@ src/
 │   ├── i18n/                  # locale primitives and translated copy
 │   └── metadata/              # canonical site URL helpers
 ├── stores/                    # bounded client interaction preferences/state
-└── styles/                    # design tokens
+├── styles/                    # design tokens
+└── proxy.ts                   # locale URL rewrite, redirects and preference
 ```
 
 ## Local development
@@ -82,7 +85,7 @@ pnpm dev
 
 `NASA_API_KEY` remains server-only. Local development can use verified snapshots and static fallbacks without it; current APOD, DONKI and NeoWs responses and the release provider probe require the key. `NEXT_PUBLIC_NASA_API_KEY` is rejected by validation.
 
-`SITE_URL` is optional locally and must contain only the canonical production origin when configured. Helios uses it for canonical metadata, social URLs, `/sitemap.xml` and `/robots.txt`.
+`SITE_URL` is optional locally and must contain only the canonical production origin when configured. Helios uses it for canonical and `hreflang` metadata, social URLs, `/sitemap.xml` and `/robots.txt`.
 
 ## Commands
 

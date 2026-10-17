@@ -1,8 +1,11 @@
-import { getExplorePageCopy } from "@/lib/i18n/explore-page-copy";
-import { getRequestLocale } from "@/lib/i18n/request-locale.server";
+"use client";
 
-export default async function Loading() {
-  const locale = await getRequestLocale();
+import { getExplorePageCopy } from "@/lib/i18n/explore-page-copy";
+import { useLocaleStore } from "@/stores/locale-store";
+
+// loading receives no route params; the [locale] layout's provider supplies the locale.
+export default function Loading() {
+  const locale = useLocaleStore((state) => state.locale);
   const copy = getExplorePageCopy(locale);
   return (
     <div

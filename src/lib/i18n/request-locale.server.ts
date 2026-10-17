@@ -1,19 +1,14 @@
 import "server-only";
 
-import { cookies } from "next/headers";
+import { resolveLocale, type Locale } from "./locale";
 
-import {
-  DEFAULT_LOCALE,
-  LOCALE_COOKIE_KEY,
-  resolveLocale,
-  type Locale,
-} from "./locale";
+export interface LocaleRouteProps {
+  readonly params: Promise<{ locale: string }>;
+}
 
-export async function getRequestLocale(): Promise<Locale> {
-  try {
-    const cookieStore = await cookies();
-    return resolveLocale(cookieStore.get(LOCALE_COOKIE_KEY)?.value);
-  } catch {
-    return DEFAULT_LOCALE;
-  }
+// src/proxy.ts maps every page URL onto the [locale] segment, so the locale is a static route param.
+export async function getRequestLocale(
+  params?: Promise<{ locale?: string }>,
+): Promise<Locale> {
+  return resolveLocale((await params)?.locale);
 }

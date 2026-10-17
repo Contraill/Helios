@@ -2,7 +2,7 @@
 
 import { type FormEvent, useEffect, useState } from "react";
 
-import styles from "@/app/explore/explore.module.css";
+import styles from "@/app/[locale]/explore/explore.module.css";
 import {
   SECONDS_PER_JULIAN_YEAR,
   TIME_SCALE_OPTIONS,

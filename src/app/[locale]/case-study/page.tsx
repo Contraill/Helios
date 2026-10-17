@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/localized-link";
 
 import { CELESTIAL_SCOPE } from "@/features/solar-system/lib/celestial-scope";
 import { editorialPageCopy } from "@/lib/i18n/editorial-page-copy";
-import { getRequestLocale } from "@/lib/i18n/request-locale.server";
+import {
+  getRequestLocale,
+  type LocaleRouteProps,
+} from "@/lib/i18n/request-locale.server";
 import { createPageMetadata } from "@/lib/metadata/page-metadata";
 
 import styles from "@/features/editorial-pages/editorial-page.module.css";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getRequestLocale();
+export async function generateMetadata({
+  params,
+}: LocaleRouteProps): Promise<Metadata> {
+  const locale = await getRequestLocale(params);
   return createPageMetadata({
     canonical: "/case-study",
     description: editorialPageCopy[locale].caseStudy.metadataDescription,
@@ -18,8 +23,8 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function CaseStudyPage() {
-  const locale = await getRequestLocale();
+export default async function CaseStudyPage({ params }: LocaleRouteProps) {
+  const locale = await getRequestLocale(params);
   const copy = editorialPageCopy[locale].caseStudy;
 
   return (

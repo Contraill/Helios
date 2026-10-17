@@ -7,7 +7,7 @@ flowchart TD
   AppRouter --> ClientIslands[Client interaction islands]
 
   ServerPages --> Content[Versioned body, planet, mission and source content]
-  ServerPages --> Locale[Cookie-backed EN/TR catalogue]
+  ServerPages --> Locale[URL-routed EN/TR catalogue]
   ServerPages --> DataLayer[External data application layer]
 
   DataLayer --> Contracts[Provider contracts]

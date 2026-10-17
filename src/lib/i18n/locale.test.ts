@@ -6,7 +6,9 @@ import {
   DEFAULT_LOCALE,
   isLocale,
   localeTag,
+  localizedPath,
   resolveLocale,
+  stripLocalePrefix,
   SUPPORTED_LOCALES,
 } from "./locale";
 import { siteCopy } from "./site-copy";
@@ -25,6 +27,18 @@ describe("locale contract", () => {
     expect(resolveLocale("invalid")).toBe(DEFAULT_LOCALE);
     expect(localeTag("en")).toBe("en-US");
     expect(localeTag("tr")).toBe("tr-TR");
+  });
+
+  it("maps internal paths into and out of the locale URL space", () => {
+    expect(localizedPath("/body/mars", "en")).toBe("/body/mars");
+    expect(localizedPath("/body/mars", "tr")).toBe("/tr/body/mars");
+    expect(localizedPath("/", "tr")).toBe("/tr");
+    expect(localizedPath("/?at=2026", "tr")).toBe("/tr?at=2026");
+    expect(localizedPath("#sources", "tr")).toBe("#sources");
+    expect(stripLocalePrefix("/tr/body/mars")).toBe("/body/mars");
+    expect(stripLocalePrefix("/tr")).toBe("/");
+    expect(stripLocalePrefix("/body/mars")).toBe("/body/mars");
+    expect(stripLocalePrefix("/trails")).toBe("/trails");
   });
 
   it("formats source dates without inventing day-level precision", () => {

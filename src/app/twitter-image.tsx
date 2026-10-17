@@ -1,8 +1,9 @@
 import {
-  createSocialImage,
   SOCIAL_IMAGE_ALT,
   SOCIAL_IMAGE_SIZE,
-} from "./social-image";
+} from "@/lib/metadata/page-metadata";
+
+import { createSocialImage } from "./social-image";
 
 export const alt = SOCIAL_IMAGE_ALT;
 export const size = SOCIAL_IMAGE_SIZE;

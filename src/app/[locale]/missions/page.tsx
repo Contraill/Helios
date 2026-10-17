@@ -6,11 +6,16 @@ import {
   MISSION_PLANET_COUNT,
 } from "@/features/missions/lib/mission-catalogue";
 import { landingCopy } from "@/lib/i18n/landing-copy";
-import { getRequestLocale } from "@/lib/i18n/request-locale.server";
+import {
+  getRequestLocale,
+  type LocaleRouteProps,
+} from "@/lib/i18n/request-locale.server";
 import { createPageMetadata } from "@/lib/metadata/page-metadata";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getRequestLocale();
+export async function generateMetadata({
+  params,
+}: LocaleRouteProps): Promise<Metadata> {
+  const locale = await getRequestLocale(params);
   return createPageMetadata({
     canonical: "/missions",
     description: landingCopy[locale].missions.metadataDescription,

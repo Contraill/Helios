@@ -7,21 +7,31 @@ import type { ReactNode } from "react";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SkipLink } from "@/components/layout/skip-link";
-import { localeTag } from "@/lib/i18n/locale";
-import { getRequestLocale } from "@/lib/i18n/request-locale.server";
+import { localeTag, SUPPORTED_LOCALES } from "@/lib/i18n/locale";
+import {
+  getRequestLocale,
+  type LocaleRouteProps,
+} from "@/lib/i18n/request-locale.server";
 import { siteCopy } from "@/lib/i18n/site-copy";
+import { socialImages } from "@/lib/metadata/page-metadata";
 import { resolveSiteUrl } from "@/lib/metadata/site-url";
 import { LocaleProvider } from "@/stores/locale-store";
 
-import "./globals.css";
-import "./mobile-layout.css";
-import "./mobile-layout-pass-2.css";
-import "./mobile-layout-pass-3.css";
-import "./mobile-layout-pass-4.css";
-import "./responsive-polish.css";
+import "../globals.css";
+import "../mobile-layout.css";
+import "../mobile-layout-pass-2.css";
+import "../mobile-layout-pass-3.css";
+import "../mobile-layout-pass-4.css";
+import "../responsive-polish.css";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getRequestLocale();
+export function generateStaticParams() {
+  return SUPPORTED_LOCALES.map((locale) => ({ locale }));
+}
+
+export async function generateMetadata({
+  params,
+}: LocaleRouteProps): Promise<Metadata> {
+  const locale = await getRequestLocale(params);
   const copy = siteCopy[locale];
   return {
     metadataBase: resolveSiteUrl(),
@@ -36,19 +46,22 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName: copy.site.name,
       title: copy.site.title,
       description: copy.site.tagline,
+      images: socialImages.openGraph,
     },
     twitter: {
       card: "summary_large_image",
       title: copy.site.title,
       description: copy.site.tagline,
+      images: socialImages.twitter,
     },
   };
 }
 
 export default async function RootLayout({
   children,
-}: Readonly<{ children: ReactNode }>) {
-  const locale = await getRequestLocale();
+  params,
+}: LocaleRouteProps & { readonly children: ReactNode }) {
+  const locale = await getRequestLocale(params);
   const isVercelDeployment = process.env.VERCEL === "1";
 
   return (

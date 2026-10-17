@@ -17,3 +17,18 @@ export function resolveLocale(value: unknown): Locale {
 export function localeTag(locale: Locale): "en-US" | "tr-TR" {
   return locale === "tr" ? "tr-TR" : "en-US";
 }
+
+/** Prefixes an internal path for non-default locales: `/body/mars` → `/tr/body/mars`. */
+export function localizedPath(path: string, locale: Locale): string {
+  if (locale === DEFAULT_LOCALE || !path.startsWith("/")) return path;
+  return path === "/" || path.startsWith("/?") || path.startsWith("/#")
+    ? `/${locale}${path.slice(1)}`
+    : `/${locale}${path}`;
+}
+
+/** Removes a locale prefix from a browser pathname: `/tr/body/mars` → `/body/mars`. */
+export function stripLocalePrefix(pathname: string): string {
+  const [, firstSegment] = pathname.split("/");
+  if (!isLocale(firstSegment)) return pathname;
+  return pathname.slice(firstSegment.length + 1) || "/";
+}

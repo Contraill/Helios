@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/localized-link";
 
 import { FreshnessBadge } from "@/features/data-presentation/components";
 import type { MissionCatalogueEntry } from "@/features/missions/lib/mission-catalogue";
@@ -8,7 +8,7 @@ import { landingCopy } from "@/lib/i18n/landing-copy";
 import type { Locale } from "@/lib/i18n/locale";
 import { useLocaleStore } from "@/stores/locale-store";
 
-import styles from "@/app/missions/missions.module.css";
+import styles from "@/app/[locale]/missions/missions.module.css";
 
 interface MissionsExperienceProps {
   readonly initialLocale?: Locale;

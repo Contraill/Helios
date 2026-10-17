@@ -200,17 +200,17 @@ if (
 }
 
 const requiredLocalizedRoutes = [
-  "src/app/page.tsx",
-  "src/app/explore/page.tsx",
-  "src/app/compare/page.tsx",
-  "src/app/missions/page.tsx",
-  "src/app/data/page.tsx",
-  "src/app/about/page.tsx",
-  "src/app/case-study/page.tsx",
-  "src/app/body/[slug]/page.tsx",
-  "src/app/region/[slug]/page.tsx",
-  "src/app/planet/[slug]/page.tsx",
-  "src/app/object/[slug]/page.tsx",
+  "src/app/[locale]/page.tsx",
+  "src/app/[locale]/explore/page.tsx",
+  "src/app/[locale]/compare/page.tsx",
+  "src/app/[locale]/missions/page.tsx",
+  "src/app/[locale]/data/page.tsx",
+  "src/app/[locale]/about/page.tsx",
+  "src/app/[locale]/case-study/page.tsx",
+  "src/app/[locale]/body/[slug]/page.tsx",
+  "src/app/[locale]/region/[slug]/page.tsx",
+  "src/app/[locale]/planet/[slug]/page.tsx",
+  "src/app/[locale]/object/[slug]/page.tsx",
 ];
 for (const relativePath of requiredLocalizedRoutes) {
   const source = fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -249,22 +249,25 @@ if (
   errors.push("Social preview image must remain bilingual and product-facing.");
 }
 
-const requestLocale = fs.readFileSync(
-  path.join(root, "src/lib/i18n/request-locale.server.ts"),
-  "utf8",
-);
+const localeProxy = fs.readFileSync(path.join(root, "src/proxy.ts"), "utf8");
 const switcher = fs.readFileSync(
   path.join(root, "src/components/layout/locale-switcher.tsx"),
   "utf8",
 );
 if (
-  !requestLocale.includes("LOCALE_COOKIE_KEY") ||
-  !switcher.includes("router.refresh")
+  !localeProxy.includes("LOCALE_COOKIE_KEY") ||
+  !switcher.includes("localizedPath") ||
+  !switcher.includes("LOCALE_COOKIE_KEY")
 ) {
-  errors.push("Cookie-backed server locale refresh contract is incomplete.");
+  errors.push(
+    "Locale URL contract is incomplete: the switcher must persist the preference and move to the localized URL, and the proxy must honour it.",
+  );
 }
 
-const layout = fs.readFileSync(path.join(root, "src/app/layout.tsx"), "utf8");
+const layout = fs.readFileSync(
+  path.join(root, "src/app/[locale]/layout.tsx"),
+  "utf8",
+);
 if (!layout.includes("<LocaleProvider initialLocale={locale}>")) {
   errors.push(
     "Request locale is not passed from the root layout to client surfaces.",

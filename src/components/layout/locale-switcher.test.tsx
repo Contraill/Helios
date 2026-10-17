@@ -5,15 +5,16 @@ import { LocaleProvider, resetLocaleStore } from "@/stores/locale-store";
 
 import { LocaleSwitcher } from "./locale-switcher";
 
-const { refresh } = vi.hoisted(() => ({ refresh: vi.fn() }));
+const { replace } = vi.hoisted(() => ({ replace: vi.fn() }));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh }),
+  usePathname: () => "/body/mars",
+  useRouter: () => ({ replace }),
 }));
 
 describe("LocaleSwitcher", () => {
   beforeEach(() => {
-    refresh.mockClear();
+    replace.mockClear();
     resetLocaleStore();
     document.cookie = "helios-locale=; Max-Age=0; Path=/";
     document.documentElement.lang = "en-US";
@@ -37,7 +38,9 @@ describe("LocaleSwitcher", () => {
     expect(turkish).toHaveAttribute("aria-pressed", "true");
     expect(document.documentElement.lang).toBe("tr-TR");
     expect(document.cookie).toContain("helios-locale=tr");
-    expect(refresh).toHaveBeenCalledOnce();
+    expect(replace).toHaveBeenCalledExactlyOnceWith("/tr/body/mars", {
+      scroll: false,
+    });
     expect(screen.getByRole("status")).toHaveTextContent(/Arayüz dili/);
   });
 });

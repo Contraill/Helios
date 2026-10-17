@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
+import { stripLocalePrefix } from "@/lib/i18n/locale";
 import { siteCopy } from "@/lib/i18n/site-copy";
 import { useLocaleStore } from "@/stores/locale-store";
 
@@ -9,7 +10,7 @@ export function SiteFooter() {
   const pathname = usePathname();
   const locale = useLocaleStore((state) => state.locale);
 
-  if (pathname === "/") return null;
+  if (stripLocalePrefix(pathname) === "/") return null;
 
   return (
     <footer className="border-t border-line" data-site-footer>

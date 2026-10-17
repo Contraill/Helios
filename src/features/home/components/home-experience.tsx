@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/localized-link";
 
 import { ApodFeature } from "@/features/space-data/components/apod-feature";
 import { CELESTIAL_SCOPE } from "@/features/solar-system/lib/celestial-scope";
@@ -13,7 +13,7 @@ import { landingCopy } from "@/lib/i18n/landing-copy";
 import type { Locale } from "@/lib/i18n/locale";
 import { useLocaleStore } from "@/stores/locale-store";
 
-import styles from "@/app/home.module.css";
+import styles from "@/app/[locale]/home.module.css";
 
 interface HomeExperienceProps {
   readonly initialLocale?: Locale;

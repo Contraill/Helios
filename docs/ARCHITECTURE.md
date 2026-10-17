@@ -55,7 +55,7 @@ InSight is historical-only and cannot create a runtime network request.
 
 ## Language
 
-The `helios-locale` cookie is read by Server Components and metadata, then hydrated into the client locale store. Both EN and TR cover the complete product surface. Language changes preserve route and scene state and refresh server-rendered HTML. Helios keeps one canonical URL per page; locale is a user preference rather than a duplicate indexed route tree.
+Each locale has its own URL space: English is unprefixed and Turkish lives under `/tr`. Pages live in `src/app/[locale]/` and are prerendered for both locales; `src/proxy.ts` rewrites unprefixed URLs onto the English segment and redirects visitors with a saved Turkish preference. The locale param seeds the client locale store, and `@/components/localized-link` keeps internal links in the active locale. Both EN and TR cover the complete product surface. See `I18N.md` for canonical and `hreflang` rules.
 
 ## Performance and assets
 

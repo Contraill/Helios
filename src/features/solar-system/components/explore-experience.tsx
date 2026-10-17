@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo } from "react";
 
-import styles from "@/app/explore/explore.module.css";
+import styles from "@/app/[locale]/explore/explore.module.css";
 import { createCelestialRegistry } from "@/features/solar-system/lib/celestial-registry";
 import { currentNavigatorView } from "@/features/solar-system/lib/celestial-navigation-state";
 import type { ExplorePlanetSummary } from "@/features/solar-system/lib/explore-planets";

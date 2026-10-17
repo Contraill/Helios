@@ -1,6 +1,6 @@
 "use client";
 
-import styles from "@/app/explore/explore.module.css";
+import styles from "@/app/[locale]/explore/explore.module.css";
 import { SCENE_VISIBILITY_CATEGORIES } from "@/features/solar-system/lib/scene-visibility-policy";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import { getExplorePageCopy } from "@/lib/i18n/explore-page-copy";

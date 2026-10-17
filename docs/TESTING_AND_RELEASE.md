@@ -23,7 +23,7 @@ NASA_API_KEY=... pnpm probe:providers:release
 - `audit:routes`: 57 body, four region, legacy canonical metadata, sitemap and robots.
 - `audit:scene`: Galactic Context, Sun prominence and all extended-body focus-distance contracts in Exploration and Scientific profiles.
 - `audit:boundaries`: Home/Missions cannot reach the WebGL dependency graph.
-- `audit:i18n`: EN/TR catalogue shape, server locale routes and cookie refresh.
+- `audit:i18n`: EN/TR catalogue shape, server locale routes and the locale URL contract.
 - `audit:providers`: provider auth/cache/timeout/version/fallback rules.
 - `audit:sources`: source registry uniqueness, HTTPS and paired notes.
 - `audit:budgets`: scene, texture, scope, sitemap and provider static limits.

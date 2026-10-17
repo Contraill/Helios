@@ -5,13 +5,18 @@ import { planets } from "@/content/planets";
 import { CompareExperience } from "@/features/comparison/components/compare-experience";
 import { createComparisonPlanets } from "@/features/comparison/lib/create-comparison-planets";
 import { comparisonCopy } from "@/lib/i18n/comparison-copy";
-import { getRequestLocale } from "@/lib/i18n/request-locale.server";
+import {
+  getRequestLocale,
+  type LocaleRouteProps,
+} from "@/lib/i18n/request-locale.server";
 import { createPageMetadata } from "@/lib/metadata/page-metadata";
 
 import styles from "./compare.module.css";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getRequestLocale();
+export async function generateMetadata({
+  params,
+}: LocaleRouteProps): Promise<Metadata> {
+  const locale = await getRequestLocale(params);
   return createPageMetadata({
     canonical: "/compare",
     description: comparisonCopy[locale].metadataDescription,
@@ -20,8 +25,8 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function ComparePage() {
-  const locale = await getRequestLocale();
+export default async function ComparePage({ params }: LocaleRouteProps) {
+  const locale = await getRequestLocale(params);
   const copy = comparisonCopy[locale];
   const comparisonPlanets = createComparisonPlanets(planets, locale);
   return (

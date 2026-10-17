@@ -31,7 +31,7 @@ describe("HomeExperience", () => {
 
     expect(
       screen.getByRole("link", { name: "Sistemi keşfet" }),
-    ).toHaveAttribute("href", "/explore");
+    ).toHaveAttribute("href", "/tr/explore");
     expect(
       screen.getByText("Kaynaklı, sinematik bir Güneş Sistemi"),
     ).toBeVisible();

@@ -1,9 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useTransition } from "react";
 
-import { LOCALE_COOKIE_KEY, localeTag, type Locale } from "@/lib/i18n/locale";
+import {
+  LOCALE_COOKIE_KEY,
+  localeTag,
+  localizedPath,
+  stripLocalePrefix,
+  type Locale,
+} from "@/lib/i18n/locale";
 import { siteCopy } from "@/lib/i18n/site-copy";
 import { useLocaleStore } from "@/stores/locale-store";
 
@@ -14,6 +20,18 @@ const OPTIONS: readonly { label: string; locale: Locale }[] = [
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 
+// Switching locale navigates into the other [locale] layout, which remounts this control;
+// carry the keyboard focus and the status announcement over to the new instance.
+let carriedSwitch: { locale: Locale; focused: boolean } | null = null;
+
+function carrySwitch(next: typeof carriedSwitch) {
+  carriedSwitch = next;
+}
+
+function carriedSwitchFor(locale: Locale) {
+  return carriedSwitch?.locale === locale ? carriedSwitch : null;
+}
+
 function persistLocalePreference(locale: Locale) {
   document.cookie = `${LOCALE_COOKIE_KEY}=${locale}; Path=/; Max-Age=${ONE_YEAR_SECONDS}; SameSite=Lax`;
   document.documentElement.lang = localeTag(locale);
@@ -21,10 +39,21 @@ function persistLocalePreference(locale: Locale) {
 
 export function LocaleSwitcher() {
   const router = useRouter();
+  const pathname = usePathname();
   const locale = useLocaleStore((state) => state.locale);
   const setLocale = useLocaleStore((state) => state.setLocale);
   const [isPending, startTransition] = useTransition();
-  const [announcedLocale, setAnnouncedLocale] = useState<Locale | null>(null);
+  const [carried] = useState(() => carriedSwitchFor(locale));
+  const [announcedLocale, setAnnouncedLocale] = useState<Locale | null>(
+    carried?.locale ?? null,
+  );
+  const buttons = useRef<Partial<Record<Locale, HTMLButtonElement | null>>>({});
+
+  useEffect(() => {
+    if (!carried) return;
+    carrySwitch(null);
+    if (carried.focused) buttons.current[carried.locale]?.focus();
+  }, [carried]);
   const copy = siteCopy[locale];
 
   const chooseLocale = (nextLocale: Locale) => {
@@ -32,7 +61,15 @@ export function LocaleSwitcher() {
     persistLocalePreference(nextLocale);
     setLocale(nextLocale);
     setAnnouncedLocale(nextLocale);
-    startTransition(() => router.refresh());
+    carrySwitch({
+      locale: nextLocale,
+      focused: document.activeElement === buttons.current[nextLocale],
+    });
+    const { hash, search } = window.location;
+    const target = localizedPath(stripLocalePrefix(pathname), nextLocale);
+    startTransition(() =>
+      router.replace(`${target}${search}${hash}`, { scroll: false }),
+    );
   };
 
   return (
@@ -53,6 +90,9 @@ export function LocaleSwitcher() {
           aria-disabled={isPending || undefined}
           key={option.locale}
           onClick={() => chooseLocale(option.locale)}
+          ref={(button) => {
+            buttons.current[option.locale] = button;
+          }}
           type="button"
         >
           {option.label}

@@ -5,7 +5,9 @@ import HomePage from "./page";
 
 describe("home page", () => {
   it("renders the product name and the explore call to action", async () => {
-    const { container } = render(await HomePage());
+    const { container } = render(
+      await HomePage({ params: Promise.resolve({ locale: "en" }) }),
+    );
     const structuredData = container.querySelector(
       'script[type="application/ld+json"]',
     );

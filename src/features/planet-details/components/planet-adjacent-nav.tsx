@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/localized-link";
 
 import type { PlanetDetailModel } from "@/features/planet-details/lib/planet-detail-model";
 import type { Locale } from "@/lib/i18n/locale";

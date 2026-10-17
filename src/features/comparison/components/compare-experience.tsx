@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/localized-link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import type { ComparePlanet } from "@/features/comparison/types/comparison";

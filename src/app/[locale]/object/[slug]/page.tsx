@@ -17,7 +17,7 @@ import { getRequestLocale } from "@/lib/i18n/request-locale.server";
 import { createPageMetadata } from "@/lib/metadata/page-metadata";
 
 interface ObjectPageProps {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }
 
 export function generateStaticParams() {
@@ -28,7 +28,7 @@ export async function generateMetadata({
   params,
 }: ObjectPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const locale = await getRequestLocale();
+  const locale = await getRequestLocale(params);
   const body = isExtendedBodyId(slug) ? EXTENDED_BODY_BY_ID[slug] : null;
   return body
     ? createPageMetadata({
@@ -42,7 +42,7 @@ export async function generateMetadata({
 
 export default async function ObjectPage({ params }: ObjectPageProps) {
   const { slug } = await params;
-  const locale = await getRequestLocale();
+  const locale = await getRequestLocale(params);
   if (!isExtendedBodyId(slug)) notFound();
 
   return (

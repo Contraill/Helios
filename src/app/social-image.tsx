@@ -1,8 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const SOCIAL_IMAGE_ALT =
-  "Helios Solar System atlas — worlds, motion and scale";
-export const SOCIAL_IMAGE_SIZE = { width: 1200, height: 630 } as const;
+import { SOCIAL_IMAGE_SIZE } from "@/lib/metadata/page-metadata";
 
 export function createSocialImage(): ImageResponse {
   return new ImageResponse(

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
+import Link from "@/components/localized-link";
 
 import {
   DWARF_SATELLITE_BY_ID,

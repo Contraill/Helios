@@ -13,8 +13,8 @@ const FORBIDDEN_3D_PACKAGES = new Set([
 ]);
 
 const entrypoints = {
-  home: path.join(SRC, "app/page.tsx"),
-  missions: path.join(SRC, "app/missions/page.tsx"),
+  home: path.join(SRC, "app/[locale]/page.tsx"),
+  missions: path.join(SRC, "app/[locale]/missions/page.tsx"),
 };
 
 function sourceText(file) {

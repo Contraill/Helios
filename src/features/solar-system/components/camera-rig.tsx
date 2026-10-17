@@ -99,6 +99,14 @@ export function CameraRig({ planetObjects, reducedMotion }: CameraRigProps) {
   }, [cameraMode, invalidate, selectedBodyId, transitionVersion]);
 
   useEffect(() => {
+    // A remount (e.g. a language switch into the other [locale] tree) starts at the
+    // overview pose; guide back to a body that is still selected.
+    const state = useExplorationStore.getState();
+    if (state.selectedBodyId && state.cameraMode === "focus")
+      state.guideCamera();
+  }, []);
+
+  useEffect(() => {
     const orbitControls = new OrbitControls(camera, gl.domElement);
     orbitControls.enableDamping = false;
     orbitControls.enablePan = true;

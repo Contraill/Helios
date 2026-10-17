@@ -16,7 +16,7 @@ import { getRequestLocale } from "@/lib/i18n/request-locale.server";
 import { createPageMetadata } from "@/lib/metadata/page-metadata";
 
 interface BodyPageProps {
-  readonly params: Promise<{ slug: string }>;
+  readonly params: Promise<{ locale: string; slug: string }>;
 }
 
 export const revalidate = 60;
@@ -29,7 +29,7 @@ export async function generateMetadata({
   params,
 }: BodyPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const locale = await getRequestLocale();
+  const locale = await getRequestLocale(params);
   if (!isRealBodySlug(slug)) return {};
 
   return createPageMetadata({
@@ -42,7 +42,7 @@ export async function generateMetadata({
 
 export default async function BodyPage({ params }: BodyPageProps) {
   const { slug } = await params;
-  const locale = await getRequestLocale();
+  const locale = await getRequestLocale(params);
   if (!isRealBodySlug(slug)) notFound();
 
   if (isPlanetId(slug)) {

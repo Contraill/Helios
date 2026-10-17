@@ -15,14 +15,19 @@ import {
 import { preferFreshestResult } from "@/lib/data/external/prefer-result";
 import { dataPageCopy } from "@/lib/i18n/data-page-copy";
 import { localeTag, type Locale } from "@/lib/i18n/locale";
-import { getRequestLocale } from "@/lib/i18n/request-locale.server";
+import {
+  getRequestLocale,
+  type LocaleRouteProps,
+} from "@/lib/i18n/request-locale.server";
 import { createPageMetadata } from "@/lib/metadata/page-metadata";
 import { siteCopy } from "@/lib/i18n/site-copy";
 
 import styles from "./data.module.css";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getRequestLocale();
+export async function generateMetadata({
+  params,
+}: LocaleRouteProps): Promise<Metadata> {
+  const locale = await getRequestLocale(params);
   return createPageMetadata({
     canonical: "/data",
     description: dataPageCopy[locale].metadataDescription,
@@ -33,8 +38,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const revalidate = 60;
 
-export default async function DataPage() {
-  const locale = await getRequestLocale();
+export default async function DataPage({ params }: LocaleRouteProps) {
+  const locale = await getRequestLocale(params);
   const copy = dataPageCopy[locale];
   const statusCopy = siteCopy[locale].dataState.labels;
   const [apod, donki, neows, cad, epic, eonet, insight, fireballs, gibs] =

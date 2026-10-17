@@ -1,9 +1,12 @@
-import { NotFoundGame } from "@/features/not-found-game/not-found-game";
-import { getRequestLocale } from "@/lib/i18n/request-locale.server";
-import { siteCopy } from "@/lib/i18n/site-copy";
+"use client";
 
-export default async function NotFound() {
-  const locale = await getRequestLocale();
+import { NotFoundGame } from "@/features/not-found-game/not-found-game";
+import { siteCopy } from "@/lib/i18n/site-copy";
+import { useLocaleStore } from "@/stores/locale-store";
+
+// not-found receives no route params; the [locale] layout's provider supplies the locale.
+export default function NotFound() {
+  const locale = useLocaleStore((state) => state.locale);
   const copy = siteCopy[locale].errors;
 
   return (

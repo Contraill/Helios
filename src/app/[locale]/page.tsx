@@ -3,13 +3,18 @@ import type { Metadata } from "next";
 import { HomeExperience } from "@/features/home/components/home-experience";
 import { loadApodArchive } from "@/lib/data/external/providers/space-data.server";
 import { landingCopy } from "@/lib/i18n/landing-copy";
-import { getRequestLocale } from "@/lib/i18n/request-locale.server";
+import {
+  getRequestLocale,
+  type LocaleRouteProps,
+} from "@/lib/i18n/request-locale.server";
 import { siteCopy } from "@/lib/i18n/site-copy";
 import { createPageMetadata } from "@/lib/metadata/page-metadata";
 import { absoluteSiteUrl } from "@/lib/metadata/site-url";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getRequestLocale();
+export async function generateMetadata({
+  params,
+}: LocaleRouteProps): Promise<Metadata> {
+  const locale = await getRequestLocale(params);
   return createPageMetadata({
     canonical: "/",
     description: landingCopy[locale].home.metadataDescription,
@@ -19,10 +24,10 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export const revalidate = 60;
 
-export default async function HomePage() {
+export default async function HomePage({ params }: LocaleRouteProps) {
   const [apod, locale] = await Promise.all([
     loadApodArchive(),
-    getRequestLocale(),
+    getRequestLocale(params),
   ]);
   // Lets Google show "Helios" as the site name in results.
   const structuredData = {

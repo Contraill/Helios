@@ -23,22 +23,42 @@ const jiti = createJiti(path.join(ROOT, "scripts/route-audit-runner.cjs"), {
 const { default: sitemap } = jiti(path.join(ROOT, "src/app/sitemap.ts"));
 const { default: robots } = jiti(path.join(ROOT, "src/app/robots.ts"));
 const staticRoutes = [
-  ["home", "/", jiti(path.join(ROOT, "src/app/page.tsx")), true],
-  ["Explore", "/explore", jiti(path.join(ROOT, "src/app/explore/page.tsx"))],
-  ["Compare", "/compare", jiti(path.join(ROOT, "src/app/compare/page.tsx"))],
-  ["Missions", "/missions", jiti(path.join(ROOT, "src/app/missions/page.tsx"))],
-  ["Data", "/data", jiti(path.join(ROOT, "src/app/data/page.tsx"))],
-  ["About", "/about", jiti(path.join(ROOT, "src/app/about/page.tsx"))],
+  ["home", "/", jiti(path.join(ROOT, "src/app/[locale]/page.tsx")), true],
+  [
+    "Explore",
+    "/explore",
+    jiti(path.join(ROOT, "src/app/[locale]/explore/page.tsx")),
+  ],
+  [
+    "Compare",
+    "/compare",
+    jiti(path.join(ROOT, "src/app/[locale]/compare/page.tsx")),
+  ],
+  [
+    "Missions",
+    "/missions",
+    jiti(path.join(ROOT, "src/app/[locale]/missions/page.tsx")),
+  ],
+  ["Data", "/data", jiti(path.join(ROOT, "src/app/[locale]/data/page.tsx"))],
+  ["About", "/about", jiti(path.join(ROOT, "src/app/[locale]/about/page.tsx"))],
   [
     "Case study",
     "/case-study",
-    jiti(path.join(ROOT, "src/app/case-study/page.tsx")),
+    jiti(path.join(ROOT, "src/app/[locale]/case-study/page.tsx")),
   ],
 ];
-const bodyRoute = jiti(path.join(ROOT, "src/app/body/[slug]/page.tsx"));
-const regionRoute = jiti(path.join(ROOT, "src/app/region/[slug]/page.tsx"));
-const planetRoute = jiti(path.join(ROOT, "src/app/planet/[slug]/page.tsx"));
-const objectRoute = jiti(path.join(ROOT, "src/app/object/[slug]/page.tsx"));
+const bodyRoute = jiti(
+  path.join(ROOT, "src/app/[locale]/body/[slug]/page.tsx"),
+);
+const regionRoute = jiti(
+  path.join(ROOT, "src/app/[locale]/region/[slug]/page.tsx"),
+);
+const planetRoute = jiti(
+  path.join(ROOT, "src/app/[locale]/planet/[slug]/page.tsx"),
+);
+const objectRoute = jiti(
+  path.join(ROOT, "src/app/[locale]/object/[slug]/page.tsx"),
+);
 const { CELESTIAL_DETAIL_SLUGS, REAL_BODY_SLUGS, celestialDetailHref } = jiti(
   path.join(ROOT, "src/features/solar-system/lib/celestial-detail-routes.ts"),
 );
@@ -125,7 +145,7 @@ async function auditMetadata(route, slugs, expectedPath) {
   const results = [];
   for (const slug of slugs) {
     const metadata = await route.generateMetadata({
-      params: Promise.resolve({ slug }),
+      params: Promise.resolve({ locale: "en", slug }),
     });
     const expected = expectedPath(slug);
     results.push(auditMetadataFields(metadata, slug, expected));
@@ -145,9 +165,10 @@ const expectedStaticRoutes = [
   "/case-study",
 ];
 
+// Every canonical page is published once per supported language (en, tr).
 if (
   paths.length !==
-  expectedStaticRoutes.length + CELESTIAL_DETAIL_SLUGS.length
+  2 * (expectedStaticRoutes.length + CELESTIAL_DETAIL_SLUGS.length)
 ) {
   fail(`sitemap entry count mismatch: ${paths.length}`);
 }
@@ -155,10 +176,13 @@ if (new Set(paths).size !== paths.length)
   fail("sitemap contains duplicate URLs");
 for (const route of expectedStaticRoutes) {
   if (!paths.includes(route)) fail(`sitemap is missing ${route}`);
+  const turkish = route === "/" ? "/tr" : `/tr${route}`;
+  if (!paths.includes(turkish)) fail(`sitemap is missing ${turkish}`);
 }
 for (const slug of CELESTIAL_DETAIL_SLUGS) {
   const href = celestialDetailHref(slug);
   if (!paths.includes(href)) fail(`sitemap is missing ${href}`);
+  if (!paths.includes(`/tr${href}`)) fail(`sitemap is missing /tr${href}`);
 }
 if (paths.some((route) => route.startsWith("/planet/"))) {
   fail("sitemap contains legacy planet routes");
@@ -185,10 +209,26 @@ for (const [
   route,
   allowUntitled = false,
 ] of staticRoutes) {
-  const metadata = await route.generateMetadata();
+  const metadata = await route.generateMetadata({
+    params: Promise.resolve({ locale: "en" }),
+  });
   staticMetadata.push(
     auditMetadataFields(metadata, label, expectedCanonical, allowUntitled),
   );
+  const turkishMetadata = await route.generateMetadata({
+    params: Promise.resolve({ locale: "tr" }),
+  });
+  const turkishCanonical =
+    expectedCanonical === "/" ? "/tr" : `/tr${expectedCanonical}`;
+  auditMetadataFields(
+    turkishMetadata,
+    `${label} (tr)`,
+    turkishCanonical,
+    allowUntitled,
+  );
+  if (turkishMetadata.alternates?.languages?.en !== expectedCanonical) {
+    fail(`${label}: hreflang alternates do not point back to English`);
+  }
 }
 
 const metadata = {

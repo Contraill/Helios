@@ -18,7 +18,7 @@ Helios ships one High visual contract. Runtime safety comes from bounded DPR, st
 - ring textures: 256 px vertical ceiling;
 - 57 real bodies, four regions and 61 semantic detail destinations;
 - 12 external-provider contracts;
-- 68 canonical sitemap entries.
+- 136 sitemap entries (68 canonical pages in two languages).
 
 Run:
 

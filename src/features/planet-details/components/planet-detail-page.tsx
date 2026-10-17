@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/localized-link";
 
 import type { PlanetDetailContent } from "@/content/planet-details";
 import {

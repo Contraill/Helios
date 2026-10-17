@@ -7,7 +7,10 @@ import { createExplorePlanetSummaries } from "@/features/solar-system/lib/explor
 import { createScenePlanets } from "@/features/solar-system/lib/scene-planets";
 import { createSceneSun } from "@/features/solar-system/lib/scene-sun";
 import { getExplorePageCopy } from "@/lib/i18n/explore-page-copy";
-import { getRequestLocale } from "@/lib/i18n/request-locale.server";
+import {
+  getRequestLocale,
+  type LocaleRouteProps,
+} from "@/lib/i18n/request-locale.server";
 import { createPageMetadata } from "@/lib/metadata/page-metadata";
 
 import styles from "./explore.module.css";
@@ -16,8 +19,10 @@ const planetSummaries = createExplorePlanetSummaries(planets);
 const scenePlanets = createScenePlanets(planets);
 const sceneSun = createSceneSun(sun);
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getRequestLocale();
+export async function generateMetadata({
+  params,
+}: LocaleRouteProps): Promise<Metadata> {
+  const locale = await getRequestLocale(params);
   const copy = getExplorePageCopy(locale);
   return createPageMetadata({
     canonical: "/explore",
@@ -27,8 +32,8 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function ExplorePage() {
-  const locale = await getRequestLocale();
+export default async function ExplorePage({ params }: LocaleRouteProps) {
+  const locale = await getRequestLocale(params);
   const copy = getExplorePageCopy(locale);
 
   return (

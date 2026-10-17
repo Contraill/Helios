@@ -26,7 +26,7 @@ Helios is live at https://heliios.vercel.app. Production deployments wait for th
 - Four `/region/[slug]` routes: asteroid belt, Kuiper belt, Oort cloud and heliosphere.
 - `/planet/[slug]` and `/object/[slug]` compatibility routes canonicalised to `/body/[slug]`.
 - Every Explore selection links to its semantic destination.
-- Canonical metadata, 68-entry sitemap, robots policy and social preview images.
+- Canonical and `hreflang` metadata, `/tr` locale URLs, a 136-entry bilingual sitemap, robots policy and social preview images.
 
 ### Editorial surfaces
 
@@ -84,7 +84,7 @@ Resolve any native-only regression before proceeding.
 
 ### Production release
 
-- Confirm production `NASA_API_KEY` with the release provider probe.
+- Preserve the release provider probe report against the production key.
 - Preserve native command, provider probe and performance reports.
 - Capture final screenshots and demo video.
 - Add measured results to Case Study, review licences, then create version and release notes.
