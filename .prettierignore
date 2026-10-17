@@ -10,3 +10,6 @@ src/features/solar-system/lib/celestial-visual-registry.ts
 
 # Generated package-manager lockfile.
 pnpm-lock.yaml
+
+# Search Console ownership token; must stay byte-exact.
+public/google*.html
