@@ -4,19 +4,19 @@ This document is the repository source of truth. Implemented source is not the s
 
 ## Current milestone map
 
-| Milestone                                     | Implementation status    | Remaining acceptance                                                          |
-| --------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------- |
-| Visibility and scene lifecycle                | Complete                 | Preserve in the regression suite.                                             |
-| Selection, pointer and camera ownership       | Complete                 | Native two-profile framing and real-device angle review.                      |
-| Regions and context                           | Complete                 | Preserve in the regression suite.                                             |
-| Non-Sun/non-planet visual catalogue           | Complete                 | Real-GPU catalogue review remains part of release evidence.                   |
-| Semantic product completion                   | Complete                 | Native build, unit and E2E acceptance.                                        |
-| Sun and Galactic Context                      | Complete                 | Manual GPU and screenshot acceptance.                                         |
-| Editorial completion                          | Complete                 | Native browser visual-density and remote/fallback-state acceptance.           |
-| Language, data, performance and documentation | Complete at source level | Native performance report and live provider probe.                            |
-| Production acceptance and release             | Pending                  | Browser/device matrix, deployment, final evidence, version and release notes. |
+| Milestone                                     | Implementation status    | Remaining acceptance                                                |
+| --------------------------------------------- | ------------------------ | ------------------------------------------------------------------- |
+| Visibility and scene lifecycle                | Complete                 | Preserve in the regression suite.                                   |
+| Selection, pointer and camera ownership       | Complete                 | Native two-profile framing and real-device angle review.            |
+| Regions and context                           | Complete                 | Preserve in the regression suite.                                   |
+| Non-Sun/non-planet visual catalogue           | Complete                 | Real-GPU catalogue review remains part of release evidence.         |
+| Semantic product completion                   | Complete                 | Native build, unit and E2E acceptance.                              |
+| Sun and Galactic Context                      | Complete                 | Manual GPU and screenshot acceptance.                               |
+| Editorial completion                          | Complete                 | Native browser visual-density and remote/fallback-state acceptance. |
+| Language, data, performance and documentation | Complete at source level | Native performance report and live provider probe.                  |
+| Production acceptance and release             | Deployed                 | Manual device matrix, final evidence, version and release notes.    |
 
-The release candidate remains local until the project owner runs the native suite and any resulting regression is corrected.
+Helios is live at https://heliios.vercel.app. Production deployments wait for the GitHub Actions quality and cross-browser gates; manual hardware review and the remaining release evidence are still open.
 
 ## Completed product scope
 
@@ -84,8 +84,7 @@ Resolve any native-only regression before proceeding.
 
 ### Production release
 
-- Set production `NASA_API_KEY` and `SITE_URL`.
-- Verify canonical/social/sitemap/robots output on the deployed domain.
+- Confirm production `NASA_API_KEY` with the release provider probe.
 - Preserve native command, provider probe and performance reports.
 - Capture final screenshots and demo video.
 - Add measured results to Case Study, review licences, then create version and release notes.

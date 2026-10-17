@@ -1,5 +1,10 @@
 # Helios
 
+[![CI](https://github.com/Contraill/Helios/actions/workflows/ci.yml/badge.svg)](https://github.com/Contraill/Helios/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
+**Live:** [heliios.vercel.app](https://heliios.vercel.app)
+
 Helios is an interactive Solar System explorer built around a simple question: what would another world feel like, not only how large is it?
 
 The project combines a cinematic 3D experience with sourced planetary data, personal comparisons and explicit scale limits. It is developed as a portfolio project, but the product and scientific constraints are treated as production requirements.
@@ -14,7 +19,7 @@ Explore starts at the current UTC time, supports accelerated playback across a b
 
 English and Turkish cover the complete product surface: the global shell, Explore, Compare, Missions, Data, About, Case Study, all semantic body/region pages, eight custom planet compositions, metadata and remote-data states. The language cookie preserves the current route and scene state while Server Components refresh in the selected locale.
 
-The current release candidate is complete at source level. It remains local until the native verification, production build, provider probe and browser/device acceptance described in `docs/ROADMAP.md` are complete.
+Helios is deployed on Vercel at [heliios.vercel.app](https://heliios.vercel.app). Production deployments are gated on the GitHub Actions quality and cross-browser checks. Manual GPU/device review, the production provider probe and the performance report remain open release evidence; see `docs/RELEASE_CHECKLIST.md`.
 
 ## Stack
 
@@ -29,6 +34,7 @@ The current release candidate is complete at source level. It remains local unti
 - Playwright
 - pnpm
 - GitHub Actions
+- Vercel hosting, Web Analytics and Speed Insights
 
 Optional scene packages are added only when a verified product requirement needs them. Helios does not use a UI component kit.
 
@@ -88,6 +94,7 @@ pnpm dev
 | `pnpm typecheck`               | Generate Next.js route types and run TypeScript                            |
 | `pnpm test`                    | Run unit and component tests                                               |
 | `pnpm test:e2e`                | Run Playwright tests                                                       |
+| `pnpm test:e2e:release`        | Run the full Chromium suite, then every cross-browser release project      |
 | `pnpm format:check`            | Check formatting                                                           |
 | `pnpm audit:routes`            | Validate canonical metadata, sitemap and legacy routes                     |
 | `pnpm audit:scene`             | Validate Galactic Context and solar prominence contracts                   |
@@ -101,6 +108,19 @@ pnpm dev
 | `pnpm probe:providers:release` | Probe official services with the production key                            |
 | `pnpm verify`                  | Run the full source, route, scene, language, data, unit and texture checks |
 | `pnpm audit:performance`       | Measure the production High visual contract                                |
+
+## Deployment
+
+Helios runs on Vercel with the Node 22 runtime. Every push to `main` runs `.github/workflows/ci.yml`; the workflow reports `Vercel - helios: quality` and `Vercel - helios: e2e` statuses so production deployment waits for lint, typecheck, unit tests, build and the full browser matrix.
+
+Production environment variables:
+
+| Variable       | Required | Purpose                                                               |
+| -------------- | -------- | --------------------------------------------------------------------- |
+| `NASA_API_KEY` | Yes      | Server-only key for current APOD, DONKI and NeoWs data                |
+| `SITE_URL`     | No       | Canonical origin; falls back to the Vercel production host when unset |
+
+Vercel Analytics and Speed Insights load only when `VERCEL=1`, so local and test runs send no telemetry.
 
 ## Rendering and interaction policy
 
@@ -128,3 +148,7 @@ pnpm dev
 - `docs/RELEASE_CHECKLIST.md` — native, browser/GPU and deployment closure
 
 Only the active documents above define the current product and release requirements.
+
+## License
+
+Source code is released under the [MIT License](LICENSE). Planet and body textures keep their original provider licences and attributions, recorded in `docs/ASSET_AND_SOURCES.md` and `scripts/data/texture-runtime-manifest.json`.

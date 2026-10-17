@@ -78,6 +78,7 @@ export const siteCopy = {
     },
     site: {
       name: "Helios",
+      title: "Helios — Interactive 3D Solar System Explorer",
       tagline:
         "An interactive Solar System explorer built around scale, place and perspective.",
     },
@@ -159,6 +160,7 @@ export const siteCopy = {
     },
     site: {
       name: "Helios",
+      title: "Helios — Etkileşimli 3D Güneş Sistemi Keşfi",
       tagline:
         "Ölçek, konum ve bakış açısı etrafında kurulan etkileşimli Güneş Sistemi keşfi.",
     },

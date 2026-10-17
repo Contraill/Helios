@@ -4,7 +4,9 @@ import { HomeExperience } from "@/features/home/components/home-experience";
 import { loadApodArchive } from "@/lib/data/external/providers/space-data.server";
 import { landingCopy } from "@/lib/i18n/landing-copy";
 import { getRequestLocale } from "@/lib/i18n/request-locale.server";
+import { siteCopy } from "@/lib/i18n/site-copy";
 import { createPageMetadata } from "@/lib/metadata/page-metadata";
+import { absoluteSiteUrl } from "@/lib/metadata/site-url";
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getRequestLocale();
@@ -18,13 +20,30 @@ export async function generateMetadata(): Promise<Metadata> {
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const apod = await loadApodArchive();
+  const [apod, locale] = await Promise.all([
+    loadApodArchive(),
+    getRequestLocale(),
+  ]);
+  // Lets Google show "Helios" as the site name in results.
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteCopy[locale].site.name,
+    url: absoluteSiteUrl("/"),
+    description: siteCopy[locale].site.tagline,
+  };
 
   return (
-    <HomeExperience
-      metadata={apod.metadata}
-      records={apod.data ?? []}
-      status={apod.status}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <HomeExperience
+        metadata={apod.metadata}
+        records={apod.data ?? []}
+        status={apod.status}
+      />
+    </>
   );
 }

@@ -16,8 +16,8 @@ export function createPageMetadata({
   locale,
   title,
 }: PageMetadataInput): Metadata {
-  const siteName = siteCopy[locale].site.name;
-  const socialTitle = title ? `${title} · ${siteName}` : siteName;
+  const { name: siteName, title: siteTitle } = siteCopy[locale].site;
+  const socialTitle = title ? `${title} · ${siteName}` : siteTitle;
 
   return {
     ...(title ? { title } : {}),

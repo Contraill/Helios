@@ -16,6 +16,8 @@
 
 ## Native automated acceptance
 
+The checked items below are covered by the GitHub Actions run for `871b1b3`, which gates Vercel production deployment.
+
 Run on a clean Node 22 / pnpm 10.34.4 environment:
 
 ```bash
@@ -32,15 +34,15 @@ pnpm audit:performance
 NASA_API_KEY=... pnpm probe:providers:release
 ```
 
-- [ ] Native checks and production build pass without errors.
-- [ ] Full Chromium Playwright suite passes with zero failed, flaky, skipped or unexpectedly retried tests.
-- [ ] Desktop Chrome release suite passes.
-- [ ] Desktop Firefox release suite passes.
-- [ ] Desktop WebKit/Safari-proxy release suite passes.
-- [ ] Desktop Microsoft Edge release suite passes.
-- [ ] Android Chrome emulation release suite passes.
-- [ ] iOS Safari emulation release suite passes.
-- [ ] No configured browser project reports zero tests.
+- [x] Native checks and production build pass without errors.
+- [x] Full Chromium Playwright suite passes with zero failed, flaky, skipped or unexpectedly retried tests.
+- [x] Desktop Chrome release suite passes.
+- [x] Desktop Firefox release suite passes.
+- [x] Desktop WebKit/Safari-proxy release suite passes.
+- [x] Desktop Microsoft Edge release suite passes.
+- [x] Android Chrome emulation release suite passes.
+- [x] iOS Safari emulation release suite passes.
+- [x] No configured browser project reports zero tests.
 - [ ] Production provider probe is preserved with release evidence.
 - [ ] Production performance report is preserved with release evidence.
 
@@ -64,8 +66,9 @@ Automated engine/device coverage does not replace real hardware checks.
 
 ## Deployment
 
-- [ ] Set `NASA_API_KEY` and canonical `SITE_URL` in production.
-- [ ] Verify `/sitemap.xml`, `/robots.txt`, canonical and social tags on the production domain.
+- [x] Deploy production to https://heliios.vercel.app.
+- [ ] Confirm production `NASA_API_KEY` with `pnpm probe:providers:release`.
+- [x] Verify `/sitemap.xml`, `/robots.txt`, canonical and social tags on the production domain.
 - [ ] Confirm API keys are absent from client bundles and logs.
 - [ ] Capture desktop/mobile screenshots and demo video.
 - [ ] Add measured performance results and final known limitations to the case study.

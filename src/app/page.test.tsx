@@ -5,7 +5,14 @@ import HomePage from "./page";
 
 describe("home page", () => {
   it("renders the product name and the explore call to action", async () => {
-    render(await HomePage());
+    const { container } = render(await HomePage());
+    const structuredData = container.querySelector(
+      'script[type="application/ld+json"]',
+    );
+    expect(JSON.parse(structuredData?.textContent ?? "{}")).toMatchObject({
+      "@type": "WebSite",
+      name: "Helios",
+    });
     expect(
       screen.getByRole("heading", { level: 1, name: "Helios" }),
     ).toBeInTheDocument();

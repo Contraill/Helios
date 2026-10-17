@@ -26,7 +26,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     metadataBase: resolveSiteUrl(),
     title: {
-      default: copy.site.name,
+      default: copy.site.title,
       template: `%s · ${copy.site.name}`,
     },
     description: copy.site.tagline,
@@ -34,12 +34,12 @@ export async function generateMetadata(): Promise<Metadata> {
       type: "website",
       locale: localeTag(locale).replace("-", "_"),
       siteName: copy.site.name,
-      title: copy.site.name,
+      title: copy.site.title,
       description: copy.site.tagline,
     },
     twitter: {
       card: "summary_large_image",
-      title: copy.site.name,
+      title: copy.site.title,
       description: copy.site.tagline,
     },
   };
