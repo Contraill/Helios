@@ -33,10 +33,11 @@ export function EarthCloudLayer({ segments }: EarthCloudLayerProps) {
       <sphereGeometry args={[1, segments[0], segments[1]]} />
       <meshStandardMaterial
         key={textureMaterialKey(texture)}
+        // Grayscale cloud opacity, stored sRGB-encoded so the shared sRGB loader decodes it back to linear alpha.
+        alphaMap={texture ?? undefined}
         alphaTest={0.018}
         color="#f8fbff"
         depthWrite={false}
-        map={texture ?? undefined}
         metalness={0}
         opacity={texture ? 0.58 : 0}
         roughness={1}

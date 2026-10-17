@@ -26,7 +26,7 @@ export interface PlanetTextureSource {
   readonly bodyId: TextureBodyId;
   readonly colorSpace: "srgb";
   readonly license: string;
-  readonly materialSlot: "map";
+  readonly materialSlot: "map" | "alphaMap";
   readonly provider: string;
   readonly representation: TextureRepresentation;
   readonly sourceId: string;
@@ -175,7 +175,7 @@ export const earthCloudTextureSource: PlanetTextureSource = Object.freeze({
   attribution: `${SOLAR_SYSTEM_SCOPE_ATTRIBUTION}; adapted as a transparent cloud layer for Helios`,
   representation: "simulation",
   colorSpace: "srgb",
-  materialSlot: "map",
+  materialSlot: "alphaMap",
   sourceMasterNote: SOURCE_MASTER_NOTE,
 });
 

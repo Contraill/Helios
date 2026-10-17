@@ -220,7 +220,7 @@
       "format": "webp",
       "width": 2048,
       "height": 1024,
-      "byteSize": 1384754,
+      "byteSize": 489904,
       "decodedBytes": 8388608,
       "owner": "celestial:earth:clouds",
       "bodyId": "earth",
@@ -232,7 +232,7 @@
       "license": "CC BY 4.0",
       "runtimeCeiling": "2048x1024",
       "sourceMasterPolicy": "Larger source master is not shipped in public/ or the runtime bundle.",
-      "sha256": "f25abef86a5489d45c6b4762d47f0324488030b8970bb8ce4d5d0a5f66de2cd0",
+      "sha256": "55bded7e2d3c97386e8d30d37e5a10c95b0afd4a0334d30c9579729c24c6d5a8",
       "projection": "equirectangular",
       "northPoleConvention": "source-derived; see orientation manifest",
       "primeMeridianVerified": false
