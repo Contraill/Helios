@@ -67,7 +67,8 @@ Automated engine/device coverage does not replace real hardware checks.
 ## Deployment
 
 - [x] Deploy production to https://heliios.vercel.app.
-- [ ] Confirm production `NASA_API_KEY` with `pnpm probe:providers:release`.
+- [x] Set production `NASA_API_KEY`.
+- [ ] Preserve a `pnpm probe:providers:release` report against the production key.
 - [x] Verify `/sitemap.xml`, `/robots.txt`, canonical and social tags on the production domain.
 - [ ] Confirm API keys are absent from client bundles and logs.
 - [ ] Capture desktop/mobile screenshots and demo video.
