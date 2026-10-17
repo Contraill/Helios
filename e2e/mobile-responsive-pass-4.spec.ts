@@ -79,7 +79,8 @@ test.describe("mobile responsive audit pass 4", () => {
   test("shared route loading state is bounded by the phone viewport", async ({
     page,
   }) => {
-    await page.goto("/");
+    // Inject only after hydration; React 19 removes unknown nodes it finds while hydrating <main>.
+    await page.goto("/", { waitUntil: "networkidle" });
     const loading = page.locator("[data-route-loading]");
     await page.evaluate(() => {
       const target = document.createElement("div");
