@@ -32,23 +32,23 @@ describe("external request boundary", () => {
   it("requires the key only for api.nasa.gov providers", async () => {
     const { buildExternalUrl, ExternalRequestError } =
       await import("./request.server");
-    const apodPolicy: FetchPolicy = {
-      providerId: "apod",
+    const neowsPolicy: FetchPolicy = {
+      providerId: "neows",
       revalidateSeconds: 60,
       timeoutMs: 500,
-      cacheTag: "apod-test",
+      cacheTag: "neows-test",
     };
 
     expect(() =>
-      buildExternalUrl({ path: "/planetary/apod", policy: apodPolicy }),
+      buildExternalUrl({ path: "/neo/rest/v1/feed", policy: neowsPolicy }),
     ).toThrowError(ExternalRequestError);
 
     process.env.NASA_API_KEY = "server-secret";
     vi.resetModules();
     const moduleWithKey = await import("./request.server");
     const url = moduleWithKey.buildExternalUrl({
-      path: "/planetary/apod",
-      policy: apodPolicy,
+      path: "/neo/rest/v1/feed",
+      policy: neowsPolicy,
     });
     expect(url.searchParams.get("api_key")).toBe("server-secret");
   });

@@ -16,7 +16,11 @@ import {
   trekRegions,
 } from "@/content/snapshots/external-data";
 
-import { executeExternal, isProductionBuild } from "../execute.server";
+import {
+  executeExternal,
+  isProductionBuild,
+  logExternalFallback,
+} from "../execute.server";
 import { externalProviderContracts } from "../provider-contracts";
 import type {
   ApodRecord,
@@ -102,15 +106,16 @@ const policies = {
   },
 } as const satisfies Record<string, FetchPolicy>;
 
+// science.nasa.gov WordPress feed that replaced api.nasa.gov/planetary/apod.
 const apodRawSchema = z.object({
   date: z.string(),
   title: z.string(),
   explanation: z.string(),
-  media_type: z.enum(["image", "video"]),
-  url: z.string().url(),
-  thumbnail_url: z.string().url().optional(),
+  media_type: z.string(),
+  permalink: z.string().url(),
+  hdurl: z.string().optional(),
   copyright: z.string().optional(),
-  service_version: z.string().default("v1"),
+  basic_html: z.string().optional(),
 });
 
 const epicRawSchema = z.array(
@@ -158,8 +163,13 @@ const donkiItemSchema = z.object({
   classType: z.string().optional(),
   sourceLocation: z.string().optional(),
   kpIndex: z.number().optional(),
+  allKpIndex: z
+    .array(z.object({ kpIndex: z.number() }))
+    .nullable()
+    .optional(),
   messageType: z.string().optional(),
   link: z.string().url().optional(),
+  messageURL: z.string().url().optional(),
   linkedEvents: z
     .array(z.object({ activityID: z.string() }))
     .nullable()
@@ -243,6 +253,45 @@ function excerpt(value: string, max = 230): string {
   return `${slice.slice(0, boundary > 120 ? boundary : max).trim()}…`;
 }
 
+const HTML_ENTITIES: Record<string, string> = {
+  amp: "&",
+  apos: "'",
+  gt: ">",
+  lt: "<",
+  nbsp: " ",
+  quot: '"',
+};
+
+/** The APOD feed returns HTML fragments; Helios renders plain text. */
+function plainText(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&#(\d+);/g, (_, code: string) =>
+      String.fromCodePoint(Number(code)),
+    )
+    .replace(/&#x([\da-f]+);/gi, (_, code: string) =>
+      String.fromCodePoint(parseInt(code, 16)),
+    )
+    .replace(
+      /&(amp|apos|gt|lt|nbsp|quot);/g,
+      (_, name: string) => HTML_ENTITIES[name],
+    )
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function apodImageUrl(hdurl: string): string {
+  // The asset CDN resizes on request; originals reach 6750 px wide.
+  const url = new URL(hdurl);
+  url.searchParams.set("w", "1280");
+  url.searchParams.delete("h");
+  return url.toString();
+}
+
+function apodVideoUrl(basicHtml = ""): string | undefined {
+  return /<(?:source|iframe)[^>]*\ssrc="([^"]+)"/i.exec(basicHtml)?.[1];
+}
+
 function metadata(
   providerId: ProviderId,
   sourceTitle: string,
@@ -287,31 +336,45 @@ export async function loadApodArchive(): Promise<
     currentStatus: "latest-available",
     fetchCurrent: async () => {
       const { start, end } = dateRange(4);
+      const yymmdd = (date: string) => date.slice(2).replaceAll("-", "");
       const raw = await fetchExternalJson({
-        path: "/planetary/apod",
-        params: { start_date: start, end_date: end, thumbs: true },
+        path: "/wp-json/wp/v2/apod-basic",
+        params: { date_from: yymmdd(start), date_to: yymmdd(end) },
         policy: policies.apod,
       });
       const parsed = z.array(apodRawSchema).parse(raw);
       return parsed
-        .map((item): ApodRecord => ({
-          date: item.date,
-          title: item.title,
-          excerpt: excerpt(item.explanation),
-          mediaType: item.media_type,
-          mediaUrl: item.url,
-          ...(item.thumbnail_url ? { thumbnailUrl: item.thumbnail_url } : {}),
-          ...(item.copyright ? { copyright: item.copyright } : {}),
-          serviceVersion: item.service_version,
-          sourceUrl: `https://apod.nasa.gov/apod/ap${item.date.slice(2).replaceAll("-", "")}.html`,
-        }))
+        .flatMap((item): ApodRecord[] => {
+          const mediaUrl =
+            item.media_type === "image" && item.hdurl
+              ? apodImageUrl(item.hdurl)
+              : item.media_type === "video"
+                ? (apodVideoUrl(item.basic_html) ?? item.permalink)
+                : null;
+          if (!mediaUrl) return [];
+          const copyright = plainText(item.copyright ?? "");
+          return [
+            {
+              date: item.date,
+              title: plainText(item.title),
+              excerpt: excerpt(
+                plainText(item.explanation).replace(/^Explanation:\s*/i, ""),
+              ),
+              mediaType: item.media_type as ApodRecord["mediaType"],
+              mediaUrl,
+              ...(copyright ? { copyright } : {}),
+              serviceVersion: "wp/v2",
+              sourceUrl: item.permalink,
+            },
+          ];
+        })
         .sort((a, b) => b.date.localeCompare(a.date));
     },
     metadata: (data) =>
       metadata(
         "apod",
         "Astronomy Picture of the Day",
-        data[0]?.sourceUrl ?? "https://apod.nasa.gov/apod/",
+        data[0]?.sourceUrl ?? "https://science.nasa.gov/apod/",
         "latest-available",
         data[0] ? `${data[0].date}T00:00:00.000Z` : undefined,
       ),
@@ -465,8 +528,10 @@ export async function loadEonet(): Promise<
   });
 }
 
+const DONKI_HOME = "https://ccmc.gsfc.nasa.gov/tools/DONKI/";
+
 async function fetchDonkiType(
-  path: "/DONKI/FLR" | "/DONKI/CME" | "/DONKI/GST" | "/DONKI/notifications",
+  path: `/DONKI-API/get/${"FLR" | "CME" | "GST" | "notifications"}`,
 ) {
   const { start, end } = dateRange(14);
   const raw = await fetchExternalJson({
@@ -481,6 +546,12 @@ function normalizeDonki(
   item: z.infer<typeof donkiItemSchema>,
   type: DonkiEvent["eventType"],
 ): DonkiEvent | null {
+  // The CCMC API reports Kp per observation in allKpIndex; show the storm peak.
+  const kp =
+    item.kpIndex ??
+    (item.allKpIndex?.length
+      ? Math.max(...item.allKpIndex.map(({ kpIndex }) => kpIndex))
+      : undefined);
   const id =
     item.activityID ?? item.flrID ?? item.gstID ?? item.cmeID ?? item.messageID;
   const startAt =
@@ -501,13 +572,13 @@ function normalizeDonki(
     ...(item.peakTime ? { peakAt: item.peakTime } : {}),
     ...(item.classType
       ? { classOrIntensity: item.classType }
-      : item.kpIndex
-        ? { classOrIntensity: `Kp ${item.kpIndex}` }
+      : kp
+        ? { classOrIntensity: `Kp ${kp}` }
         : {}),
     ...(item.sourceLocation ? { sourceLocation: item.sourceLocation } : {}),
     linkedEventIds:
       item.linkedEvents?.map(({ activityID }) => activityID) ?? [],
-    sourceUrl: item.link ?? "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
+    sourceUrl: item.link ?? item.messageURL ?? DONKI_HOME,
   };
 }
 
@@ -515,10 +586,10 @@ export async function loadDonki(): Promise<
   ExternalResult<readonly DonkiEvent[]>
 > {
   const endpoints = [
-    ["/DONKI/FLR", "FLR"],
-    ["/DONKI/CME", "CME"],
-    ["/DONKI/GST", "GST"],
-    ["/DONKI/notifications", "notification"],
+    ["/DONKI-API/get/FLR", "FLR"],
+    ["/DONKI-API/get/CME", "CME"],
+    ["/DONKI-API/get/GST", "GST"],
+    ["/DONKI-API/get/notifications", "notification"],
   ] as const;
 
   if (isProductionBuild()) {
@@ -565,7 +636,7 @@ export async function loadDonki(): Promise<
         ...metadata(
           "donki",
           "Space Weather Database",
-          "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
+          DONKI_HOME,
           "near-live",
           results[0]?.startAt,
           failedEndpoints.length > 0
@@ -575,7 +646,8 @@ export async function loadDonki(): Promise<
         ...(failedEndpoints.length > 0 ? { failedEndpoints } : {}),
       },
     };
-  } catch {
+  } catch (error) {
+    logExternalFallback(externalProviderContracts.donki.name, error);
     return {
       data: donkiSnapshot.data,
       status: donkiSnapshot.fallbackStatus ?? "fallback",

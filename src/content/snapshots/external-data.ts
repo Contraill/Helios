@@ -20,23 +20,25 @@ export const apodSnapshot: VerifiedSnapshot<readonly ApodRecord[]> = {
   purpose: "Bundled fallback for the home APOD surface.",
   data: [
     {
-      date: "2026-07-18",
-      title: "Shadow and Rainbow",
+      date: "2026-10-12",
+      title: "Jupiter and the Moons",
       excerpt:
-        "Sunlight, cloud droplets and a well-placed observer turn an atmospheric shadow into a compact study of light and color.",
+        "How many moons can you see? The best answer is five: four orbiting Jupiter and Luna orbiting Earth. This multi-moon picture was possible because Earth's Moon moved directly in front of Jupiter last week. The featured image is a…",
       mediaType: "image",
       mediaUrl:
-        "https://apod.nasa.gov/apod/image/2607/ShadowandRainbow_Loschiavo1024.jpg",
-      serviceVersion: "v1",
-      sourceUrl: "https://apod.nasa.gov/apod/ap260718.html",
+        "https://assets.science.nasa.gov/dynamicimage/assets/science/cds/apod/apod/2026/october/JupiterMoons_Upreti_3105.jpg?w=1280&fit=clip&crop=faces%2Cfocalpoint",
+      copyright: "Chirag Upreti",
+      serviceVersion: "wp/v2",
+      sourceUrl:
+        "https://science.nasa.gov/image-article/apod-2026-october-12-jupiter-and-the-moons/",
     },
   ],
   metadata: {
     provider: providerName("apod"),
     sourceTitle: "Astronomy Picture of the Day",
-    sourceUrl: "https://apod.nasa.gov/apod/",
+    sourceUrl: "https://science.nasa.gov/apod/",
     freshness: "latest-available",
-    observedAt: "2026-07-18T00:00:00.000Z",
+    observedAt: "2026-10-12T00:00:00.000Z",
     retrievedAt,
     attribution: "NASA Astronomy Picture of the Day",
     notes: "Bundled fallback; media date is shown explicitly.",
@@ -170,7 +172,7 @@ export const donkiSnapshot: VerifiedSnapshot<readonly DonkiEvent[]> = {
       classOrIntensity: "M-class",
       sourceLocation: "Active solar region",
       linkedEventIds: [],
-      sourceUrl: "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
+      sourceUrl: "https://ccmc.gsfc.nasa.gov/tools/DONKI/",
     },
     {
       id: "2026-07-15T2110-GST",
@@ -179,14 +181,14 @@ export const donkiSnapshot: VerifiedSnapshot<readonly DonkiEvent[]> = {
       startAt: "2026-07-15T21:10:00.000Z",
       classOrIntensity: "Kp 5",
       linkedEventIds: [],
-      sourceUrl: "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
+      sourceUrl: "https://ccmc.gsfc.nasa.gov/tools/DONKI/",
     },
   ],
   metadata: {
     provider: providerName("donki"),
     sourceTitle:
       "Space Weather Database Of Notifications, Knowledge, Information",
-    sourceUrl: "https://kauai.ccmc.gsfc.nasa.gov/DONKI/",
+    sourceUrl: "https://ccmc.gsfc.nasa.gov/tools/DONKI/",
     freshness: "latest-available",
     observedAt: "2026-07-16T10:40:00.000Z",
     retrievedAt,

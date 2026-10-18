@@ -7,19 +7,23 @@ const today = new Date().toISOString().slice(0, 10);
 const tomorrowDate = new Date();
 tomorrowDate.setUTCDate(tomorrowDate.getUTCDate() + 1);
 const tomorrow = tomorrowDate.toISOString().slice(0, 10);
+const weekAgoDate = new Date();
+weekAgoDate.setUTCDate(weekAgoDate.getUTCDate() - 7);
+const weekAgo = weekAgoDate.toISOString().slice(0, 10);
+const yymmdd = (date) => date.slice(2).replaceAll("-", "");
 
 const probes = [
   {
     id: "apod",
-    url: `https://api.nasa.gov/planetary/apod?date=${today}${nasaKey ? `&api_key=${encodeURIComponent(nasaKey)}` : ""}`,
-    requiresKey: true,
+    url: `https://science.nasa.gov/wp-json/wp/v2/apod-basic?date_from=${yymmdd(weekAgo)}&date_to=${yymmdd(today)}`,
     validate: (value) =>
-      typeof value?.date === "string" && typeof value?.title === "string",
+      Array.isArray(value) &&
+      typeof value[0]?.date === "string" &&
+      typeof value[0]?.permalink === "string",
   },
   {
     id: "donki",
-    url: `https://api.nasa.gov/DONKI/FLR?startDate=${today}&endDate=${tomorrow}${nasaKey ? `&api_key=${encodeURIComponent(nasaKey)}` : ""}`,
-    requiresKey: true,
+    url: `https://ccmc.gsfc.nasa.gov/DONKI-API/get/FLR?startDate=${weekAgo}&endDate=${today}`,
     validate: Array.isArray,
   },
   {

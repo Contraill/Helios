@@ -131,14 +131,97 @@ describe("space-data provider normalization", () => {
             },
           ]);
         }
+        if (pathname.endsWith("/GST")) {
+          return jsonResponse([
+            {
+              gstID: "GST-1",
+              startTime: "2026-07-17T00:00:00Z",
+              allKpIndex: [{ kpIndex: 5.33 }, { kpIndex: 6.67 }],
+            },
+          ]);
+        }
         return jsonResponse([]);
       }),
     );
 
     const result = await spaceData.loadDonki();
     expect(result.status).toBe("partial");
-    expect(result.data?.map(({ eventType }) => eventType)).toEqual(["FLR"]);
-    expect(result.metadata.failedEndpoints).toEqual(["/DONKI/CME"]);
+    expect(result.data?.map(({ eventType }) => eventType)).toEqual([
+      "FLR",
+      "GST",
+    ]);
+    expect(result.data?.[1]?.classOrIntensity).toBe("Kp 6.67");
+    expect(result.metadata.failedEndpoints).toEqual(["/DONKI-API/get/CME"]);
+  });
+
+  it("reads APOD from the science.nasa.gov feed without an API key", async () => {
+    delete process.env.NASA_API_KEY;
+    resetServerEnvCache();
+    const fetchMock = vi.fn<typeof fetch>(async () =>
+      jsonResponse([
+        {
+          date: "2026-10-16",
+          title: "Launch",
+          permalink: "https://science.nasa.gov/image-article/apod-launch/",
+          media_type: "video",
+          explanation: "<strong>Explanation:</strong> A rocket&#8217;s climb.",
+          copyright: "",
+          hdurl: "",
+          basic_html:
+            '<video controls><source src="https://assets.science.nasa.gov/launch.mp4" type="video/mp4"></video>',
+        },
+        {
+          date: "2026-10-17",
+          title: "3D 67P",
+          permalink: "https://science.nasa.gov/image-article/apod-67p/",
+          media_type: "image",
+          explanation:
+            "<strong>Explanation:</strong> Put on your <a href='#'>red/blue</a> glasses &amp; float.",
+          copyright: '<a href="https://www.esa.int/">ESA</a> , Rosetta',
+          hdurl:
+            "https://assets.science.nasa.gov/dynamicimage/apod/67p.jpg?w=2628&h=2418&fit=clip",
+        },
+        {
+          date: "2026-10-15",
+          title: "Unsupported",
+          permalink: "https://science.nasa.gov/image-article/apod-other/",
+          media_type: "other",
+          explanation: "Interactive page.",
+        },
+      ]),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await spaceData.loadApodArchive();
+    const url = new URL(String(fetchMock.mock.calls[0]?.[0]));
+    expect(url.origin + url.pathname).toBe(
+      "https://science.nasa.gov/wp-json/wp/v2/apod-basic",
+    );
+    expect(url.searchParams.get("date_from")).toMatch(/^\d{6}$/);
+    expect(url.searchParams.has("api_key")).toBe(false);
+    expect(result.status).toBe("latest-available");
+    expect(result.data).toEqual([
+      {
+        date: "2026-10-17",
+        title: "3D 67P",
+        excerpt: "Put on your red/blue glasses & float.",
+        mediaType: "image",
+        mediaUrl:
+          "https://assets.science.nasa.gov/dynamicimage/apod/67p.jpg?w=1280&fit=clip",
+        copyright: "ESA , Rosetta",
+        serviceVersion: "wp/v2",
+        sourceUrl: "https://science.nasa.gov/image-article/apod-67p/",
+      },
+      {
+        date: "2026-10-16",
+        title: "Launch",
+        excerpt: "A rocket’s climb.",
+        mediaType: "video",
+        mediaUrl: "https://assets.science.nasa.gov/launch.mp4",
+        serviceVersion: "wp/v2",
+        sourceUrl: "https://science.nasa.gov/image-article/apod-launch/",
+      },
+    ]);
   });
 
   it("requests CAD diameter/fullname and preserves unknown diameter and hazard", async () => {

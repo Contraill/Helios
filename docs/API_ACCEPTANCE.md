@@ -16,10 +16,12 @@ The UI receives only validated, normalised domain models. Observation time and r
 
 ## Provider matrix
 
+APOD moved from `api.nasa.gov/planetary/apod` to `science.nasa.gov/wp-json/wp/v2/apod-basic` (dates as `YYMMDD`, HTML fields reduced to plain text, images requested at 1280 px). DONKI moved from `api.nasa.gov/DONKI` to `ccmc.gsfc.nasa.gov/DONKI-API/get/*` in September 2026; Kp values now arrive in `allKpIndex`. Neither needs `NASA_API_KEY`. A runtime fallback to a snapshot is logged on the server with the provider and error kind.
+
 | Provider     | Runtime mode             | Freshness        |  Cache | Fallback          | Release note                                          |
 | ------------ | ------------------------ | ---------------- | -----: | ----------------- | ----------------------------------------------------- |
-| APOD         | NASA API key             | latest available |   24 h | verified snapshot | Media date and media type stay visible.               |
-| DONKI        | NASA API key             | latest available | 30 min | verified snapshot | Event families may return partially.                  |
+| APOD         | public JSON (WordPress)  | latest available |   24 h | verified snapshot | Media date and media type stay visible.               |
+| DONKI        | public JSON (CCMC)       | latest available | 30 min | verified snapshot | Event families may return partially.                  |
 | NeoWs        | NASA API key             | latest available |    3 h | verified snapshot | Hazard classification is not an impact prediction.    |
 | EPIC         | public JSON              | latest available |    3 h | verified snapshot | Capture time is shown.                                |
 | EONET v3     | public JSON              | near-live        | 30 min | verified snapshot | Not an emergency-warning service.                     |

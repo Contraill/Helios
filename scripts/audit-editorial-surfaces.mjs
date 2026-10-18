@@ -69,7 +69,7 @@ const { SYSTEM_REGION_IDS } = jiti(
 const apodMetadata = {
   provider: "NASA",
   sourceTitle: "Astronomy Picture of the Day",
-  sourceUrl: "https://apod.nasa.gov/apod/",
+  sourceUrl: "https://science.nasa.gov/apod/",
   freshness: "latest-available",
   retrievedAt: "2026-07-26T00:00:00.000Z",
   attribution: "NASA",

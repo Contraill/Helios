@@ -32,6 +32,15 @@ export function isProductionBuild(): boolean {
   );
 }
 
+/** Snapshots are expected while prerendering; at runtime a fallback means a provider broke. */
+export function logExternalFallback(provider: string, error: unknown): void {
+  if (isProductionBuild()) return;
+  console.warn(
+    `[helios] ${provider} fell back to its snapshot (${errorKind(error)}):`,
+    error instanceof Error ? error.message : error,
+  );
+}
+
 export async function executeExternal<T>({
   fetchCurrent,
   metadata,
@@ -56,6 +65,10 @@ export async function executeExternal<T>({
     }
     return { data, status: currentStatus, metadata: metadata(data) };
   } catch (error) {
+    logExternalFallback(
+      snapshot?.metadata.provider ?? "External provider",
+      error,
+    );
     if (snapshot) {
       return {
         data: snapshot.data,
