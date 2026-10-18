@@ -1113,6 +1113,9 @@ export function NotFoundGame({
             data-target-segments={BREAKOUT_TARGET_SEGMENTS}
             data-testid="not-found-game-canvas"
             onBlur={clearActiveInput}
+            onClick={() => {
+              if (phase === "idle") startGame();
+            }}
             onContextMenu={(event: ReactMouseEvent<HTMLCanvasElement>) =>
               event.preventDefault()
             }
@@ -1126,10 +1129,9 @@ export function NotFoundGame({
                 return;
               }
               event.currentTarget.focus();
-              if (phase === "idle") {
-                startGame();
-                return;
-              }
+              // Start on click instead: starting here moves the home link under the finger
+              // before touchend, so the follow-up click would navigate away.
+              if (phase === "idle") return;
 
               const logicalX = clientXToLogical(event.clientX);
               const model = modelRef.current;
