@@ -213,11 +213,15 @@ test("mobile release Mars detail keeps calculator and sourced content usable", a
   ).toBeVisible();
   const input = page.getByRole("textbox", { name: "Earth scale reading" });
   await expectInsideViewport(page, input);
-  await input.fill("70");
+  // The prerendered input exists before hydration; retry until React owns it.
+  await expect(async () => {
+    await input.fill("70");
+    await expect(page.getByTestId("planet-weight-result")).toContainText(
+      /26[.,]5/,
+      { timeout: 1_000 },
+    );
+  }).toPass();
   await expect(input).toHaveValue("70");
-  await expect(page.getByTestId("planet-weight-result")).toContainText(
-    /26[.,]5/,
-  );
   await expect(
     page.getByRole("heading", { name: "Sources and provenance" }),
   ).toBeVisible();
@@ -250,9 +254,12 @@ test("mobile release language switch remains reachable and persistent", async ({
   const turkish = language.getByRole("button", { name: "TR" });
   await expectInsideViewport(page, turkish);
   await turkish.tap();
+  // The switcher updates <html lang> at once; the /tr navigation finishes afterwards.
+  await page.waitForURL(/\/tr$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "tr-TR");
 
-  await page.reload();
+  // Static pages render before third-party media finish; "load" can wait on a slow NASA image.
+  await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveAttribute("lang", "tr-TR");
   await expect(
     page.getByRole("group", { name: "Arayüz dili" }).getByRole("button", {

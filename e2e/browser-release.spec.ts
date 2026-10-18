@@ -158,6 +158,8 @@ test("desktop release language switch survives reload and preserves the active l
   const englishGroup = page.getByRole("group", { name: "Language" });
   const turkish = englishGroup.getByRole("button", { name: "TR" });
   await turkish.click();
+  // The switcher updates <html lang> at once; the /tr navigation finishes afterwards.
+  await page.waitForURL(/\/tr$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "tr-TR");
   await expect(
     page.getByRole("group", { name: "Arayüz dili" }).getByRole("button", {
@@ -165,7 +167,8 @@ test("desktop release language switch survives reload and preserves the active l
     }),
   ).toHaveAttribute("aria-pressed", "true");
 
-  await page.reload();
+  // Static pages render before third-party media finish; "load" can wait on a slow NASA image.
+  await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveAttribute("lang", "tr-TR");
   await expect(
     page.getByRole("group", { name: "Arayüz dili" }).getByRole("button", {
@@ -182,11 +185,15 @@ test("desktop release Mars calculation validates input and remains finite", asyn
   const weightInput = page.getByRole("textbox", {
     name: "Earth scale reading",
   });
-  await weightInput.fill("70");
+  // The prerendered input exists before hydration; retry until React owns it.
+  await expect(async () => {
+    await weightInput.fill("70");
+    await expect(page.getByTestId("planet-weight-result")).toContainText(
+      /26[.,]5/,
+      { timeout: 1_000 },
+    );
+  }).toPass();
   await expect(weightInput).toHaveValue("70");
-  await expect(page.getByTestId("planet-weight-result")).toContainText(
-    /26[.,]5/,
-  );
   await expect(page.getByText(/NaN|Infinity/)).toHaveCount(0);
 
   await weightInput.fill("1000001");
@@ -214,14 +221,19 @@ test("desktop release comparison keeps URL state, history and validation synchro
   await expect(page.getByText(/NaN|Infinity/)).toHaveCount(0);
 });
 
-test("desktop release home APOD keeps a sourced fallback record available", async ({
+test("desktop release home APOD keeps a sourced record available", async ({
   page,
 }) => {
   await page.goto("/");
   await expect(
     page.getByText("Astronomy Picture of the Day", { exact: true }),
   ).toBeVisible();
-  await expect(page.locator('[data-status="fallback"]').first()).toBeVisible();
+  // APOD needs no key, so the record is the bundled snapshot or a revalidated live one.
+  await expect(
+    page
+      .locator('[data-status="fallback"], [data-status="latest-available"]')
+      .first(),
+  ).toBeVisible();
   await expect(
     page.getByRole("link", { name: /Open the official record/i }).first(),
   ).toHaveAttribute("href", /^https:\/\//);

@@ -692,6 +692,8 @@ test("interface language persists across the complete product surface", async ({
 }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "TR" }).click();
+  // The switcher updates <html lang> at once; the /tr navigation finishes afterwards.
+  await page.waitForURL(/\/tr$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "tr-TR");
   await expect(
     page.getByRole("link", { name: "Keşfet", exact: true }),
@@ -720,7 +722,8 @@ test("interface language persists across the complete product surface", async ({
     );
   }
 
-  await page.reload();
+  // Static pages render before third-party media finish; "load" can wait on a slow NASA image.
+  await page.reload({ waitUntil: "domcontentloaded" });
   await expect(page.locator("html")).toHaveAttribute("lang", "tr-TR");
   await expect(page.getByRole("button", { name: "TR" })).toHaveAttribute(
     "aria-pressed",
