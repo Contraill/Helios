@@ -3,8 +3,6 @@
 [![CI](https://github.com/Contraill/Helios/actions/workflows/ci.yml/badge.svg)](https://github.com/Contraill/Helios/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-**Live:** [heliios.vercel.app](https://heliios.vercel.app)
-
 Helios is an interactive Solar System explorer built around a simple question: what would another world feel like, not only how large is it?
 
 The project combines a cinematic 3D experience with sourced planetary data, personal comparisons and explicit scale limits. It is developed as a portfolio project, but the product and scientific constraints are treated as production requirements.
