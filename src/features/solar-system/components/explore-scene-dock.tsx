@@ -154,7 +154,8 @@ export function ExploreSceneDock(props: ExploreSceneDockProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const titleId = useId();
-  const handledSelectionFocusRequest = useRef(0);
+  // A remount (locale switch) must not replay a focus request handled by the previous instance.
+  const handledSelectionFocusRequest = useRef(selectionFocusRequest);
 
   useEffect(() => {
     const dialog = dialogRef.current;

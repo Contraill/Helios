@@ -100,6 +100,29 @@ describe("ExploreSceneDock", () => {
     );
   });
 
+  it("does not replay a handled focus request when it remounts", async () => {
+    setCssMode("desktop");
+    act(() => useExploreSceneUiStore.getState().openSelectionPanel());
+    render(
+      <>
+        <button type="button">EN</button>
+        <ExploreSceneDock
+          {...props}
+          selection={
+            <h2 data-selection-summary-heading tabIndex={-1}>
+              Ceres
+            </h2>
+          }
+        />
+      </>,
+    );
+    const localeButton = screen.getByRole("button", { name: "EN" });
+    localeButton.focus();
+
+    await new Promise((resolve) => window.requestAnimationFrame(resolve));
+    expect(localeButton).toHaveFocus();
+  });
+
   it("uses the CSS contract to expose a modal bottom sheet and restores focus", () => {
     setCssMode("mobile");
     const showModal = vi.fn(function (this: HTMLDialogElement) {
