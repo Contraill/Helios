@@ -48,4 +48,8 @@ afterEach(() => {
   if (typeof document !== "undefined") {
     document.documentElement.lang = "en-US";
   }
+  // isolate: false shares one jsdom window, so a URL set by one test must not leak into the next.
+  if (typeof window !== "undefined") {
+    window.history.replaceState(null, "", "/");
+  }
 });

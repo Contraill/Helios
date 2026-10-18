@@ -18,6 +18,7 @@ describe("LocaleSwitcher", () => {
     resetLocaleStore();
     document.cookie = "helios-locale=; Max-Age=0; Path=/";
     document.documentElement.lang = "en-US";
+    window.history.replaceState(null, "", "/body/mars?a=earth#sources");
   });
 
   afterEach(() => resetLocaleStore());
@@ -38,9 +39,10 @@ describe("LocaleSwitcher", () => {
     expect(turkish).toHaveAttribute("aria-pressed", "true");
     expect(document.documentElement.lang).toBe("tr-TR");
     expect(document.cookie).toContain("helios-locale=tr");
-    expect(replace).toHaveBeenCalledExactlyOnceWith("/tr/body/mars", {
-      scroll: false,
-    });
+    expect(replace).toHaveBeenCalledExactlyOnceWith(
+      "/tr/body/mars?a=earth#sources",
+      { scroll: false },
+    );
     expect(screen.getByRole("status")).toHaveTextContent(/Arayüz dili/);
   });
 });
