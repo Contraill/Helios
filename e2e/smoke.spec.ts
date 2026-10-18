@@ -462,22 +462,28 @@ test.describe("planet detail mobile overflow", () => {
 });
 
 test.describe("external-data surfaces", () => {
-  test("home APOD preserves date, source and fallback status without a key", async ({
+  // APOD needs no key, so the page may show the bundled snapshot or a revalidated live record.
+  test("home APOD preserves date, source and freshness status", async ({
     page,
   }) => {
     await page.goto("/");
+    const apod = page.locator("[data-apod-feature]");
     await expect(
-      page.getByText("Astronomy Picture of the Day", { exact: true }),
+      apod.getByText("Astronomy Picture of the Day", { exact: true }),
     ).toBeVisible();
+    await expect(apod.locator("#apod-heading")).not.toBeEmpty();
+    await expect(apod.locator("time").first()).toHaveAttribute(
+      "datetime",
+      /^\d{4}-\d{2}-\d{2}$/,
+    );
     await expect(
-      page.getByRole("heading", { name: "Shadow and Rainbow" }),
+      apod.getByRole("link", { name: /Open the official record for/i }),
+    ).toHaveAttribute("href", /^https:\/\/science\.nasa\.gov\//);
+    await expect(
+      apod.locator(
+        '[data-status="fallback"], [data-status="latest-available"]',
+      ),
     ).toBeVisible();
-    await expect(
-      page.getByRole("link", {
-        name: /Open the official record for Shadow and Rainbow/i,
-      }),
-    ).toHaveAttribute("href", /^https:\/\//);
-    await expect(page.locator('[data-status="fallback"]')).toBeVisible();
   });
 
   test("Earth combines EPIC, EONET, GIBS, DONKI and NEO without a weight calculator", async ({
