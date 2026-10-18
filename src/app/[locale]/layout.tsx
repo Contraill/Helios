@@ -18,11 +18,7 @@ import { resolveSiteUrl } from "@/lib/metadata/site-url";
 import { LocaleProvider } from "@/stores/locale-store";
 
 import "../globals.css";
-import "../mobile-layout.css";
-import "../mobile-layout-pass-2.css";
-import "../mobile-layout-pass-3.css";
-import "../mobile-layout-pass-4.css";
-import "../responsive-polish.css";
+import "../responsive.css";
 
 export function generateStaticParams() {
   return SUPPORTED_LOCALES.map((locale) => ({ locale }));
