@@ -105,12 +105,18 @@ export function extendedBodyNavigatorCategory(
   return "dwarf-kuiper";
 }
 
+export function moonDisplayName(
+  moon: Pick<Moon, "id" | "name">,
+  locale: Locale,
+): string {
+  return moon.id === "moon-earth-moon" && locale === "tr" ? "Ay" : moon.name;
+}
+
 function moonEntry(moon: Moon, locale: Locale): CelestialRegistryEntry {
   const copy = getExploreSceneCopy(locale);
   return {
     id: moon.id,
-    displayName:
-      moon.id === "moon-earth-moon" && locale === "tr" ? "Ay" : moon.name,
+    displayName: moonDisplayName(moon, locale),
     kind: "moon",
     navigatorCategory: "planetary-moons",
     orbitPolicyClass: "moon-orbit",

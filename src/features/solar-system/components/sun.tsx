@@ -346,7 +346,7 @@ export function Sun({
           priority={labelPriority}
           positionCaption={selected ? copy.labels.selectedStar : ""}
           selected={selected}
-          text={sun.name}
+          text={locale === "tr" ? "Güneş" : sun.name}
         />
       ) : null}
       <SolarCoronaShell

@@ -37,6 +37,8 @@ import {
 } from "@/features/solar-system/lib/tidal-lock-orientation";
 import type { ScaleMode } from "@/features/solar-system/types/experience-settings";
 import type { PlanetObjectRegistry } from "@/features/solar-system/types/planet-object-registry";
+import { getExploreSceneCopy } from "@/lib/i18n/explore-scene-copy";
+import { useLocaleStore } from "@/stores/locale-store";
 import { useExplorationStore } from "@/stores/exploration-store";
 import { useSceneVisibilityStore } from "@/stores/scene-visibility-store";
 import { useSimulationStore } from "@/stores/simulation-store";
@@ -187,6 +189,7 @@ function SatelliteObject({
     surface.userData.testRotationKind = moon.rotation.kind;
   }, SCENE_FRAME_PRIORITY.satellites);
 
+  const locale = useLocaleStore((state) => state.locale);
   const over = (event: ThreeEvent<PointerEvent>) => {
     if (!visible) return;
     event.stopPropagation();
@@ -262,7 +265,9 @@ function SatelliteObject({
             offsetY={interactionRadius + 0.2}
             placement="north"
             priority={labelPriority}
-            positionCaption="DWARF-SYSTEM CONTEXT"
+            positionCaption={
+              getExploreSceneCopy(locale).labels.dwarfSystemContext
+            }
             selected={selected}
             text={moon.name}
           />

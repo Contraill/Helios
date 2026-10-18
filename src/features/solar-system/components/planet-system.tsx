@@ -6,6 +6,7 @@ import type { ThreeEvent } from "@react-three/fiber";
 import { BackSide } from "three";
 import type { Group, Mesh } from "three";
 
+import { getPlanetById } from "@/content/planets";
 import { planetTextureSources } from "@/content/sources/planet-textures";
 import { planetEphemerisRepresentation } from "@/lib/data/ephemeris/models";
 import { markMaterialApplied } from "@/features/solar-system/lib/asset-loading-lifecycle";
@@ -426,7 +427,7 @@ export function PlanetSystem({
                   : copy.scientificMarkerCaption
               }
               selected={selected}
-              text={planet.name}
+              text={getPlanetById(planet.id)?.name[locale] ?? planet.name}
             />
           ) : null}
         </group>

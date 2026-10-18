@@ -207,6 +207,7 @@ const EN_COPY = Object.freeze({
     moonRepresentative: "FEATURED MAJOR MOON · REPRESENTATIVE ORBIT",
     antiSolarTail: "ANTI-SOLAR TAIL",
     representativeOrbit: "REPRESENTATIVE ORBIT",
+    dwarfSystemContext: "DWARF-SYSTEM CONTEXT",
   },
   ephemeris: {
     controlsLabel: "Simulation time controls",
@@ -464,6 +465,7 @@ const TR_COPY: typeof EN_COPY = Object.freeze({
     moonRepresentative: "ÖNE ÇIKAN BÜYÜK UYDU · TEMSİLİ YÖRÜNGE",
     antiSolarTail: "GÜNEŞ KARŞITI KUYRUK",
     representativeOrbit: "TEMSİLİ YÖRÜNGE",
+    dwarfSystemContext: "CÜCE SİSTEM BAĞLAMI",
   },
   ephemeris: {
     controlsLabel: "Simülasyon zamanı kontrolleri",

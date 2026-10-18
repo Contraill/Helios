@@ -21,6 +21,7 @@ import {
   moonOrbitNormalScene,
   moonOrbitPoints,
 } from "@/features/solar-system/lib/moon-position";
+import { moonDisplayName } from "@/features/solar-system/lib/celestial-registry";
 import { moonSceneMetrics } from "@/features/solar-system/lib/moon-scene-metrics";
 import { moonOrbitVisibility } from "@/features/solar-system/lib/orbit-visibility-policy";
 import {
@@ -248,7 +249,7 @@ function MoonObject({
             priority={labelPriority}
             positionCaption={copy.labels.moonRepresentative}
             selected={selected}
-            text={moon.name}
+            text={moonDisplayName(moon, locale)}
           />
         ) : null}
       </group>
