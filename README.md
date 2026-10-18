@@ -9,6 +9,12 @@ Helios is an interactive Solar System explorer built around a simple question: w
 
 The project combines a cinematic 3D experience with sourced planetary data, personal comparisons and explicit scale limits. It is developed as a portfolio project, but the product and scientific constraints are treated as production requirements.
 
+![Helios home page](docs/screenshots/home.webp)
+
+| Explore the system                                        | Follow a world through time                                                 |
+| --------------------------------------------------------- | --------------------------------------------------------------------------- |
+| ![Helios Explore overview](docs/screenshots/explore.webp) | ![Earth in Explore with time controls](docs/screenshots/explore-earth.webp) |
+
 ## Current status
 
 Helios includes semantic detail routes for 57 real Solar System bodies and four regional context layers, eight custom planet pages, normalized NASA/JPL data surfaces with explicit fallback metadata, a two-world comparison experience, a sourced Missions index and a JPL Horizons-backed Explore timeline.
@@ -83,7 +89,7 @@ pnpm verify
 pnpm dev
 ```
 
-`NASA_API_KEY` remains server-only. Local development can use verified snapshots and static fallbacks without it; current APOD, DONKI and NeoWs responses and the release provider probe require the key. `NEXT_PUBLIC_NASA_API_KEY` is rejected by validation.
+`NASA_API_KEY` remains server-only. Local development can use verified snapshots and static fallbacks without it; current NeoWs responses and the release provider probe require the key; APOD and DONKI use keyless public endpoints. `NEXT_PUBLIC_NASA_API_KEY` is rejected by validation.
 
 `SITE_URL` is optional locally and must contain only the canonical production origin when configured. Helios uses it for canonical and `hreflang` metadata, social URLs, `/sitemap.xml` and `/robots.txt`.
 
@@ -120,7 +126,7 @@ Production environment variables:
 
 | Variable       | Required | Purpose                                                               |
 | -------------- | -------- | --------------------------------------------------------------------- |
-| `NASA_API_KEY` | Yes      | Server-only key for current APOD, DONKI and NeoWs data                |
+| `NASA_API_KEY` | Yes      | Server-only key for current NeoWs data                                |
 | `SITE_URL`     | No       | Canonical origin; falls back to the Vercel production host when unset |
 
 Vercel Analytics and Speed Insights load only when `VERCEL=1`, so local and test runs send no telemetry.
@@ -138,16 +144,14 @@ Vercel Analytics and Speed Insights load only when `VERCEL=1`, so local and test
 
 ## Repository documentation
 
-- `docs/ROADMAP.md` — active milestones and remaining acceptance
-- `docs/ARCHITECTURE.md` — route, scene, language and performance boundaries
-- `docs/ARCHITECTURE_DIAGRAM.md` — system ownership and data-flow diagram
+- `docs/ARCHITECTURE.md` — system diagram, route, scene, language and performance boundaries
 - `docs/CELESTIAL_MODEL.md` — body/orbit model contracts
 - `docs/ASSET_AND_SOURCES.md` — provenance and runtime asset policy
 - `docs/TESTING_AND_RELEASE.md` — automated and manual release checks
 - `docs/I18N.md` — complete EN/TR rendering and canonical URL policy
 - `docs/API_ACCEPTANCE.md` — provider contracts, failure states and release probe
 - `docs/PERFORMANCE.md` — static budgets and native runtime measurement contract
-- `docs/KNOWN_LIMITATIONS.md` — scientific, data and device-dependent limits
+- `docs/KNOWN_LIMITATIONS.md` — scientific, data and device-dependent limits and deferred scope
 - `docs/RELEASE_CHECKLIST.md` — native, browser/GPU and deployment closure
 
 Only the active documents above define the current product and release requirements.

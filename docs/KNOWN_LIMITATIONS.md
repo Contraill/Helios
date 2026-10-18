@@ -10,7 +10,7 @@
 
 ## External data
 
-- APOD, DONKI and NeoWs need a server-only `NASA_API_KEY` for current provider responses.
+- NeoWs needs a server-only `NASA_API_KEY` for current responses; APOD and DONKI use keyless public endpoints.
 - Remote services can be stale, partial or unavailable; Helios keeps verified snapshots/static explanations rather than inventing current records.
 - InSight is a bundled historical landing-site snapshot. Helios does not depend on a current InSight weather API.
 - Trek products open the official external map; Helios does not proxy or embed the full application.
@@ -26,3 +26,16 @@ The following cannot be proven by source inspection and require the release brow
 - actual frame pacing, GPU memory, bundle transfer and resource disposal.
 
 These are release acceptance items, not hidden implementation claims.
+
+## Deferred scope
+
+These ideas are intentionally outside the shipped product:
+
+- Automated presentation tour.
+- WebXR.
+- User favourites.
+- Advanced sonification.
+- Surface exploration or landing experiences.
+- Broad mission trajectory catalogue.
+- Full N-body or navigation-grade simulation.
+- Additional distant-system datasets and map products.
