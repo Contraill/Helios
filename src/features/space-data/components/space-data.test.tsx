@@ -11,6 +11,7 @@ import type {
 
 import { ApodFeature } from "./apod-feature";
 import { DataState } from "./data-state";
+import { RemoteMedia } from "./remote-media";
 
 const metadata: ExternalMetadata = {
   provider: "NASA Test",
@@ -83,6 +84,29 @@ describe("space data states", () => {
         name: "Open the official record for Test nebula (opens in a new tab)",
       }),
     ).toHaveAttribute("href", apod.sourceUrl);
+  });
+  it("loads a new remote image after the previous URL failed", () => {
+    const { rerender } = render(
+      <RemoteMedia
+        alt="NASA image"
+        fallbackLabel="Unavailable"
+        src="https://example.com/old.jpg"
+      />,
+    );
+    fireEvent.error(screen.getByRole("img", { name: "NASA image" }));
+    expect(screen.getByText("Unavailable")).toBeVisible();
+
+    rerender(
+      <RemoteMedia
+        alt="NASA image"
+        fallbackLabel="Unavailable"
+        src="https://example.com/new.jpg"
+      />,
+    );
+    expect(screen.getByRole("img", { name: "NASA image" })).toHaveAttribute(
+      "src",
+      "https://example.com/new.jpg",
+    );
   });
   it("localizes dated state and APOD controls with the interface preference", () => {
     render(

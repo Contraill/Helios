@@ -107,7 +107,5 @@ Preserve:
 - current route/sitemap and source/licence audits;
 - screenshots, demo video and known limitations.
 
-Use `RELEASE_CHECKLIST.md` for the final sign-off.
-
 - Camera framing audits cover 61 selectable targets across two scale profiles and desktop/mobile aspect ratios (244 contracts).
 - Editorial CSS audits protect skip-link flow, WebKit masks, compositor-oriented portrait motion, Sun-specific glow and Saturn ring presentation.

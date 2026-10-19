@@ -19,7 +19,7 @@ interface BodyPageProps {
   readonly params: Promise<{ locale: string; slug: string }>;
 }
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
   return REAL_BODY_SLUGS.map((slug) => ({ slug }));

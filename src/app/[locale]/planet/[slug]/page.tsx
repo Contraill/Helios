@@ -11,7 +11,7 @@ interface PlanetPageProps {
   params: Promise<{ locale: string; slug: string }>;
 }
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
   return planetIds.map((slug) => ({ slug }));

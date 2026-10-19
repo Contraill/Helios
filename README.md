@@ -23,7 +23,7 @@ Explore starts at the current UTC time, supports accelerated playback across a b
 
 English and Turkish cover the complete product surface: the global shell, Explore, Compare, Missions, Data, About, Case Study, all semantic body/region pages, eight custom planet compositions, metadata and remote-data states. English pages keep the unprefixed URLs and Turkish pages live under `/tr` (for example `/body/mars` and `/tr/body/mars`), so both languages are indexable. Every page is prerendered in both languages; the saved language preference only redirects returning visitors.
 
-Helios is deployed on Vercel at [heliios.vercel.app](https://heliios.vercel.app). Production deployments are gated on the GitHub Actions quality and cross-browser checks. Manual GPU/device review, the production provider probe and the performance report remain open release evidence; see `docs/RELEASE_CHECKLIST.md`.
+Helios is deployed on Vercel at [heliios.vercel.app](https://heliios.vercel.app). Production deployments are gated on the GitHub Actions quality and cross-browser checks. Manual GPU/device review, the production provider probe and the performance report remain open release evidence; see `docs/TESTING_AND_RELEASE.md`.
 
 ## Stack
 
@@ -150,7 +150,6 @@ Vercel Analytics and Speed Insights load only when `VERCEL=1`, so local and test
 - `docs/API_ACCEPTANCE.md` — provider contracts, failure states and release probe
 - `docs/PERFORMANCE.md` — static budgets and native runtime measurement contract
 - `docs/KNOWN_LIMITATIONS.md` — scientific, data and device-dependent limits and deferred scope
-- `docs/RELEASE_CHECKLIST.md` — native, browser/GPU and deployment closure
 
 Only the active documents above define the current product and release requirements.
 

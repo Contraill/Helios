@@ -362,6 +362,11 @@ export async function loadApodArchive(): Promise<
               ),
               mediaType: item.media_type as ApodRecord["mediaType"],
               mediaUrl,
+              ...(item.media_type === "video" &&
+              item.hdurl &&
+              /\.(?:jpe?g|png|webp)(?:\?|$)/i.test(item.hdurl)
+                ? { thumbnailUrl: apodImageUrl(item.hdurl) }
+                : {}),
               ...(copyright ? { copyright } : {}),
               serviceVersion: "wp/v2",
               sourceUrl: item.permalink,
@@ -757,7 +762,14 @@ async function nasaAssetManifest(href: string) {
 }
 
 function mediaAssets(urls: readonly string[]) {
-  const images = urls.filter((url) => /\.(?:jpe?g|png|webp)$/i.test(url));
+  const images = urls
+    .filter((url) => /\.(?:jpe?g|png|webp)$/i.test(url))
+    .map((url) =>
+      url.replace(
+        /^http:\/\/images-assets\.nasa\.gov\//i,
+        "https://images-assets.nasa.gov/",
+      ),
+    );
   const thumbnailUrl =
     images.find((url) => /~thumb\./i.test(url)) ??
     images.find((url) => /~small\./i.test(url));
