@@ -224,6 +224,72 @@ describe("space-data provider normalization", () => {
     ]);
   });
 
+  it("uses the APOD video poster supplied by the science.nasa.gov feed", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        jsonResponse([
+          {
+            date: "2026-10-18",
+            title: "Sonified pillars",
+            permalink: "https://science.nasa.gov/image-article/apod-video/",
+            media_type: "video",
+            explanation: "A video.",
+            hdurl:
+              "https://assets.science.nasa.gov/dynamicimage/apod/poster.jpg?w=3048&h=1708",
+            basic_html:
+              '<iframe src="https://www.youtube.com/embed/example"></iframe>',
+          },
+        ]),
+      ),
+    );
+
+    const result = await spaceData.loadApodArchive();
+    expect(result.data?.[0]?.thumbnailUrl).toBe(
+      "https://assets.science.nasa.gov/dynamicimage/apod/poster.jpg?w=1280",
+    );
+  });
+
+  it("serves NASA Images manifest thumbnails over HTTPS", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+        if (url.includes("/search?"))
+          return jsonResponse({
+            collection: {
+              items: [
+                {
+                  href: "https://images-assets.nasa.gov/image/PIA12264/collection.json",
+                  data: [
+                    {
+                      nasa_id: "PIA12264",
+                      title: "Mercury",
+                      date_created: "2009-09-29T00:00:00Z",
+                      media_type: "image",
+                    },
+                  ],
+                },
+              ],
+            },
+          });
+        return jsonResponse([
+          "http://images-assets.nasa.gov/image/PIA12264/PIA12264~thumb.jpg",
+          "http://images-assets.nasa.gov/image/PIA12264/PIA12264~orig.jpg",
+        ]);
+      }),
+    );
+
+    const result = await spaceData.loadMissionMedia("mercury");
+    expect(result.status).toBe("latest-available");
+    expect(result.data?.[0]?.thumbnailUrl).toBe(
+      "https://images-assets.nasa.gov/image/PIA12264/PIA12264~thumb.jpg",
+    );
+    expect(result.data?.[0]?.assetUrl).toBe(
+      "https://images-assets.nasa.gov/image/PIA12264/PIA12264~orig.jpg",
+    );
+  });
+
   it("requests CAD diameter/fullname and preserves unknown diameter and hazard", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       void input;

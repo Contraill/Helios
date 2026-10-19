@@ -17,8 +17,8 @@ export function RemoteMedia({
   fallbackLabel,
   src,
 }: RemoteMediaProps) {
-  const [failed, setFailed] = useState(!src);
-  if (failed || !src) {
+  const [failedSrc, setFailedSrc] = useState<string>();
+  if (!src || failedSrc === src) {
     return (
       <div
         className={`${styles.remoteFallback} ${className ?? ""}`}
@@ -38,7 +38,7 @@ export function RemoteMedia({
       className={className}
       data-remote-media
       loading="lazy"
-      onError={() => setFailed(true)}
+      onError={() => setFailedSrc(src)}
       src={src}
     />
   );
