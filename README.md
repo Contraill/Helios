@@ -3,6 +3,8 @@
 [![CI](https://github.com/Contraill/Helios/actions/workflows/ci.yml/badge.svg)](https://github.com/Contraill/Helios/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
+**[Live demo](https://heliios.vercel.app)** · [Case study](https://heliios.vercel.app/case-study) · [Known limitations](docs/KNOWN_LIMITATIONS.md) · [Release evidence](docs/release-evidence/1.0.0/README.md)
+
 Helios is an interactive Solar System explorer built around a simple question: what would another world feel like, not only how large is it?
 
 The project combines a cinematic 3D experience with sourced planetary data, personal comparisons and explicit scale limits. It is developed as a portfolio project, but the product and scientific constraints are treated as production requirements.
@@ -15,15 +17,9 @@ The project combines a cinematic 3D experience with sourced planetary data, pers
 
 ## Current status
 
-Helios includes semantic detail routes for 57 real Solar System bodies and four regional context layers, eight custom planet pages, normalized NASA/JPL data surfaces with explicit fallback metadata, a two-world comparison experience, a sourced Missions index and a JPL Horizons-backed Explore timeline.
+Version 1.0.0 ships detail pages for 57 real Solar System bodies and four regions, eight custom planet pages, a JPL Horizons-backed Explore timeline, two-world comparison, a sourced Missions index and NASA/JPL data surfaces with explicit fallback labels. Everything is available in English and Turkish (`/tr`).
 
-The `/body/[slug]` library covers the Sun, eight planets, 22 featured planetary moons, 18 extended bodies and eight dwarf-system satellites. `/region/[slug]` adds the asteroid belt, Kuiper belt, Oort cloud and heliosphere. Existing `/planet/[slug]` and `/object/[slug]` routes remain compatible and point search engines to canonical body pages.
-
-Explore starts at the current UTC time, supports accelerated playback across a bounded historical and future range, and keeps camera, selection and simulation state under a single scene authority. Galactic Context is a separate schematic Milky Way map with a labelled Solar System marker; it is not presented as one physically continuous zoom. Solar prominences use deterministic emergence/decay and reduced-motion-aware plasma flow.
-
-English and Turkish cover the complete product surface: the global shell, Explore, Compare, Missions, Data, About, Case Study, all semantic body/region pages, eight custom planet compositions, metadata and remote-data states. English pages keep the unprefixed URLs and Turkish pages live under `/tr` (for example `/body/mars` and `/tr/body/mars`), so both languages are indexable. Every page is prerendered in both languages; the saved language preference only redirects returning visitors.
-
-Helios is deployed on Vercel at [heliios.vercel.app](https://heliios.vercel.app). Production deployments are gated on the GitHub Actions quality and cross-browser checks. Manual GPU/device review, the production provider probe and the performance report remain open release evidence; see `docs/TESTING_AND_RELEASE.md`.
+Production deploys on Vercel only after the CI quality and cross-browser checks pass. What has and has not been checked on real hardware is listed in the [1.0.0 release evidence](docs/release-evidence/1.0.0/README.md); acceptance criteria live in `docs/TESTING_AND_RELEASE.md`.
 
 ## Stack
 
@@ -150,6 +146,7 @@ Vercel Analytics and Speed Insights load only when `VERCEL=1`, so local and test
 - `docs/API_ACCEPTANCE.md` — provider contracts, failure states and release probe
 - `docs/PERFORMANCE.md` — static budgets and native runtime measurement contract
 - `docs/KNOWN_LIMITATIONS.md` — scientific, data and device-dependent limits and deferred scope
+- `docs/release-evidence/1.0.0/` — recorded performance, provider and device evidence for 1.0.0
 
 Only the active documents above define the current product and release requirements.
 

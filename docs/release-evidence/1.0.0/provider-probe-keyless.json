@@ -1,0 +1,65 @@
+{
+  "checkedAt": "2026-10-20T17:36:56.672Z",
+  "results": [
+    {
+      "id": "apod",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "id": "donki",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "id": "neows",
+      "status": "skipped",
+      "reason": "NASA_API_KEY missing"
+    },
+    {
+      "id": "epic",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "id": "eonet",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "id": "nasa-images",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "id": "cneos-cad",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "id": "cneos-fireball",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "id": "gibs",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "id": "mars-trek",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "id": "mercury-trek",
+      "status": "ok",
+      "httpStatus": 200
+    },
+    {
+      "id": "insight",
+      "status": "historical-snapshot",
+      "reason": "No runtime endpoint is used by Helios."
+    }
+  ]
+}

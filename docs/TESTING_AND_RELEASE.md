@@ -95,6 +95,8 @@ A failure in any matrix entry keeps the workflow red. Failed browser jobs upload
 
 ## Release evidence
 
+Each release records its evidence under `docs/release-evidence/<version>/`; see [1.0.0](release-evidence/1.0.0/README.md). Platforms that were not checked are recorded as untested.
+
 Preserve:
 
 - native command results;

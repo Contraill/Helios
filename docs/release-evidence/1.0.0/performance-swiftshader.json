@@ -1,0 +1,267 @@
+{
+  "browser": "149.0.7827.55 headless with SwiftShader",
+  "bundle": {
+    "explore3d": [
+      {
+        "brotliBytes": 635,
+        "gzipBytes": 764,
+        "path": "static/css/bf996b58ddad17c7.css",
+        "rawBytes": 1796
+      },
+      {
+        "brotliBytes": 72838,
+        "gzipBytes": 87329,
+        "path": "static/chunks/b19bb45c.e5d97d32d9411b32.js",
+        "rawBytes": 359304
+      },
+      {
+        "brotliBytes": 80700,
+        "gzipBytes": 100415,
+        "path": "static/chunks/375a538c.60ef3084ade67193.js",
+        "rawBytes": 376160
+      },
+      {
+        "brotliBytes": 40365,
+        "gzipBytes": 45855,
+        "path": "static/chunks/abc0a8fc.c2f3507bc775abca.js",
+        "rawBytes": 145251
+      },
+      {
+        "brotliBytes": 14481,
+        "gzipBytes": 16287,
+        "path": "static/chunks/4063.0d8016ae63ca38f7.js",
+        "rawBytes": 56997
+      },
+      {
+        "brotliBytes": 43510,
+        "gzipBytes": 51632,
+        "path": "static/chunks/6759.13ca7f50ff2fcb50.js",
+        "rawBytes": 186137
+      }
+    ],
+    "root": [
+      {
+        "brotliBytes": 35158,
+        "gzipBytes": 39627,
+        "path": "static/chunks/polyfills-42372ed130431b0a.js",
+        "rawBytes": 112594
+      },
+      {
+        "brotliBytes": 2070,
+        "gzipBytes": 2333,
+        "path": "static/chunks/webpack-d5d8cf1ca562ed5e.js",
+        "rawBytes": 4847
+      },
+      {
+        "brotliBytes": 53685,
+        "gzipBytes": 62879,
+        "path": "static/chunks/ea75e279-a2c112b3a5a53435.js",
+        "rawBytes": 199865
+      },
+      {
+        "brotliBytes": 49652,
+        "gzipBytes": 60866,
+        "path": "static/chunks/1646-05121c22a59f096a.js",
+        "rawBytes": 222182
+      },
+      {
+        "brotliBytes": 201,
+        "gzipBytes": 224,
+        "path": "static/chunks/main-app-76a000eafdd25814.js",
+        "rawBytes": 514
+      }
+    ],
+    "explore3dTotal": {
+      "brotliBytes": 252529,
+      "gzipBytes": 302282,
+      "rawBytes": 1125645
+    },
+    "rootTotal": {
+      "brotliBytes": 140766,
+      "gzipBytes": 165929,
+      "rawBytes": 540002
+    }
+  },
+  "measuredAt": "2026-10-20T17:42:47.885Z",
+  "home": {
+    "errors": [],
+    "explore3dChunkLoaded": false,
+    "scriptTransferBytes": 271238,
+    "texturePaths": []
+  },
+  "lifecycle": {
+    "dynamicChunkOnInitialHome": false,
+    "errors": [],
+    "homeBefore": {
+      "canvasCount": 0,
+      "documents": 1,
+      "jsEventListeners": 322,
+      "jsHeapUsedBytes": 4884960,
+      "nodes": 340
+    },
+    "initialHomeTextureRequests": [],
+    "target": "explore",
+    "visits": [
+      {
+        "explore": {
+          "canvasCount": 1,
+          "documents": 1,
+          "jsEventListeners": 457,
+          "jsHeapUsedBytes": 20254664,
+          "nodes": 284
+        },
+        "homeAfterCacheExpiry": {
+          "canvasCount": 0,
+          "documents": 1,
+          "jsEventListeners": 390,
+          "jsHeapUsedBytes": 14725032,
+          "nodes": 440
+        },
+        "visit": 1
+      },
+      {
+        "explore": {
+          "canvasCount": 1,
+          "documents": 1,
+          "jsEventListeners": 469,
+          "jsHeapUsedBytes": 20071376,
+          "nodes": 389
+        },
+        "homeAfterCacheExpiry": {
+          "canvasCount": 0,
+          "documents": 1,
+          "jsEventListeners": 402,
+          "jsHeapUsedBytes": 15019008,
+          "nodes": 543
+        },
+        "visit": 2
+      },
+      {
+        "explore": {
+          "canvasCount": 1,
+          "documents": 1,
+          "jsEventListeners": 481,
+          "jsHeapUsedBytes": 20603924,
+          "nodes": 492
+        },
+        "homeAfterCacheExpiry": {
+          "canvasCount": 0,
+          "documents": 1,
+          "jsEventListeners": 414,
+          "jsHeapUsedBytes": 15441808,
+          "nodes": 646
+        },
+        "visit": 3
+      }
+    ]
+  },
+  "node": "v22.23.3",
+  "runtime": {
+    "dom": {
+      "documents": 1,
+      "nodes": 306,
+      "jsEventListeners": 440
+    },
+    "errors": [],
+    "frame": {
+      "averageFps": 9.54030780045693,
+      "frames": 38,
+      "framesOver20ms": 37,
+      "framesOver33ms": 36,
+      "longTaskCount": 0,
+      "longTaskTotalMs": 0,
+      "p50FrameMs": 83.40000000000146,
+      "p95FrameMs": 216.69999999999982
+    },
+    "heap": {
+      "jsHeapUsedBytes": 19951452,
+      "jsHeapTotalBytes": 22388736,
+      "jsEventListeners": 440,
+      "nodes": 306
+    },
+    "network": {
+      "apiPaths": ["/api/ephemeris"],
+      "all": {
+        "decodedBytes": 6512599,
+        "transferBytes": 4995734
+      },
+      "duplicateTexturePaths": [],
+      "scripts": {
+        "decodedBytes": 1955428,
+        "transferBytes": 563944
+      },
+      "styles": {
+        "decodedBytes": 183893,
+        "transferBytes": 40512
+      },
+      "texturePaths": [
+        "/textures/celestial/67p.webp",
+        "/textures/celestial/ceres.webp",
+        "/textures/celestial/dwarf-satellite-charon.webp",
+        "/textures/celestial/dwarf-satellite-dysnomia.webp",
+        "/textures/celestial/dwarf-satellite-hiiaka.webp",
+        "/textures/celestial/dwarf-satellite-mk2.webp",
+        "/textures/celestial/dwarf-satellite-namaka.webp",
+        "/textures/celestial/dwarf-satellite-vanth.webp",
+        "/textures/celestial/dwarf-satellite-weywot.webp",
+        "/textures/celestial/dwarf-satellite-xiangliu.webp",
+        "/textures/celestial/encke.webp",
+        "/textures/celestial/eris.webp",
+        "/textures/celestial/gonggong.webp",
+        "/textures/celestial/hale-bopp.webp",
+        "/textures/celestial/halley.webp",
+        "/textures/celestial/haumea.webp",
+        "/textures/celestial/hygiea.webp",
+        "/textures/celestial/makemake.webp",
+        "/textures/celestial/moon-earth-moon.webp",
+        "/textures/celestial/moon-jupiter-callisto.webp",
+        "/textures/celestial/moon-jupiter-europa.webp",
+        "/textures/celestial/moon-jupiter-ganymede.webp",
+        "/textures/celestial/moon-jupiter-io.webp",
+        "/textures/celestial/moon-mars-deimos.webp",
+        "/textures/celestial/moon-mars-phobos.webp",
+        "/textures/celestial/moon-neptune-nereid.webp",
+        "/textures/celestial/moon-neptune-proteus.webp",
+        "/textures/celestial/moon-neptune-triton.webp",
+        "/textures/celestial/moon-saturn-dione.webp",
+        "/textures/celestial/moon-saturn-enceladus.webp",
+        "/textures/celestial/moon-saturn-iapetus.webp",
+        "/textures/celestial/moon-saturn-mimas.webp",
+        "/textures/celestial/moon-saturn-rhea.webp",
+        "/textures/celestial/moon-saturn-tethys.webp",
+        "/textures/celestial/moon-saturn-titan.webp",
+        "/textures/celestial/moon-uranus-ariel.webp",
+        "/textures/celestial/moon-uranus-miranda.webp",
+        "/textures/celestial/moon-uranus-oberon.webp",
+        "/textures/celestial/moon-uranus-titania.webp",
+        "/textures/celestial/moon-uranus-umbriel.webp",
+        "/textures/celestial/neowise.webp",
+        "/textures/celestial/orcus.webp",
+        "/textures/celestial/pallas.webp",
+        "/textures/celestial/pluto.webp",
+        "/textures/celestial/quaoar.webp",
+        "/textures/celestial/sedna.webp",
+        "/textures/celestial/tempel-1.webp",
+        "/textures/celestial/vesta.webp",
+        "/textures/planets/earth-city-lights.webp",
+        "/textures/planets/earth-clouds.webp",
+        "/textures/planets/earth.webp",
+        "/textures/planets/jupiter.webp",
+        "/textures/planets/mars.webp",
+        "/textures/planets/mercury.webp",
+        "/textures/planets/neptune.webp",
+        "/textures/planets/saturn.webp",
+        "/textures/planets/sun.webp",
+        "/textures/planets/uranus.webp",
+        "/textures/planets/venus.webp",
+        "/textures/rings/saturn.webp"
+      ],
+      "textures": {
+        "decodedBytes": 4373278,
+        "transferBytes": 4391278
+      }
+    },
+    "visualContract": "high"
+  },
+  "viewport": "1440x1000"
+}
